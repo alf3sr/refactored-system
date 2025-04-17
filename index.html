@@ -17,240 +17,220 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
-    /* ---------- themes ---------- */
-    :root {
-      --bg: #000; --panel-bg: #111; --panel-border: #333; --text: #fff;
-      --pill-bg: #181818; --pill-br: #444; --pill-fg: #fff;
-      --box: #000; --box-gap: 2px; --accent: #3498db;
+    /* ========= THEME & BASE ========= */
+    :root{--bg:#000;--fg:#fff;--panel:#111;--border:#333;--accent:#3498db;--box:#000;--gap:8px}
+    @media (prefers-color-scheme:light){
+      :root{--bg:#fff;--fg:#000;--panel:#f5f5f5;--border:#ccc;--accent:#156fd1;--box:#fff}
     }
-    @media (prefers-color-scheme: light) {
-      :root {
-        --bg: #fff; --panel-bg: #f5f5f5; --panel-border: #ccc; --text: #000;
-        --pill-bg: #eee; --pill-br: #bbb; --pill-fg: #000;
-        --box: #fff; --accent: #156fd1;
-      }
-    }
-    .light { --bg:#fff; --panel-bg:#f5f5f5; --panel-border:#ccc; --text:#000; --box:#fff; }
-    .dark  { --bg:#000; --panel-bg:#111; --panel-border:#333; --text:#fff; --box:#000; }
+    .light{--bg:#fff;--fg:#000;--box:#fff}
+    .dark {--bg:#000;--fg:#fff;--box:#000}
 
-    /* ---------- base ---------- */
-    * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-    body {
-      height:100vh; background:var(--bg); color:var(--text);
-      font-family:system-ui,sans-serif; overflow:hidden;
-      touch-action:manipulation; user-select:none; -webkit-user-select:none;
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    body{
+      height:100vh;background:var(--bg);color:var(--fg);
+      font-family:system-ui,sans-serif;overflow:hidden;
+      touch-action:manipulation;user-select:none;-webkit-user-select:none;
     }
-    button { font: inherit; }
-    .pill {
-      padding:.45rem .9rem; border-radius:20px;
-      background:var(--pill-bg); border:1px solid var(--pill-br); color:var(--pill-fg);
-      cursor:pointer;
+    button{font:inherit;cursor:pointer}
+    .pill{
+      padding:.6rem 1rem;border-radius:8px;
+      background:var(--panel);border:1px solid var(--border);
+      color:var(--fg);box-shadow:0 2px 10px rgba(0,0,0,0.25);
+      transition:all .2s ease;
     }
-    .pill:active { background:#222; }
+    .pill:active{background:rgba(255,255,255,.1)}
 
-    /* ---------- floating controls ---------- */
-    #settingsBtn {
-      position:fixed; top:1rem; right:1rem; z-index:90;
-      width:2.6rem; height:2.6rem; display:flex; align-items:center; justify-content:center;
+    /* ========= SETTINGS PANEL ========= */
+    #settingsBtn{
+      position:fixed;top:12px;right:12px;z-index:100;
+      width:44px;height:44px;display:flex;
+      align-items:center;justify-content:center;background:var(--panel);
+      border:1px solid var(--border);border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.25);
     }
-    #cornerBtns {
-      position:fixed; bottom:1rem; left:1rem; z-index:90;
-      display:flex; gap:.7rem;
+    #settingsPanel{
+      position:fixed;top:0;right:0;width:320px;height:100%;
+      background:var(--panel);border-left:1px solid var(--border);
+      box-shadow:-2px 0 10px rgba(0,0,0,0.25);
+      transform:translateX(100%);transition:transform .3s ease;
+      padding:16px;overflow-y:auto;z-index:90;
     }
-    #timerBtn {
-      position:fixed; bottom:1rem; right:1rem; z-index:90;
-    }
-    body.panel-open #cornerBtns,
-    body.panel-open #timerBtn {
-      opacity:0.1; pointer-events:none;
-    }
-
-    /* ---------- settings panel ---------- */
-    #settingsPanel {
-      position:fixed; top:0; right:0; width:340px; height:100%;
-      background:var(--panel-bg); border-left:1px solid var(--panel-border);
-      transform:translateX(100%); transition:.3s; padding:1rem;
-      overflow-y:auto; z-index:80; scroll-behavior:smooth;
-    }
-    #settingsPanel.open { transform:translateX(0); }
-    #settingsPanel h2 {
-      margin-bottom:.7rem; font-size:1.2rem; 
-      border-bottom:1px solid var(--panel-border); padding-bottom:.4rem;
+    #settingsPanel.open{transform:translateX(0)}
+    #settingsPanel h2{
+      font-size:1.4rem;margin-bottom:12px;
+      border-bottom:1px solid var(--border);padding-bottom:8px;
     }
 
     /* live preview */
-    #preview {
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-      gap:.3rem; margin-bottom:.8rem;
+    #preview{
+      display:grid;gap:8px;margin-bottom:16px;
+      grid-template-columns:repeat(auto-fit,minmax(80px,1fr));
     }
-    .previewBox {
-      padding:.4rem; text-align:center; font-size:.85rem;
-      border-radius:6px; background:var(--box);
-      border:1px solid var(--panel-border);
+    .previewBox{
+      background:var(--box);padding:8px;border-radius:8px;
+      border:1px solid var(--border);text-align:center;
+      transition:all .2s ease;
     }
-    .previewBox span { display:block; font-weight:600; }
+    .previewBox span{display:block;font-weight:700}
 
     /* rows */
-    label.row {
-      display:flex; align-items:center; margin:.55rem 0; font-size:.93rem;
+    label.row{
+      display:flex;align-items:center;margin:8px 0;
+      font-size:1rem;
     }
-    label.row>span { flex:1; }
+    label.row>span{flex:1}
     .row input[type="text"],
-    .row select {
-      flex:1; padding:.35rem .55rem;
-      background:#1a1a1a; border:1px solid #444;
-      border-radius:6px; color:var(--text);
+    .row select{
+      flex:1;padding:.5rem;
+      background:var(--box);border:1px solid var(--border);
+      border-radius:6px;color:var(--fg);
+      transition:all .2s ease;
     }
-    .light .row input[type="text"],
-    .light .row select {
-      background:#fff; border:1px solid #bbb; color:#000;
+    .row input[type="color"]{width:32px;height:32px;border:none;padding:0}
+    .swatchWrap{display:flex;gap:4px;margin-top:4px}
+    .swatch{
+      width:20px;height:20px;border-radius:50%;
+      border:1px solid var(--border);cursor:pointer;
+      transition:transform .2s ease;
     }
-    .row input[type="color"] {
-      width:2rem; height:2rem; padding:0; border:none; background:none;
+    .swatch:hover{transform:scale(1.2)}
+
+    /* toggle */
+    .toggle{
+      position:relative;width:48px;height:28px;margin-left:8px;
+    }
+    .toggle input{opacity:0;width:0;height:0}
+    .slider{
+      position:absolute;inset:0;background:var(--border);
+      border-radius:14px;transition:background .2s,border .2s;
+    }
+    .slider:before{
+      content:"";position:absolute;left:4px;top:4px;
+      width:20px;height:20px;border-radius:50%;
+      background:var(--fg);transition:transform .2s;
+    }
+    input:checked+.slider{background:var(--accent)}
+    input:checked+.slider:before{transform:translateX(20px)}
+
+    /* slider */
+    .rangeRow{
+      display:flex;align-items:center;gap:8px;font-size:1rem;margin:8px 0;
+    }
+    .rangeRow input[type=range]{
+      flex:1;-webkit-appearance:none;background:transparent;
+      transition:all .2s ease;
+    }
+    input[type=range]::-webkit-slider-runnable-track{
+      height:4px;background:var(--border);border-radius:4px;
+    }
+    input[type=range]::-webkit-slider-thumb{
+      -webkit-appearance:none;width:24px;height:24px;border-radius:50%;
+      background:var(--accent);margin-top:-10px;
+      box-shadow:0 2px 6px rgba(0,0,0,0.3);
+      transition:all .2s ease;
     }
 
-    .swatchWrap {
-      display:flex; gap:.25rem; margin-top:.25rem;
+    /* stats */
+    .statsBox{
+      margin-top:24px;border-top:1px solid var(--border);
+      padding-top:16px;font-size:1rem;transition:all .2s ease;
     }
-    .swatch {
-      width:1.2rem; height:1.2rem; border-radius:50%;
-      border:1px solid #666; cursor:pointer;
-    }
+    .statsBox h3{font-size:1.2rem;margin-bottom:8px}
 
-    /* modern toggle */
-    .toggle {
-      position:relative; width:48px; height:27px; margin-left:.6rem;
+    /* ========= BOARD ========= */
+    #court{
+      position:absolute;inset:0;display:grid;gap:var(--gap);
+      transition:all .2s ease;
     }
-    .toggle input { opacity:0; width:0; height:0; }
-    .slider {
-      position:absolute; inset:0; background:#444;
-      border-radius:27px; transition:.25s;
+    .teamBox{
+      background:var(--box);
+      display:flex;flex-direction:column;justify-content:center;align-items:center;
+      border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.25);
+      padding:16px;text-align:center;
+      transition:all .2s ease;
     }
-    .slider:before {
-      content:""; position:absolute; left:3px; top:3px;
-      width:21px; height:21px; border-radius:50%; background:#fff;
-      transition:.25s;
+    .teamBox:active{transform:scale(0.97)}
+    .teamName{
+      font-size:clamp(3rem,8vw,5rem);
+      font-family:'Bebas Neue',sans-serif;margin-bottom:8px;
     }
-    input:checked + .slider { background:var(--accent); }
-    input:checked + .slider:before { transform:translateX(21px); }
-
-    /* modern slider */
-    .rangeRow {
-      display:flex; align-items:center; gap:.6rem; font-size:.9rem;
-    }
-    .rangeRow input[type=range] {
-      flex:1; -webkit-appearance:none; background:transparent;
-    }
-    input[type=range]::-webkit-slider-runnable-track {
-      height:4px; background:#444; border-radius:4px;
-    }
-    input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance:none; width:22px; height:22px;
-      border-radius:50%; background:var(--accent);
-      margin-top:-9px; box-shadow:0 0 2px rgba(0,0,0,.6);
-    }
-    input[type=range]:focus { outline:none; }
-
-    .statsBox {
-      margin-top:1rem; border-top:1px solid var(--panel-border);
-      padding-top:.8rem; font-size:.9rem;
-    }
-    .statsBox h3 {
-      font-size:1rem; margin-bottom:.5rem;
-    }
-
-    /* ---------- court ---------- */
-    #court {
-      position:absolute; inset:0; display:grid; gap:var(--gap);
-    }
-    .teamBox {
-      background:var(--box); display:flex; flex-direction:column;
-      justify-content:center; align-items:center; cursor:pointer;
-      padding:.4rem; transition:background .15s,transform .13s;
-    }
-    .teamBox:active { transform:scale(.96); }
-    .teamName {
-      font-size:clamp(4rem,10vw,6rem);
+    .teamScore{
+      font-size:clamp(6rem,15vw,12rem);
       font-family:'Bebas Neue',sans-serif;
+      transition:transform .2s ease;
     }
-    .teamScore {
-      font-size:clamp(8rem,20vmin,16rem);
-      font-family:'Bebas Neue',sans-serif;
-      transition:transform .25s;
+    .pop{transform:scale(1.3)}
+    .leader{outline:3px solid var(--accent)}
+
+    /* overlays */
+    #winnerBanner{
+      position:absolute;inset:0;display:none;
+      background:rgba(0,0,0,0.7);z-index:95;color:#fff;
+      font-size:2rem;font-weight:700;
+      justify-content:center;align-items:center;flex-direction:column;
     }
-    .pop { transform:scale(1.35); }
-    .leader {
-      box-shadow:0 0 10px 4px currentColor inset;
+    #winnerBanner button{margin-top:16px}
+
+    #matchTimer{
+      position:fixed;top:12px;left:50%;transform:translateX(-50%);
+      font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:.5px;
+      z-index:100;transition:opacity .2s;
+    }
+    body.panel-open #matchTimer{opacity:0}
+
+    /* ========= FLOATING BAR ========= */
+    #floatbar{
+      position:fixed;bottom:12px;left:50%;transform:translateX(-50%);
+      display:flex;gap:12px;z-index:100;
     }
 
-    /* ---------- overlays ---------- */
-    #winnerBanner {
-      position:absolute; inset:0; display:none;
-      background:rgba(0,0,0,.8); z-index:95; color:#fff;
-      font-size:2.4rem; font-weight:700;
-      justify-content:center; align-items:center; flex-direction:column;
-      text-align:center;
-    }
-    #winnerBanner button { margin-top:1rem; }
-    #matchTimer {
-      position:fixed; top:1rem; left:50%;
-      transform:translateX(-50%);
-      font-size:1.2rem; font-family:'Bebas Neue',sans-serif;
-      letter-spacing:.5px; z-index:89;
-    }
-    body.panel-open #matchTimer { opacity:0; }
+    /* prevent double-tap zoom */
+    body,html{touch-action:manipulation}
   </style>
 </head>
-<body class="dark">
 
-  <!-- clock -->
+<body class="dark">
+  <!-- timer -->
   <div id="matchTimer">00:00</div>
 
-  <!-- floating controls -->
-  <button id="settingsBtn" class="pill">⚙️</button>
-  <div id="cornerBtns">
+  <!-- settings gear -->
+  <button id="settingsBtn">⚙️</button>
+
+  <!-- floating bottom bar -->
+  <div id="floatbar">
     <button id="undoBtn" class="pill">Undo</button>
     <button id="resetBtn" class="pill">Reset</button>
+    <button id="timerBtn" class="pill">Timer</button>
   </div>
-  <button id="timerBtn" class="pill">⏵ Timer</button>
 
   <!-- settings drawer -->
   <div id="settingsPanel">
     <h2>Settings</h2>
     <div id="preview"></div>
 
-    <label class="row">
-      <span>Teams</span>
-      <select id="teamCount"><option>2</option><option>3</option><option>4</option></select>
+    <label class="row"><span>Teams</span>
+      <select id="teamCount"><option>1</option><option>2</option><option>3</option><option>4</option></select>
     </label>
     <div id="teamsConfig"></div>
 
-    <label class="row">
-      <span>Points / tap</span>
+    <label class="row"><span>Points / tap</span>
       <select id="stepSel"><option>1</option><option>2</option><option>3</option><option>5</option></select>
     </label>
 
-    <label class="row">
-      <span>Score limit</span>
+    <label class="row"><span>Score limit</span>
       <div class="toggle"><input type="checkbox" id="limitToggle"><span class="slider"></span></div>
     </label>
     <div id="limitRow" class="rangeRow hidden">
-      <input type="range" id="limitRange" min="1" max="100">
-      <span id="limitVal"></span>
+      <input type="range" id="limitRange" min="1" max="100"><span id="limitVal"></span>
     </div>
 
-    <label class="row">
-      <span>Countdown timer</span>
+    <label class="row"><span>Countdown timer</span>
       <div class="toggle"><input type="checkbox" id="cdToggle"><span class="slider"></span></div>
     </label>
     <div id="cdRow" class="rangeRow hidden">
-      <input type="range" id="cdRange" min="1" max="60">
-      <span id="cdVal"></span>
+      <input type="range" id="cdRange" min="1" max="60"><span id="cdVal"></span>
     </div>
 
-    <label class="row">
-      <span>Theme</span>
+    <label class="row"><span>Theme</span>
       <select id="themeSel">
         <option value="auto">Auto</option>
         <option value="dark">Dark</option>
@@ -261,9 +241,7 @@
     <div class="statsBox">
       <h3>Stats</h3>
       <div id="statsWrap"></div>
-      <button id="resetStats" class="pill" style="margin-top:.6rem;display:none">
-        Reset stats
-      </button>
+      <button id="resetStats" class="pill" style="display:none">Reset stats</button>
     </div>
   </div>
 
@@ -275,169 +253,154 @@
   </div>
 
   <script>
-    const $ = id => document.getElementById(id);
-    const swatches = ['#3498db','#e74c3c','#9b59b6','#f1c40f','#1abc9c','#fff','#000'];
-    const fmt = ms => {
-      const s = Math.floor(ms/1000),
-            m = Math.floor(s/60),
-            ss = String(s%60).padStart(2,'0');
+    const $=id=>document.getElementById(id);
+    const swatches=['#3498db','#e74c3c','#9b59b6','#f1c40f','#1abc9c','#fff','#000'];
+    const fmt=ms=>{
+      const s=Math.floor(ms/1000),
+            m=Math.floor(s/60),
+            ss=String(s%60).padStart(2,'0');
       return `${m}:${ss}`;
     };
 
-    // initial state + persistence
-    const seed = {
+    // initial state
+    const seed={
       teamCount:2,
       teams:[
         {name:'Team A',color:'#3498db',score:0},
         {name:'Team B',color:'#e74c3c',score:0}
       ],
-      step:1, limitEnabled:false, limit:11,
-      countdownEnabled:false, countdown:300000,
+      step:1,limitEnabled:false,limit:11,
+      countdownEnabled:false,countdown:300000,
       timer:{running:false,start:0,elapsed:0},
-      history:[], wins:{}, games:0, pointsTotal:0,
-      theme:'auto'
+      history:[],wins:{},games:0,pointsTotal:0,
+      theme:'auto',
+      startTime:Date.now(),
+      leadChanges:0,previousLeader:-1
     };
-    let cfg = Object.assign(seed, JSON.parse(localStorage.getItem('pt-state')||'{}'));
-    function save(){ localStorage.setItem('pt-state', JSON.stringify(cfg)); }
+    let cfg=Object.assign(seed,JSON.parse(localStorage.getItem('pt-state')||'{}'));
+    function save(){localStorage.setItem('pt-state',JSON.stringify(cfg));}
 
-    /* ——— SANITISE any stored black colours ——— */
-    const defaults = ['#3498db','#e74c3c','#9b59b6','#f1c40f'];
-    cfg.teams = (cfg.teams||[]).map((t,i)=>({
-      name : t.name  || `Team ${String.fromCharCode(65+i)}`,
-      color: (!t.color || /^#0{3,6}$/i.test(t.color))
-               ? defaults[i % defaults.length]
-               : t.color,
-      score: t.score||0
+    // sanitise colours
+    const defaults=['#3498db','#e74c3c','#9b59b6','#f1c40f'];
+    cfg.teams=(cfg.teams||[]).map((t,i)=>({
+      name:t.name||`Team ${String.fromCharCode(65+i)}`,
+      // if missing or black
+      color:(!t.color||/^#0{3,6}$/i.test(t.color))?defaults[i]:t.color,
+      score:t.score||0
     }));
-    save();  // write back the cleaned array
+    // ensure timing & leads exist
+    cfg.startTime=cfg.startTime||Date.now();
+    cfg.leadChanges=cfg.leadChanges||0;
+    cfg.previousLeader=(typeof cfg.previousLeader==='number'?cfg.previousLeader:-1);
+    save();
 
-    // element refs
-    const els = {
-      panel:$('settingsPanel'), gear:$('settingsBtn'), preview:$('preview'),
-      teamCount:$('teamCount'), teams:$('teamsConfig'),
+    const els={
+      panel:$('settingsPanel'),gear:$('settingsBtn'),preview:$('preview'),
+      teamCount:$('teamCount'),teams:$('teamsConfig'),
       stepSel:$('stepSel'),
-      limitToggle:$('limitToggle'), limitRow:$('limitRow'),
-      limitRange:$('limitRange'), limitVal:$('limitVal'),
-      cdToggle:$('cdToggle'), cdRow:$('cdRow'),
-      cdRange:$('cdRange'), cdVal:$('cdVal'),
-      themeSel:$('themeSel'), court:$('court'),
-      undo:$('undoBtn'), reset:$('resetBtn'),
-      timerBtn:$('timerBtn'), timerDisp:$('matchTimer'),
-      winner:$('winnerBanner'), winnerText:$('winnerText'),
-      stats:$('statsWrap'), resetStats:$('resetStats')
+      limitToggle:$('limitToggle'),limitRow:$('limitRow'),
+      limitRange:$('limitRange'),limitVal:$('limitVal'),
+      cdToggle:$('cdToggle'),cdRow:$('cdRow'),
+      cdRange:$('cdRange'),cdVal:$('cdVal'),
+      themeSel:$('themeSel'),court:$('court'),
+      undo:$('undoBtn'),reset:$('resetBtn'),
+      timerBtn:$('timerBtn'),timerDisp:$('matchTimer'),
+      winner:$('winnerBanner'),winnerText:$('winnerText'),
+      stats:$('statsWrap'),resetStats:$('resetStats')
     };
 
     // drawer toggle
-    els.gear.addEventListener('click', ()=> {
+    els.gear.addEventListener('click',()=>{
       els.panel.classList.toggle('open');
-      document.body.classList.toggle('panel-open',
-        els.panel.classList.contains('open'));
+      document.body.classList.toggle('panel-open',els.panel.classList.contains('open'));
     });
 
     // theme
     function applyTheme(){
-      const sys = matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
-      document.body.classList.toggle('light',
-        cfg.theme==='light'||(cfg.theme==='auto'&&sys==='light')
-      );
-      document.body.classList.toggle('dark',
-        cfg.theme==='dark'||(cfg.theme==='auto'&&sys==='dark')
-      );
-      els.themeSel.value = cfg.theme;
+      const sys=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+      document.body.classList.toggle('light',cfg.theme==='light'||(cfg.theme==='auto'&&sys==='light'));
+      document.body.classList.toggle('dark',cfg.theme==='dark'||(cfg.theme==='auto'&&sys==='dark'));
+      els.themeSel.value=cfg.theme;
     }
-    els.themeSel.oninput = e => { cfg.theme=e.target.value; applyTheme(); save(); };
+    els.themeSel.oninput=e=>{cfg.theme=e.target.value;applyTheme();save()};
     applyTheme();
 
     // render teams
     function renderTeams(){
-      cfg.teams = Array.from({length:cfg.teamCount}, (_,i)=>{
-        const p = cfg.teams[i] || {};
+      cfg.teams=Array.from({length:cfg.teamCount},(_,i)=>{
+        const p=cfg.teams[i]||{};
         return {
-          name:p.name||`Team ${String.fromCharCode(65+i)}`,
-          color:p.color||defaults[i%defaults.length],
+          name:p.name||`Team ${String.fromCharCode(65+i)}`,
+          color:p.color||defaults[i],
           score:p.score||0
         };
       });
-      els.teams.innerHTML = '';
+      els.teams.innerHTML='';
       cfg.teams.forEach((t,i)=>{
         els.teams.insertAdjacentHTML('beforeend',`
-          <label class="row"><span>Team ${String.fromCharCode(65+i)}</span>
+          <label class="row"><span>Team ${String.fromCharCode(65+i)}</span>
             <input type="text" id="name${i}" value="${t.name}">
           </label>
           <label class="row"><span style="visibility:hidden">Colour</span>
             <input type="color" id="clr${i}" value="${t.color}">
           </label>
-          <div class="swatchWrap" id="sw${i}"></div>
-        `);
-        swatches.forEach(c=> {
+          <div class="swatchWrap" id="sw${i}"></div>`);
+        swatches.forEach(c=>{
           const d=document.createElement('div');
-          d.className='swatch'; d.style.background=c;
-          d.onclick = ()=>{
-            $(`clr${i}`).value = c;
-            cfg.teams[i].color = c;
-            updateCourt(); updatePreview(); save();
+          d.className='swatch';d.style.background=c;
+          d.onclick=()=>{
+            $(`clr${i}`).value=c;
+            cfg.teams[i].color=c;
+            updateCourt();updatePreview();save();
           };
           $(`sw${i}`).append(d);
         });
       });
-      updateCourt(); updatePreview(); save();
+      updateCourt();updatePreview();save();
     }
     ['change','input'].forEach(evt=>
-      els.teamCount.addEventListener(evt, e=>{
-        cfg.teamCount = +e.target.value;
-        renderTeams();
+      els.teamCount.addEventListener(evt,e=>{
+        cfg.teamCount=+e.target.value;renderTeams();
       })
     );
 
-    // live name/color edits
-    els.teams.addEventListener('input', e=>{
-      const m=e.target.id.match(/(name|clr)(\d+)/);
-      if(!m) return;
+    // live name/color
+    els.teams.addEventListener('input',e=>{
+      const m=e.target.id.match(/(name|clr)(\d+)/);if(!m)return;
       const i=+m[2];
-      if(m[1]==='name'){
-        cfg.teams[i].name = e.target.value||`Team ${String.fromCharCode(65+i)}`;
-      } else {
-        cfg.teams[i].color = e.target.value;
-      }
-      updateCourt(); updatePreview(); save();
+      if(m[1]==='name') cfg.teams[i].name=e.target.value||`Team ${String.fromCharCode(65+i)}`;
+      else cfg.teams[i].color=e.target.value;
+      updateCourt();updatePreview();save();
     });
 
     // points/tap
-    els.stepSel.value = cfg.step;
-    els.stepSel.onchange = e=>{ cfg.step = +e.target.value; save(); };
+    els.stepSel.value=cfg.step;
+    els.stepSel.onchange=e=>{cfg.step=+e.target.value;save()};
 
     // score limit
     function syncLimit(){
-      els.limitRow.classList.toggle('hidden', !els.limitToggle.checked);
-      cfg.limitEnabled = els.limitToggle.checked; save();
+      els.limitRow.classList.toggle('hidden',!els.limitToggle.checked);
+      cfg.limitEnabled=els.limitToggle.checked;save();
     }
-    els.limitToggle.checked = cfg.limitEnabled;
-    els.limitToggle.onchange = syncLimit;
-    els.limitRange.value = cfg.limit;
-    els.limitVal.textContent = cfg.limit;
-    els.limitRange.oninput = e=>{ cfg.limit=+e.target.value; els.limitVal.textContent=e.target.value; save(); };
+    els.limitToggle.checked=cfg.limitEnabled;els.limitToggle.onchange=syncLimit;
+    els.limitRange.value=cfg.limit;els.limitVal.textContent=cfg.limit;
+    els.limitRange.oninput=e=>{cfg.limit=+e.target.value;els.limitVal.textContent=e.target.value;save()};
     syncLimit();
 
-    // countdown toggle
+    // countdown
     function syncCD(){
-      els.cdRow.classList.toggle('hidden', !els.cdToggle.checked);
-      cfg.countdownEnabled = els.cdToggle.checked;
-      resetClock(); save();
+      els.cdRow.classList.toggle('hidden',!els.cdToggle.checked);
+      cfg.countdownEnabled=els.cdToggle.checked;
+      resetClock();save();
     }
-    els.cdToggle.checked = cfg.countdownEnabled;
-    els.cdToggle.onchange = syncCD;
-    els.cdRange.value = cfg.countdown/60000;
-    els.cdVal.textContent = cfg.countdown/60000;
-    els.cdRange.oninput = e=>{
-      cfg.countdown = +e.target.value*60000;
-      els.cdVal.textContent = e.target.value;
-      resetClock(); save();
-    };
+    els.cdToggle.checked=cfg.countdownEnabled;els.cdToggle.onchange=syncCD;
+    els.cdRange.value=cfg.countdown/60000;els.cdVal.textContent=cfg.countdown/60000;
+    els.cdRange.oninput=e=>{cfg.countdown=+e.target.value*60000;els.cdVal.textContent=e.target.value;resetClock();save()};
     syncCD();
 
-    // update preview
+    // live preview
     function updatePreview(){
-      els.preview.innerHTML = '';
+      els.preview.innerHTML='';
       cfg.teams.forEach(t=>{
         els.preview.insertAdjacentHTML('beforeend',`
           <div class="previewBox">
@@ -449,46 +412,58 @@
 
     // draw court
     function updateCourt(){
-      els.court.style.gridTemplate =
-        cfg.teamCount===2?'1fr 1fr / 1fr':'1fr 1fr / 1fr 1fr';
-      els.court.innerHTML = '';
+      let tpl;
+      switch(cfg.teamCount){
+        case 1: tpl='1fr / 1fr'; break;
+        case 2: tpl='1fr / 1fr 1fr'; break;
+        case 3: tpl='1fr / 1fr 1fr 1fr'; break;
+        case 4: tpl='1fr 1fr / 1fr 1fr'; break;
+      }
+      els.court.style.gridTemplate = tpl;
+      els.court.innerHTML='';
       cfg.teams.forEach((t,i)=>{
         const b=document.createElement('div');
-        b.className='teamBox'; b.dataset.i=i;
+        b.className='teamBox';b.dataset.i=i;
         b.innerHTML=`
           <div class="teamName" style="color:${t.color}">${t.name}</div>
           <div class="teamScore" style="color:${t.color}">${t.score}</div>`;
-        b.addEventListener('pointerdown', e=>startPress(e,b));
+        b.addEventListener('pointerdown',e=>startPress(e,b));
         els.court.append(b);
       });
-      updateScores(); highlightLeader();
+      updateScores();highlightLeader();
     }
     function updateScores(){
-      document.querySelectorAll('.teamScore').forEach((el,i)=>{
-        el.textContent = cfg.teams[i].score;
-      });
+      document.querySelectorAll('.teamScore').forEach((el,i)=>
+        el.textContent=cfg.teams[i].score
+      );
     }
     function highlightLeader(){
-      const mx = Math.max(...cfg.teams.map(t=>t.score));
+      const max=Math.max(...cfg.teams.map(t=>t.score));
+      let newLeader=-1;
       document.querySelectorAll('.teamBox').forEach((b,i)=>{
-        b.classList.toggle('leader',
-          cfg.teams[i].score===mx && mx>0
-        );
+        const isL=cfg.teams[i].score===max&&max>0;
+        b.classList.toggle('leader',isL);
+        if(isL&&newLeader<0) newLeader=i;
       });
+      // record lead change
+      if(cfg.previousLeader>=0 && newLeader!==cfg.previousLeader){
+        cfg.leadChanges++;
+        save();
+      }
+      cfg.previousLeader=newLeader;
     }
 
-    // tap / long‑press logic
-    let longId, wasLong=false;
+    // tap/long-press
+    let longId,wasLong=false;
     function startPress(e,b){
-      const i=+b.dataset.i, step=cfg.step;
+      const i=+b.dataset.i,st=cfg.step;
       wasLong=false;
-      longId = setTimeout(()=>{
-        changeScore(i,-step);
-        wasLong=true;
+      longId=setTimeout(()=>{
+        changeScore(i,-st);wasLong=true;
       },500);
       const end=()=>{
         clearTimeout(longId);
-        if(!wasLong) changeScore(i,step);
+        if(!wasLong) changeScore(i,st);
         b.removeEventListener('pointerup',end);
         b.removeEventListener('pointercancel',end);
       };
@@ -501,57 +476,74 @@
       setTimeout(()=>sc.classList.remove('pop'),250);
       b.animate([{background:c+'22'},{background:'transparent'}],{duration:250});
     }
-    function changeScore(i,delta){
-      cfg.teams[i].score = Math.max(0, cfg.teams[i].score+delta);
-      cfg.history.push({team:i,delta});
-      if(cfg.history.length>300) cfg.history.shift();
-      updateScores();
-      popAnim(els.court.children[i], cfg.teams[i].color);
-      highlightLeader();
-      haptic();
-      checkWin(i);
-      save();
+    function changeScore(i,d){
+      cfg.teams[i].score=Math.max(0,cfg.teams[i].score+d);
+      cfg.history.push({team:i,delta:d});
+      if(cfg.history.length>300)cfg.history.shift();
+      updateScores();popAnim(els.court.children[i],cfg.teams[i].color);
+      highlightLeader();haptic();checkWin(i);save();
     }
 
-    // undo / reset
+    // undo & reset
     els.undo.onclick=()=>{
-      const last=cfg.history.pop();
-      if(!last) return;
-      cfg.teams[last.team].score = Math.max(0,
-        cfg.teams[last.team].score - last.delta
-      );
-      updateScores(); highlightLeader(); save();
+      const h=cfg.history.pop();if(!h)return;
+      cfg.teams[h.team].score=Math.max(0,cfg.teams[h.team].score-h.delta);
+      updateScores();highlightLeader();save();
     };
     function resetGame(){
       cfg.teams.forEach(t=>t.score=0);
-      cfg.history=[];
-      updateScores(); highlightLeader();
-      els.winner.style.display='none';
-      save();
+      cfg.history=[];updateScores();highlightLeader();
+      cfg.startTime=Date.now();cfg.leadChanges=0;cfg.previousLeader=-1;
+      els.winner.style.display='none';save();
     }
-    els.reset.onclick = resetGame;
+    els.reset.onclick=resetGame;
 
-    // check win & stats
+    // win & stats
     function checkWin(i){
-      if(cfg.limitEnabled && cfg.teams[i].score>=cfg.limit){
+      if(cfg.limitEnabled&&cfg.teams[i].score>=cfg.limit){
         confetti({particleCount:200,spread:70,startVelocity:45});
-        els.winnerText.textContent = `🏆 ${cfg.teams[i].name} wins!`;
+        els.winnerText.textContent=`🏆 ${cfg.teams[i].name} wins!`;
         els.winner.style.display='flex';
-        cfg.wins[cfg.teams[i].name] = (cfg.wins[cfg.teams[i].name]||0)+1;
-        cfg.games++;
-        cfg.pointsTotal += cfg.teams.reduce((s,t)=>s+t.score,0);
-        renderStats(); save();
+        cfg.wins[cfg.teams[i].name]=(cfg.wins[cfg.teams[i].name]||0)+1;
+        cfg.games++;cfg.pointsTotal+=cfg.teams.reduce((s,t)=>s+t.score,0);
+        renderStats();save();
       }
     }
     function renderStats(){
-      els.stats.innerHTML = '';
+      els.stats.innerHTML='';
+      // history per team
+      const histMap=cfg.teams.map(()=>[]);
+      const sm=cfg.teams.map(()=>0);
+      cfg.history.forEach(e=>{
+        sm[e.team]+=e.delta;
+        histMap[e.team].push(sm[e.team]);
+      });
+      cfg.teams.forEach((t,i)=>{
+        els.stats.insertAdjacentHTML('beforeend',
+          `<div><strong>${t.name} history:</strong> 0 → ${histMap[i].join(' → ')}</div>`
+        );
+      });
+      // points/tap
+      els.stats.insertAdjacentHTML('beforeend',
+        `<div><strong>Points/tap:</strong> +${cfg.step}</div>`
+      );
+      // time elapsed
+      const el=Date.now()-cfg.startTime,mm=Math.floor(el/60000),ss=String(Math.floor((el%60000)/1000)).padStart(2,'0');
+      els.stats.insertAdjacentHTML('beforeend',
+        `<div><strong>Time elapsed:</strong> ${mm}:${ss}</div>`
+      );
+      // lead changes
+      els.stats.insertAdjacentHTML('beforeend',
+        `<div><strong>Lead changes:</strong> ${cfg.leadChanges}</div>`
+      );
+      // wins + avg
       Object.entries(cfg.wins).forEach(([n,w])=>{
         els.stats.insertAdjacentHTML('beforeend',
-          `<div>${n}: ${w}</div>`
+          `<div>${n}: ${w} wins</div>`
         );
       });
       if(cfg.games){
-        const avg = (cfg.pointsTotal/cfg.games).toFixed(1);
+        const avg=(cfg.pointsTotal/cfg.games).toFixed(1);
         els.stats.insertAdjacentHTML('beforeend',
           `<div>Avg pts/game: ${avg}</div>`
         );
@@ -560,13 +552,12 @@
         els.resetStats.style.display='none';
       }
     }
-    els.resetStats.onclick = ()=>{
-      cfg.wins={}; cfg.games=cfg.pointsTotal=0;
-      renderStats(); save();
+    els.resetStats.onclick=()=>{
+      cfg.wins={};cfg.games=cfg.pointsTotal=0;renderStats();save();
     };
     renderStats();
 
-    // countdown timer
+    // countdown
     function resetClock(){
       if(!cfg.countdownEnabled){
         els.timerDisp.textContent='00:00';
@@ -574,13 +565,13 @@
         return;
       }
       els.timerBtn.style.display='';
-      cfg.timer.elapsed = cfg.countdown;
-      cfg.timer.running = false;
+      cfg.timer.elapsed=cfg.countdown;
+      cfg.timer.running=false;
       els.timerBtn.textContent='⏵ Timer';
     }
     resetClock();
-    els.timerBtn.onclick = ()=>{
-      if(!cfg.countdownEnabled) return;
+    els.timerBtn.onclick=()=>{
+      if(!cfg.countdownEnabled)return;
       const t=cfg.timer;
       if(t.running){
         t.running=false;
@@ -588,45 +579,42 @@
         els.timerBtn.textContent='⏵ Timer';
       } else {
         t.running=true;
-        t.start = Date.now() - (cfg.countdown - t.elapsed || 0);
+        t.start=Date.now()-(cfg.countdown-t.elapsed||0);
         els.timerBtn.textContent='⏸ Timer';
       }
       save();
     };
     (function loop(){
       const t=cfg.timer;
-      if(t.running && cfg.countdownEnabled){
-        const rem = Math.max(0, t.start+cfg.countdown-Date.now());
-        els.timerDisp.textContent = fmt(rem);
-        if(rem===0){
-          t.running=false;
-          confetti({particleCount:180,spread:100});
-        }
+      if(t.running&&cfg.countdownEnabled){
+        const r=Math.max(0,t.start+cfg.countdown-Date.now());
+        els.timerDisp.textContent=fmt(r);
+        if(r===0){t.running=false;confetti({particleCount:180,spread:100});}
       }
       requestAnimationFrame(loop);
     })();
 
-    // haptic feedback
+    // haptic click
     let audioCtx;
     function haptic(){
       try{
-        audioCtx = audioCtx||new (AudioContext||webkitAudioContext)();
-        const osc = audioCtx.createOscillator(),
-              g   = audioCtx.createGain();
-        osc.connect(g); g.connect(audioCtx.destination);
-        osc.frequency.value = 200; g.gain.value = .8;
-        osc.start(); osc.stop(audioCtx.currentTime+0.02);
-      } catch {}
+        audioCtx=audioCtx||new(AudioContext||webkitAudioContext)();
+        const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+        o.connect(g);g.connect(audioCtx.destination);
+        o.frequency.value=200;g.gain.value=.8;
+        o.start();o.stop(audioCtx.currentTime+.02);
+      }catch{}
     }
 
     // prevent double‑tap zoom
-    let lastTouch=0;
-    document.addEventListener('touchend', e=>{
-      const now=e.timeStamp;
-      if(now-lastTouch<300) e.preventDefault();
-      lastTouch=now;
+    let last=0;
+    document.addEventListener('touchend',e=>{
+      const n=e.timeStamp;
+      if(n-last<300)e.preventDefault();
+      last=n;
     },{passive:false});
 
+    // initial render
     renderTeams();
     applyTheme();
     if('serviceWorker' in navigator){
