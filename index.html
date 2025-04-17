@@ -2,189 +2,192 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport"
-        content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
   <title>Point Tracker</title>
 
-  <!-- PWA + icons -->
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#000000">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="apple-touch-icon" href="./Icon-192.png">
 
-  <!-- Confetti + Sporty Font -->
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
-    /* ========= THEME & BASE ========= */
-    :root{--bg:#000;--fg:#fff;--panel:#111;--border:#333;--accent:#3498db;--box:#000;--gap:8px}
-    @media (prefers-color-scheme:light){
-      :root{--bg:#fff;--fg:#000;--panel:#f5f5f5;--border:#ccc;--accent:#156fd1;--box:#fff}
+  /* ======= THEMES & BASE ======= */
+  :root {
+    --bg: #000; --fg: #fff; --panel: #111; --border: #333;
+    --accent: #3498db; --box: #000; --gap: 8px;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #fff; --fg: #000; --panel: #f5f5f5; --border: #ccc;
+      --accent: #156fd1; --box: #fff;
     }
-    .light{--bg:#fff;--fg:#000;--box:#fff}
-    .dark {--bg:#000;--fg:#fff;--box:#000}
+  }
+  .light { --bg:#fff; --fg:#000; --box:#fff }
+  .dark  { --bg:#000; --fg:#fff; --box:#000 }
 
-    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-    body{
-      height:100vh;background:var(--bg);color:var(--fg);
-      font-family:system-ui,sans-serif;overflow:hidden;
-      touch-action:manipulation;user-select:none;-webkit-user-select:none;
-    }
-    button{font:inherit;cursor:pointer}
-    .pill{
-      padding:.6rem 1rem;border-radius:8px;
-      background:var(--panel);border:1px solid var(--border);
-      color:var(--fg);box-shadow:0 2px 10px rgba(0,0,0,0.25);
-      transition:all .2s ease;
-    }
-    .pill:active{background:rgba(255,255,255,.1)}
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    height:100vh; background:var(--bg); color:var(--fg);
+    font-family: system-ui, sans-serif; overflow:hidden;
+    touch-action:manipulation; user-select:none; -webkit-user-select:none;
+  }
+  button { font: inherit; }
+  .pill {
+    padding:.6rem 1rem; border-radius:8px;
+    background:var(--panel); border:1px solid var(--border);
+    color:var(--fg); box-shadow:0 2px 10px rgba(0,0,0,0.25);
+    transition: all .2s ease;
+  }
+  .pill:active { background: rgba(255,255,255,0.1); }
 
-    /* ========= SETTINGS PANEL ========= */
-    #settingsBtn{
-      position:fixed;top:12px;right:12px;z-index:100;
-      width:44px;height:44px;display:flex;
-      align-items:center;justify-content:center;background:var(--panel);
-      border:1px solid var(--border);border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.25);
-    }
-    #settingsPanel{
-      position:fixed;top:0;right:0;width:320px;height:100%;
-      background:var(--panel);border-left:1px solid var(--border);
-      box-shadow:-2px 0 10px rgba(0,0,0,0.25);
-      transform:translateX(100%);transition:transform .3s ease;
-      padding:16px;overflow-y:auto;z-index:90;
-    }
-    #settingsPanel.open{transform:translateX(0)}
-    #settingsPanel h2{
-      font-size:1.4rem;margin-bottom:12px;
-      border-bottom:1px solid var(--border);padding-bottom:8px;
-    }
+  /* ======= SETTINGS ======= */
+  #settingsBtn {
+    position: fixed; top:12px; right:12px; z-index:100;
+    width:44px; height:44px; background:var(--panel);
+    border:1px solid var(--border); border-radius:50%;
+    box-shadow:0 2px 10px rgba(0,0,0,0.25);
+    display:flex; align-items:center; justify-content:center;
+  }
+  #settingsPanel {
+    position: fixed; top:0; right:0; width:300px; height:100%;
+    background:var(--panel); border-left:1px solid var(--border);
+    box-shadow:-2px 0 10px rgba(0,0,0,0.25);
+    transform:translateX(100%); transition: transform .3s ease;
+    padding:16px; overflow-y:auto; z-index:90;
+  }
+  #settingsPanel.open { transform: translateX(0); }
+  #settingsPanel h2 {
+    font-size:1.3rem; margin-bottom:12px;
+    border-bottom:1px solid var(--border); padding-bottom:8px;
+  }
+  .section-header {
+    font-weight:600; opacity:.7; margin-top:16px;
+    margin-bottom:8px; font-size:1rem;
+  }
 
-    /* live preview */
-    #preview{
-      display:grid;gap:8px;margin-bottom:16px;
-      grid-template-columns:repeat(auto-fit,minmax(80px,1fr));
-    }
-    .previewBox{
-      background:var(--box);padding:8px;border-radius:8px;
-      border:1px solid var(--border);text-align:center;
-      transition:all .2s ease;
-    }
-    .previewBox span{display:block;font-weight:700}
+  /* live preview */
+  #preview {
+    display:grid; gap:8px; margin-bottom:16px;
+    grid-template-columns:repeat(auto-fit,minmax(80px,1fr));
+  }
+  .previewBox {
+    background:var(--box); padding:8px; border-radius:8px;
+    border:1px solid var(--border); text-align:center;
+    font-size:.85rem;
+  }
+  .previewBox span { display:block; font-weight:600; }
 
-    /* rows */
-    label.row{
-      display:flex;align-items:center;margin:8px 0;
-      font-size:1rem;
-    }
-    label.row>span{flex:1}
-    .row input[type="text"],
-    .row select{
-      flex:1;padding:.5rem;
-      background:var(--box);border:1px solid var(--border);
-      border-radius:6px;color:var(--fg);
-      transition:all .2s ease;
-    }
-    .row input[type="color"]{width:32px;height:32px;border:none;padding:0}
-    .swatchWrap{display:flex;gap:4px;margin-top:4px}
-    .swatch{
-      width:20px;height:20px;border-radius:50%;
-      border:1px solid var(--border);cursor:pointer;
-      transition:transform .2s ease;
-    }
-    .swatch:hover{transform:scale(1.2)}
+  /* rows & inputs */
+  label.row {
+    display:flex; align-items:center; font-size:1rem; margin:8px 0;
+  }
+  label.row>span { flex:1; }
+  .row input[type="text"], .row select {
+    flex:1; padding:.5rem; background:var(--box);
+    border:1px solid var(--border); border-radius:6px;
+    color:var(--fg); transition: all .2s ease;
+  }
+  .row input[type="color"] {
+    width:32px; height:32px; margin-left:8px; border:none;
+  }
 
-    /* toggle */
-    .toggle{
-      position:relative;width:48px;height:28px;margin-left:8px;
-    }
-    .toggle input{opacity:0;width:0;height:0}
-    .slider{
-      position:absolute;inset:0;background:var(--border);
-      border-radius:14px;transition:background .2s,border .2s;
-    }
-    .slider:before{
-      content:"";position:absolute;left:4px;top:4px;
-      width:20px;height:20px;border-radius:50%;
-      background:var(--fg);transition:transform .2s;
-    }
-    input:checked+.slider{background:var(--accent)}
-    input:checked+.slider:before{transform:translateX(20px)}
+  /* advanced toggle */
+  .toggle {
+    position:relative; width:48px; height:28px; margin-left:8px;
+  }
+  .toggle input { opacity:0; width:0; height:0; }
+  .slider {
+    position:absolute; inset:0; background:var(--border);
+    border-radius:14px; transition: background .2s ease;
+  }
+  .slider:before {
+    content:""; position:absolute; width:20px; height:20px;
+    top:4px; left:4px; background:var(--fg);
+    border-radius:50%; transition: transform .2s ease;
+  }
+  input:checked + .slider { background:var(--accent); }
+  input:checked + .slider:before { transform: translateX(20px); }
 
-    /* slider */
-    .rangeRow{
-      display:flex;align-items:center;gap:8px;font-size:1rem;margin:8px 0;
-    }
-    .rangeRow input[type=range]{
-      flex:1;-webkit-appearance:none;background:transparent;
-      transition:all .2s ease;
-    }
-    input[type=range]::-webkit-slider-runnable-track{
-      height:4px;background:var(--border);border-radius:4px;
-    }
-    input[type=range]::-webkit-slider-thumb{
-      -webkit-appearance:none;width:24px;height:24px;border-radius:50%;
-      background:var(--accent);margin-top:-10px;
-      box-shadow:0 2px 6px rgba(0,0,0,0.3);
-      transition:all .2s ease;
-    }
+  /* slider */
+  .rangeRow {
+    display:flex; align-items:center; gap:8px; font-size:1rem; margin:8px 0;
+  }
+  .rangeRow input[type=range] {
+    flex:1; -webkit-appearance:none; background:transparent;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    height:4px; background:var(--border); border-radius:4px;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance:none; width:24px; height:24px;
+    background:var(--accent); border-radius:50%;
+    margin-top:-10px; box-shadow:0 2px 6px rgba(0,0,0,0.3);
+    transition: all .2s ease;
+  }
 
-    /* stats */
-    .statsBox{
-      margin-top:24px;border-top:1px solid var(--border);
-      padding-top:16px;font-size:1rem;transition:all .2s ease;
-    }
-    .statsBox h3{font-size:1.2rem;margin-bottom:8px}
+  /* stats */
+  .statsBox {
+    margin-top:24px; border-top:1px solid var(--border);
+    padding-top:16px; font-size:1rem;
+  }
+  .statsBox h3 {
+    font-size:1.2rem; margin-bottom:8px;
+  }
 
-    /* ========= BOARD ========= */
-    #court{
-      position:absolute;inset:0;display:grid;gap:var(--gap);
-      transition:all .2s ease;
-    }
-    .teamBox{
-      background:var(--box);
-      display:flex;flex-direction:column;justify-content:center;align-items:center;
-      border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.25);
-      padding:16px;text-align:center;
-      transition:all .2s ease;
-    }
-    .teamBox:active{transform:scale(0.97)}
-    .teamName{
-      font-size:clamp(3rem,8vw,5rem);
-      font-family:'Bebas Neue',sans-serif;margin-bottom:8px;
-    }
-    .teamScore{
-      font-size:clamp(6rem,15vw,12rem);
-      font-family:'Bebas Neue',sans-serif;
-      transition:transform .2s ease;
-    }
-    .pop{transform:scale(1.3)}
-    .leader{outline:3px solid var(--accent)}
+  /* ======= BOARD ======= */
+  #court {
+    position:absolute; inset:0; display:grid; gap:var(--gap);
+    transition: all .2s ease;
+  }
+  .teamBox {
+    background:var(--box);
+    display:flex; flex-direction:column; justify-content:flex-start;
+    align-items:center; padding:12px; border-radius:8px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.25);
+    transition: all .2s ease;
+  }
+  .teamBox:active { transform: scale(.97); }
+  .teamName {
+    font-size:clamp(3rem,8vw,5rem);
+    font-family:'Bebas Neue',sans-serif; margin-bottom:8px;
+  }
+  .teamScore {
+    font-size:clamp(6rem,15vw,12rem);
+    font-family:'Bebas Neue',sans-serif;
+    transition: transform .2s ease;
+  }
+  .pop { transform: scale(1.3); }
+  .leader {
+    border:4px solid currentColor;
+  }
 
-    /* overlays */
-    #winnerBanner{
-      position:absolute;inset:0;display:none;
-      background:rgba(0,0,0,0.7);z-index:95;color:#fff;
-      font-size:2rem;font-weight:700;
-      justify-content:center;align-items:center;flex-direction:column;
-    }
-    #winnerBanner button{margin-top:16px}
+  /* overlays */
+  #winnerBanner {
+    position:absolute; inset:0; display:none;
+    background:rgba(0,0,0,0.7); z-index:95; color:#fff;
+    font-size:2rem; font-weight:700;
+    justify-content:center; align-items:center; flex-direction:column;
+  }
+  #winnerBanner button { margin-top:16px; }
 
-    #matchTimer{
-      position:fixed;top:12px;left:50%;transform:translateX(-50%);
-      font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:.5px;
-      z-index:100;transition:opacity .2s;
-    }
-    body.panel-open #matchTimer{opacity:0}
+  #matchTimer {
+    position:fixed; top:12px; left:50%; transform:translateX(-50%);
+    font-family:'Bebas Neue',sans-serif; font-size:1.2rem;
+    letter-spacing:.5px; z-index:100; transition: opacity .2s;
+  }
+  body.panel-open #matchTimer { opacity:0; }
 
-    /* ========= FLOATING BAR ========= */
-    #floatbar{
-      position:fixed;bottom:12px;left:50%;transform:translateX(-50%);
-      display:flex;gap:12px;z-index:100;
-    }
+  /* floating bottom bar */
+  #floatbar {
+    position:fixed; bottom:60px; left:50%;
+    transform:translateX(-50%); display:flex; gap:12px; z-index:100;
+  }
 
-    /* prevent double-tap zoom */
-    body,html{touch-action:manipulation}
+  /* prevent double-tap zoom */
+  html,body { touch-action:manipulation; }
   </style>
 </head>
 
@@ -193,55 +196,72 @@
   <div id="matchTimer">00:00</div>
 
   <!-- settings gear -->
-  <button id="settingsBtn">⚙️</button>
+  <button id="settingsBtn" class="pill">⚙️</button>
 
   <!-- floating bottom bar -->
   <div id="floatbar">
-    <button id="undoBtn" class="pill">Undo</button>
-    <button id="resetBtn" class="pill">Reset</button>
-    <button id="timerBtn" class="pill">Timer</button>
+    <button id="undoBtn" class="pill">↩️ Undo</button>
+    <button id="resetBtn" class="pill">🔄 Reset</button>
+    <button id="timerBtn" class="pill">⏱ Timer</button>
   </div>
 
   <!-- settings drawer -->
   <div id="settingsPanel">
     <h2>Settings</h2>
-    <div id="preview"></div>
 
-    <label class="row"><span>Teams</span>
+    <div class="section-header">── Game Setup ──</div>
+    <!-- advanced toggle -->
+    <label class="row">
+      <span>Advanced</span>
+      <div class="toggle"><input type="checkbox" id="advToggle"><span class="slider"></span></div>
+    </label>
+    <!-- team count -->
+    <label class="row">
+      <span>Number of Teams</span>
       <select id="teamCount"><option>1</option><option>2</option><option>3</option><option>4</option></select>
     </label>
+
+    <div class="section-header">── Team Names & Colours ──</div>
+    <!-- team configs -->
     <div id="teamsConfig"></div>
 
-    <label class="row"><span>Points / tap</span>
-      <select id="stepSel"><option>1</option><option>2</option><option>3</option><option>5</option></select>
-    </label>
-
-    <label class="row"><span>Score limit</span>
-      <div class="toggle"><input type="checkbox" id="limitToggle"><span class="slider"></span></div>
-    </label>
-    <div id="limitRow" class="rangeRow hidden">
-      <input type="range" id="limitRange" min="1" max="100"><span id="limitVal"></span>
+    <div id="advOptions">
+      <div class="section-header">── Game Rules ──</div>
+      <!-- points/tap -->
+      <label class="row"><span>➕ Points per tap</span>
+        <select id="stepSel"><option>1</option><option>2</option><option>3</option><option>5</option></select>
+      </label>
+      <!-- score limit -->
+      <label class="row"><span>🎯 Score limit</span>
+        <div class="toggle"><input type="checkbox" id="limitToggle"><span class="slider"></span></div>
+      </label>
+      <div id="limitRow" class="rangeRow hidden">
+        <input type="range" id="limitRange" min="1" max="100">
+        <span id="limitVal"></span>
+      </div>
+      <!-- countdown -->
+      <label class="row"><span>⏱ Countdown timer</span>
+        <div class="toggle"><input type="checkbox" id="cdToggle"><span class="slider"></span></div>
+      </label>
+      <div id="cdRow" class="rangeRow hidden">
+        <input type="range" id="cdRange" min="1" max="60">
+        <span id="cdVal"></span>
+      </div>
+      <!-- theme -->
+      <label class="row"><span>🌗 Theme</span>
+        <select id="themeSel">
+          <option value="auto">Auto</option>
+          <option value="dark">Dark</option>
+          <option value="light">Light</option>
+        </select>
+      </label>
     </div>
 
-    <label class="row"><span>Countdown timer</span>
-      <div class="toggle"><input type="checkbox" id="cdToggle"><span class="slider"></span></div>
-    </label>
-    <div id="cdRow" class="rangeRow hidden">
-      <input type="range" id="cdRange" min="1" max="60"><span id="cdVal"></span>
-    </div>
-
-    <label class="row"><span>Theme</span>
-      <select id="themeSel">
-        <option value="auto">Auto</option>
-        <option value="dark">Dark</option>
-        <option value="light">Light</option>
-      </select>
-    </label>
-
+    <div class="section-header">── Stats ──</div>
     <div class="statsBox">
       <h3>Stats</h3>
       <div id="statsWrap"></div>
-      <button id="resetStats" class="pill" style="display:none">Reset stats</button>
+      <button id="resetStats" class="pill" style="display:none">🗑️ Reset stats</button>
     </div>
   </div>
 
@@ -249,16 +269,14 @@
   <div id="court"></div>
   <div id="winnerBanner">
     <div id="winnerText">🏆 Winner!</div>
-    <button onclick="resetGame()" class="pill">New game</button>
+    <button onclick="resetGame()" class="pill">▶️ New game</button>
   </div>
 
   <script>
     const $=id=>document.getElementById(id);
-    const swatches=['#3498db','#e74c3c','#9b59b6','#f1c40f','#1abc9c','#fff','#000'];
+    const defaults=['#3498db','#e74c3c','#9b59b6','#f1c40f'];
     const fmt=ms=>{
-      const s=Math.floor(ms/1000),
-            m=Math.floor(s/60),
-            ss=String(s%60).padStart(2,'0');
+      const s=Math.floor(ms/1000),m=Math.floor(s/60),ss=String(s%60).padStart(2,'0');
       return `${m}:${ss}`;
     };
 
@@ -269,55 +287,60 @@
         {name:'Team A',color:'#3498db',score:0},
         {name:'Team B',color:'#e74c3c',score:0}
       ],
-      step:1,limitEnabled:false,limit:11,
-      countdownEnabled:false,countdown:300000,
+      step:1, limitEnabled:false, limit:11,
+      countdownEnabled:false, countdown:300000,
       timer:{running:false,start:0,elapsed:0},
-      history:[],wins:{},games:0,pointsTotal:0,
+      history:[], wins:{}, games:0, pointsTotal:0,
       theme:'auto',
-      startTime:Date.now(),
-      leadChanges:0,previousLeader:-1
+      startTime:Date.now(), leadChanges:0, previousLeader:-1
     };
     let cfg=Object.assign(seed,JSON.parse(localStorage.getItem('pt-state')||'{}'));
     function save(){localStorage.setItem('pt-state',JSON.stringify(cfg));}
 
-    // sanitise colours
-    const defaults=['#3498db','#e74c3c','#9b59b6','#f1c40f'];
+    // sanitize colours
     cfg.teams=(cfg.teams||[]).map((t,i)=>({
-      name:t.name||`Team ${String.fromCharCode(65+i)}`,
-      // if missing or black
-      color:(!t.color||/^#0{3,6}$/i.test(t.color))?defaults[i]:t.color,
-      score:t.score||0
+      name: t.name||`Team ${String.fromCharCode(65+i)}`,
+      color: (!t.color||/^#0{3,6}$/i.test(t.color))?defaults[i]:t.color,
+      score: t.score||0
     }));
-    // ensure timing & leads exist
     cfg.startTime=cfg.startTime||Date.now();
     cfg.leadChanges=cfg.leadChanges||0;
-    cfg.previousLeader=(typeof cfg.previousLeader==='number'?cfg.previousLeader:-1);
+    cfg.previousLeader=typeof cfg.previousLeader==='number'?cfg.previousLeader:-1;
     save();
 
+    // refs
     const els={
-      panel:$('settingsPanel'),gear:$('settingsBtn'),preview:$('preview'),
-      teamCount:$('teamCount'),teams:$('teamsConfig'),
+      gear:$('settingsBtn'), panel:$('settingsPanel'),
+      advToggle:$('advToggle'), advOptions:$('advOptions'),
+      teamCount:$('teamCount'), teams:$('teamsConfig'),
       stepSel:$('stepSel'),
-      limitToggle:$('limitToggle'),limitRow:$('limitRow'),
-      limitRange:$('limitRange'),limitVal:$('limitVal'),
-      cdToggle:$('cdToggle'),cdRow:$('cdRow'),
-      cdRange:$('cdRange'),cdVal:$('cdVal'),
-      themeSel:$('themeSel'),court:$('court'),
-      undo:$('undoBtn'),reset:$('resetBtn'),
-      timerBtn:$('timerBtn'),timerDisp:$('matchTimer'),
-      winner:$('winnerBanner'),winnerText:$('winnerText'),
-      stats:$('statsWrap'),resetStats:$('resetStats')
+      limitToggle:$('limitToggle'), limitRow:$('limitRow'),
+      limitRange:$('limitRange'), limitVal:$('limitVal'),
+      cdToggle:$('cdToggle'), cdRow:$('cdRow'),
+      cdRange:$('cdRange'), cdVal:$('cdVal'),
+      themeSel:$('themeSel'),
+      preview:$('preview'),
+      undo:$('undoBtn'), reset:$('resetBtn'), timerBtn:$('timerBtn'),
+      court:$('court'),
+      timerDisp:$('matchTimer'),
+      winner:$('winnerBanner'), winnerText:$('winnerText'),
+      stats:$('statsWrap'), resetStats:$('resetStats')
     };
 
     // drawer toggle
-    els.gear.addEventListener('click',()=>{
-      els.panel.classList.toggle('open');
-      document.body.classList.toggle('panel-open',els.panel.classList.contains('open'));
-    });
+    els.gear.onclick=()=>{els.panel.classList.toggle('open');document.body.classList.toggle('panel-open',els.panel.classList.contains('open'));};
+
+    // advanced toggle
+    function syncAdvanced(){
+      els.advOptions.style.display=els.advToggle.checked?'block':'none';
+    }
+    els.advToggle.onchange=()=>{syncAdvanced();save()};
+    els.advToggle.checked=false;
+    syncAdvanced();
 
     // theme
     function applyTheme(){
-      const sys=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+      const sys=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
       document.body.classList.toggle('light',cfg.theme==='light'||(cfg.theme==='auto'&&sys==='light'));
       document.body.classList.toggle('dark',cfg.theme==='dark'||(cfg.theme==='auto'&&sys==='dark'));
       els.themeSel.value=cfg.theme;
@@ -325,59 +348,59 @@
     els.themeSel.oninput=e=>{cfg.theme=e.target.value;applyTheme();save()};
     applyTheme();
 
-    // render teams
+    // teams
     function renderTeams(){
       cfg.teams=Array.from({length:cfg.teamCount},(_,i)=>{
         const p=cfg.teams[i]||{};
         return {
           name:p.name||`Team ${String.fromCharCode(65+i)}`,
-          color:p.color||defaults[i],
-          score:p.score||0
+          color:p.color||defaults[i], score:p.score||0
         };
       });
+      els.preview.innerHTML='';
       els.teams.innerHTML='';
       cfg.teams.forEach((t,i)=>{
+        // live preview
+        els.preview.insertAdjacentHTML('beforeend',`
+          <div class="previewBox">
+            <span style="color:${t.color}">${t.name}</span>
+          </div>`);
+        // config
         els.teams.insertAdjacentHTML('beforeend',`
-          <label class="row"><span>Team ${String.fromCharCode(65+i)}</span>
+          <label class="row">
+            <span>Team ${String.fromCharCode(65+i)}</span>
             <input type="text" id="name${i}" value="${t.name}">
-          </label>
-          <label class="row"><span style="visibility:hidden">Colour</span>
             <input type="color" id="clr${i}" value="${t.color}">
-          </label>
-          <div class="swatchWrap" id="sw${i}"></div>`);
-        swatches.forEach(c=>{
-          const d=document.createElement('div');
-          d.className='swatch';d.style.background=c;
-          d.onclick=()=>{
-            $(`clr${i}`).value=c;
-            cfg.teams[i].color=c;
-            updateCourt();updatePreview();save();
-          };
-          $(`sw${i}`).append(d);
-        });
+          </label>`);
       });
-      updateCourt();updatePreview();save();
+      // listeners
+      els.teams.querySelectorAll('input[type="text"]').forEach(inp=>{
+        inp.oninput=e=>{
+          const i=+e.target.id.slice(4);
+          cfg.teams[i].name=e.target.value||`Team ${String.fromCharCode(65+i)}`;
+          updateCourt();save();
+        };
+      });
+      els.teams.querySelectorAll('input[type="color"]').forEach(inp=>{
+        inp.oninput=e=>{
+          const i=+e.target.id.slice(3);
+          cfg.teams[i].color=e.target.value;
+          updateCourt();save();
+        };
+      });
+      updateCourt(); save();
     }
-    ['change','input'].forEach(evt=>
+    ['change','input'].forEach(evt=>{
       els.teamCount.addEventListener(evt,e=>{
         cfg.teamCount=+e.target.value;renderTeams();
-      })
-    );
-
-    // live name/color
-    els.teams.addEventListener('input',e=>{
-      const m=e.target.id.match(/(name|clr)(\d+)/);if(!m)return;
-      const i=+m[2];
-      if(m[1]==='name') cfg.teams[i].name=e.target.value||`Team ${String.fromCharCode(65+i)}`;
-      else cfg.teams[i].color=e.target.value;
-      updateCourt();updatePreview();save();
+      });
     });
+    els.teamCount.value=cfg.teamCount;
 
-    // points/tap
+    // rules
     els.stepSel.value=cfg.step;
     els.stepSel.onchange=e=>{cfg.step=+e.target.value;save()};
 
-    // score limit
     function syncLimit(){
       els.limitRow.classList.toggle('hidden',!els.limitToggle.checked);
       cfg.limitEnabled=els.limitToggle.checked;save();
@@ -387,39 +410,25 @@
     els.limitRange.oninput=e=>{cfg.limit=+e.target.value;els.limitVal.textContent=e.target.value;save()};
     syncLimit();
 
-    // countdown
     function syncCD(){
       els.cdRow.classList.toggle('hidden',!els.cdToggle.checked);
-      cfg.countdownEnabled=els.cdToggle.checked;
-      resetClock();save();
+      cfg.countdownEnabled=els.cdToggle.checked; resetClock();save();
     }
     els.cdToggle.checked=cfg.countdownEnabled;els.cdToggle.onchange=syncCD;
     els.cdRange.value=cfg.countdown/60000;els.cdVal.textContent=cfg.countdown/60000;
     els.cdRange.oninput=e=>{cfg.countdown=+e.target.value*60000;els.cdVal.textContent=e.target.value;resetClock();save()};
     syncCD();
 
-    // live preview
-    function updatePreview(){
-      els.preview.innerHTML='';
-      cfg.teams.forEach(t=>{
-        els.preview.insertAdjacentHTML('beforeend',`
-          <div class="previewBox">
-            <span style="color:${t.color}">${t.name}</span>
-            <small style="color:${t.color}">0</small>
-          </div>`);
-      });
-    }
-
-    // draw court
+    // board
     function updateCourt(){
       let tpl;
       switch(cfg.teamCount){
         case 1: tpl='1fr / 1fr'; break;
-        case 2: tpl='1fr / 1fr 1fr'; break;
-        case 3: tpl='1fr / 1fr 1fr 1fr'; break;
+        case 2: tpl='1fr 1fr / 1fr'; break;
+        case 3: tpl='1fr 1fr 1fr / 1fr'; break;
         case 4: tpl='1fr 1fr / 1fr 1fr'; break;
       }
-      els.court.style.gridTemplate = tpl;
+      els.court.style.gridTemplate=tpl;
       els.court.innerHTML='';
       cfg.teams.forEach((t,i)=>{
         const b=document.createElement('div');
@@ -439,18 +448,24 @@
     }
     function highlightLeader(){
       const max=Math.max(...cfg.teams.map(t=>t.score));
-      let newLeader=-1;
+      const leaders=cfg.teams.map((t,i)=>t.score===max && max>0 ? i : -1).filter(i=>i>=0);
+      const tie=leaders.length>1;
       document.querySelectorAll('.teamBox').forEach((b,i)=>{
-        const isL=cfg.teams[i].score===max&&max>0;
-        b.classList.toggle('leader',isL);
-        if(isL&&newLeader<0) newLeader=i;
+        b.classList.remove('leader');
+        b.style.borderColor='';
+        if(leaders.includes(i)){
+          b.classList.add('leader');
+          if(tie){
+            b.style.borderColor = document.body.classList.contains('light')?'#000':'#fff';
+          }
+        }
       });
-      // record lead change
-      if(cfg.previousLeader>=0 && newLeader!==cfg.previousLeader){
-        cfg.leadChanges++;
-        save();
+      // count lead changes
+      const newLead=(leaders.length===1)?leaders[0]:-1;
+      if(cfg.previousLeader>=0 && newLead!==cfg.previousLeader){
+        cfg.leadChanges++; save();
       }
-      cfg.previousLeader=newLeader;
+      cfg.previousLeader=newLead;
     }
 
     // tap/long-press
@@ -470,31 +485,24 @@
       b.addEventListener('pointerup',end);
       b.addEventListener('pointercancel',end);
     }
-    function popAnim(b,c){
-      const sc=b.querySelector('.teamScore');
-      sc.classList.add('pop');
-      setTimeout(()=>sc.classList.remove('pop'),250);
-      b.animate([{background:c+'22'},{background:'transparent'}],{duration:250});
-    }
     function changeScore(i,d){
       cfg.teams[i].score=Math.max(0,cfg.teams[i].score+d);
       cfg.history.push({team:i,delta:d});
       if(cfg.history.length>300)cfg.history.shift();
-      updateScores();popAnim(els.court.children[i],cfg.teams[i].color);
-      highlightLeader();haptic();checkWin(i);save();
+      updateScores(); highlightLeader(); haptic(); checkWin(i); save();
     }
 
-    // undo & reset
+    // undo/reset
     els.undo.onclick=()=>{
-      const h=cfg.history.pop();if(!h)return;
+      const h=cfg.history.pop(); if(!h)return;
       cfg.teams[h.team].score=Math.max(0,cfg.teams[h.team].score-h.delta);
       updateScores();highlightLeader();save();
     };
     function resetGame(){
       cfg.teams.forEach(t=>t.score=0);
-      cfg.history=[];updateScores();highlightLeader();
-      cfg.startTime=Date.now();cfg.leadChanges=0;cfg.previousLeader=-1;
-      els.winner.style.display='none';save();
+      cfg.history=[]; updateScores(); highlightLeader();
+      cfg.startTime=Date.now(); cfg.leadChanges=0; cfg.previousLeader=-1;
+      els.winner.style.display='none'; save();
     }
     els.reset.onclick=resetGame;
 
@@ -511,18 +519,6 @@
     }
     function renderStats(){
       els.stats.innerHTML='';
-      // history per team
-      const histMap=cfg.teams.map(()=>[]);
-      const sm=cfg.teams.map(()=>0);
-      cfg.history.forEach(e=>{
-        sm[e.team]+=e.delta;
-        histMap[e.team].push(sm[e.team]);
-      });
-      cfg.teams.forEach((t,i)=>{
-        els.stats.insertAdjacentHTML('beforeend',
-          `<div><strong>${t.name} history:</strong> 0 → ${histMap[i].join(' → ')}</div>`
-        );
-      });
       // points/tap
       els.stats.insertAdjacentHTML('beforeend',
         `<div><strong>Points/tap:</strong> +${cfg.step}</div>`
@@ -560,27 +556,22 @@
     // countdown
     function resetClock(){
       if(!cfg.countdownEnabled){
-        els.timerDisp.textContent='00:00';
-        els.timerBtn.style.display='none';
-        return;
+        els.timerDisp.textContent='00:00'; els.timerBtn.style.display='none'; return;
       }
-      els.timerBtn.style.display='';
-      cfg.timer.elapsed=cfg.countdown;
-      cfg.timer.running=false;
-      els.timerBtn.textContent='⏵ Timer';
+      els.timerBtn.style.display='inline-block';
+      cfg.timer.elapsed=cfg.countdown; cfg.timer.running=false;
+      els.timerBtn.textContent='⏱ Timer';
     }
     resetClock();
     els.timerBtn.onclick=()=>{
-      if(!cfg.countdownEnabled)return;
+      if(!cfg.countdownEnabled) return;
       const t=cfg.timer;
       if(t.running){
-        t.running=false;
-        t.elapsed=Math.max(0,t.start+cfg.countdown-Date.now());
-        els.timerBtn.textContent='⏵ Timer';
+        t.running=false; t.elapsed=Math.max(0,t.start+cfg.countdown-Date.now());
+        els.timerBtn.textContent='⏱ Timer';
       } else {
-        t.running=true;
-        t.start=Date.now()-(cfg.countdown-t.elapsed||0);
-        els.timerBtn.textContent='⏸ Timer';
+        t.running=true; t.start=Date.now()-(cfg.countdown-t.elapsed||0);
+        els.timerBtn.textContent='⏸ Pause';
       }
       save();
     };
@@ -589,24 +580,24 @@
       if(t.running&&cfg.countdownEnabled){
         const r=Math.max(0,t.start+cfg.countdown-Date.now());
         els.timerDisp.textContent=fmt(r);
-        if(r===0){t.running=false;confetti({particleCount:180,spread:100});}
+        if(r===0){ t.running=false; confetti({particleCount:180,spread:100}); }
       }
       requestAnimationFrame(loop);
     })();
 
-    // haptic click
+    // haptic
     let audioCtx;
     function haptic(){
       try{
         audioCtx=audioCtx||new(AudioContext||webkitAudioContext)();
         const o=audioCtx.createOscillator(),g=audioCtx.createGain();
-        o.connect(g);g.connect(audioCtx.destination);
-        o.frequency.value=200;g.gain.value=.8;
-        o.start();o.stop(audioCtx.currentTime+.02);
-      }catch{}
+        o.connect(g); g.connect(audioCtx.destination);
+        o.frequency.value=200; g.gain.value=.8;
+        o.start(); o.stop(audioCtx.currentTime+.02);
+      } catch{}
     }
 
-    // prevent double‑tap zoom
+    // prevent dbl-tap zoom
     let last=0;
     document.addEventListener('touchend',e=>{
       const n=e.timeStamp;
@@ -614,12 +605,8 @@
       last=n;
     },{passive:false});
 
-    // initial render
+    // first render
     renderTeams();
-    applyTheme();
-    if('serviceWorker' in navigator){
-      navigator.serviceWorker.register('./sw.js').catch(console.error);
-    }
   </script>
 </body>
 </html>
