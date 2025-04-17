@@ -15,7 +15,7 @@
   /* ===== THEMES & BASE ===== */
   :root {
     --bg:#000; --fg:#fff; --panel:#111; --border:#333;
-    --accent:#3498db; --box:#000; --gap:8px;
+    --accent:#3498db; --box:#000; --gap:0;
   }
   @media (prefers-color-scheme: light) {
     :root {
@@ -71,7 +71,6 @@
   /* LIVE PREVIEW */
   #preview {
     display:grid; gap:8px; margin-bottom:16px;
-    grid-template-columns:repeat(auto-fit,minmax(80px,1fr));
   }
   .previewBox {
     background:var(--box); padding:8px; border-radius:8px;
@@ -91,20 +90,20 @@
     background:var(--box); border:1px solid var(--border);
     border-radius:6px; color:var(--fg);
     transition:all .2s ease;
-    /* modern arrow */
     -webkit-appearance:none; appearance:none;
     background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path style='fill:currentColor' d='M0 0l5 6 5-6z'/></svg>");
     background-repeat:no-repeat;
     background-position:right 12px center;
     padding-right:2rem;
+    margin-left:16px; /* extra space from label */
   }
   .row input[type="color"] {
-    width:32px; height:32px; margin-left:8px; border:none;
+    width:32px; height:32px; margin-left:16px; border:none;
   }
 
   /* TOGGLE */
   .toggle {
-    position:relative; width:48px; height:28px; margin-left:8px;
+    position:relative; width:48px; height:28px; margin-left:16px;
   }
   .toggle input { opacity:0; width:0; height:0 }
   .slider {
@@ -153,20 +152,19 @@
   .teamBox {
     background:var(--box);
     display:flex; flex-direction:column;
-    justify-content:center; /* center vertically */
-    align-items:center; padding:12px; border-radius:8px;
+    justify-content:center; align-items:center;
+    padding:12px; border-radius:8px;
     box-shadow:0 2px 10px rgba(0,0,0,0.25);
     transition:all .2s ease;
-    /* allow border-color override */
     border:4px solid transparent;
   }
   .teamBox:active { transform:scale(.97) }
   .teamName {
-    font-size:clamp(5rem,12vw,7rem); /* bigger */
+    font-size:clamp(5rem,12vw,7rem);
     font-family:'Bebas Neue',sans-serif; margin-bottom:12px;
   }
   .teamScore {
-    font-size:clamp(10rem,25vw,18rem); /* bigger */
+    font-size:clamp(10rem,25vw,18rem);
     font-family:'Bebas Neue',sans-serif;
     transition:transform .2s ease;
   }
@@ -181,7 +179,7 @@
   }
   #winnerBanner button { margin-top:16px }
 
-  /* TIMER DISPLAY */
+  /* TIMER */
   #matchTimer {
     position:fixed; top:12px; left:50%;
     transform:translateX(-50%);
@@ -202,28 +200,28 @@
   </style>
 </head>
 <body class="dark">
-  <!-- timer -->
+  <!-- TIMER DISPLAY -->
   <div id="matchTimer">00:00</div>
 
-  <!-- settings gear -->
+  <!-- SETTINGS GEAR -->
   <button id="settingsBtn" class="pill">⚙️</button>
 
-  <!-- floating left bar -->
+  <!-- FLOATING LEFT BAR -->
   <div id="floatbar">
     <button id="undoBtn" class="pill">↩️</button>
     <button id="resetBtn" class="pill">🔄</button>
     <button id="timerBtn" class="pill">⏱</button>
   </div>
 
-  <!-- settings drawer -->
+  <!-- SETTINGS DRAWER -->
   <div id="settingsPanel">
     <h2>Settings</h2>
 
     <div class="section-header">── Team Names & Colours ──</div>
-    <!-- live preview -->
+    <!-- mini live preview -->
     <div id="preview"></div>
 
-    <!-- team count -->
+    <!-- number of teams -->
     <label class="row">
       <span>Number of Teams</span>
       <select id="teamCount">
@@ -231,11 +229,11 @@
       </select>
     </label>
 
-    <!-- name + colour -->
+    <!-- per‐team name + color -->
     <div id="teamsConfig"></div>
 
     <div class="section-header">── Game Rules ──</div>
-    <!-- points / tap -->
+    <!-- points per tap -->
     <label class="row">
       <span>➕ Points per tap</span>
       <select id="stepSel"><option>1</option><option>2</option><option>3</option><option>5</option></select>
@@ -244,9 +242,7 @@
     <!-- score limit -->
     <label class="row">
       <span>🎯 Score limit</span>
-      <div class="toggle">
-        <input type="checkbox" id="limitToggle"><span class="slider"></span>
-      </div>
+      <div class="toggle"><input type="checkbox" id="limitToggle"><span class="slider"></span></div>
     </label>
     <div id="limitRow" class="rangeRow hidden">
       <input type="range" id="limitRange" min="1" max="100">
@@ -256,9 +252,7 @@
     <!-- countdown -->
     <label class="row">
       <span>⏱ Countdown timer</span>
-      <div class="toggle">
-        <input type="checkbox" id="cdToggle"><span class="slider"></span>
-      </div>
+      <div class="toggle"><input type="checkbox" id="cdToggle"><span class="slider"></span></div>
     </label>
     <div id="cdRow" class="rangeRow hidden">
       <input type="range" id="cdRange" min="1" max="60">
@@ -283,7 +277,7 @@
     </div>
   </div>
 
-  <!-- court & winner -->
+  <!-- COURT & WINNER OVERLAY -->
   <div id="court"></div>
   <div id="winnerBanner">
     <div id="winnerText">🏆 Winner!</div>
@@ -291,370 +285,381 @@
   </div>
 
   <script>
-  const $ = id => document.getElementById(id);
-  const defaults = ['#3498db','#e74c3c','#9b59b6','#f1c40f'];
-  const fmt = ms => {
-    const s = Math.floor(ms/1000),
-          m = Math.floor(s/60),
-          ss = String(s%60).padStart(2,'0');
-    return `${m}:${ss}`;
-  };
+    const $ = id=>document.getElementById(id),
+          defaults = ['#3498db','#e74c3c','#9b59b6','#f1c40f'],
+          fmt = ms=>{
+            const s = Math.floor(ms/1000),
+                  m = Math.floor(s/60),
+                  ss = String(s%60).padStart(2,'0');
+            return `${m}:${ss}`;
+          };
 
-  const seed = {
-    teamCount:2,
-    teams:[
-      {name:'Team A',color:'#3498db',score:0},
-      {name:'Team B',color:'#e74c3c',score:0}
-    ],
-    step:1, limitEnabled:false, limit:11,
-    countdownEnabled:false, countdown:300000,
-    timer:{running:false,start:0,elapsed:0},
-    history:[], wins:{}, games:0, pointsTotal:0,
-    theme:'auto',
-    startTime:Date.now(), leadChanges:0, previousLeader:-1
-  };
-  let cfg = Object.assign(seed,
-    JSON.parse(localStorage.getItem('pt-state')||'{}')
-  );
-  function save(){ localStorage.setItem('pt-state',JSON.stringify(cfg)) }
-
-  // sanitize defaults
-  cfg.teams = Array.from({length:cfg.teamCount}, (_,i)=>{
-    const t = cfg.teams[i]||{};
-    return {
-      name: t.name||`Team ${String.fromCharCode(65+i)}`,
-      color: t.color||defaults[i],
-      score: t.score||0
+    const seed = {
+      teamCount:2,
+      teams:[
+        {name:'Team A',color:'#3498db',score:0},
+        {name:'Team B',color:'#e74c3c',score:0}
+      ],
+      step:1, limitEnabled:false, limit:11,
+      countdownEnabled:false, countdown:300000,
+      timer:{running:false,start:0,elapsed:0},
+      history:[], wins:{}, games:0, pointsTotal:0,
+      theme:'auto', startTime:Date.now(),
+      leadChanges:0, previousLeader:-1
     };
-  });
-  cfg.startTime     ||= Date.now();
-  cfg.leadChanges   ||= 0;
-  cfg.previousLeader = cfg.previousLeader>=0?cfg.previousLeader:-1;
-  save();
-
-  const els = {
-    gear:   $('settingsBtn'),
-    panel:  $('settingsPanel'),
-    preview:$('preview'),
-    teamCount:$('teamCount'),
-    teams:  $('teamsConfig'),
-    stepSel:$('stepSel'),
-    limitToggle:$('limitToggle'),
-    limitRow:   $('limitRow'),
-    limitRange: $('limitRange'),
-    limitVal:   $('limitVal'),
-    cdToggle:$('cdToggle'),
-    cdRow:   $('cdRow'),
-    cdRange: $('cdRange'),
-    cdVal:   $('cdVal'),
-    themeSel:$('themeSel'),
-    undo:    $('undoBtn'),
-    reset:   $('resetBtn'),
-    timerBtn:$('timerBtn'),
-    court:   $('court'),
-    timerDisp:$('matchTimer'),
-    winner:  $('winnerBanner'),
-    winnerText:$('winnerText'),
-    stats:   $('statsWrap'),
-    resetStats:$('resetStats')
-  };
-
-  // drawer
-  els.gear.onclick = ()=>{
-    els.panel.classList.toggle('open');
-    document.body.classList.toggle('panel-open',
-      els.panel.classList.contains('open')
+    let cfg = Object.assign(seed,
+      JSON.parse(localStorage.getItem('pt-state')||'{}')
     );
-  };
+    function save(){ localStorage.setItem('pt-state',JSON.stringify(cfg)) }
 
-  // theme
-  function applyTheme(){
-    const sys = window.matchMedia('(prefers-color-scheme:dark)')
-                .matches?'dark':'light';
-    document.body.classList.toggle('light',
-      cfg.theme==='light'||(cfg.theme==='auto'&&sys==='light')
-    );
-    document.body.classList.toggle('dark',
-      cfg.theme==='dark'||(cfg.theme==='auto'&&sys==='dark')
-    );
-    els.themeSel.value = cfg.theme;
-  }
-  els.themeSel.onchange = e=>{
-    cfg.theme = e.target.value; applyTheme(); save();
-  };
-  applyTheme();
-
-  // teams
-  function renderTeams(){
-    cfg.teams = Array.from({length:cfg.teamCount}, (_,i)=>{
-      const p = cfg.teams[i]||{};
+    // ensure defaults
+    cfg.teams = Array.from({length:cfg.teamCount},(_,i)=>{
+      const t = cfg.teams[i]||{};
       return {
-        name: p.name||`Team ${String.fromCharCode(65+i)}`,
-        color:p.color||defaults[i], score:p.score||0
+        name: t.name||`Team ${String.fromCharCode(65+i)}`,
+        color:t.color||defaults[i],
+        score:t.score||0
       };
     });
-    // preview
-    els.preview.innerHTML = '';
-    cfg.teams.forEach(t=>{
-      els.preview.insertAdjacentHTML('beforeend',
-        `<div class="previewBox"><span style="color:${t.color}">${t.name}</span></div>`
-      );
-    });
-    // inputs
-    els.teams.innerHTML = '';
-    cfg.teams.forEach((t,i)=>{
-      els.teams.insertAdjacentHTML('beforeend',`
-        <label class="row">
-          <span>Team ${String.fromCharCode(65+i)}</span>
-          <input type="text" id="name${i}" value="${t.name}">
-          <input type="color" id="clr${i}" value="${t.color}">
-        </label>`);
-    });
-    // listeners
-    els.teams.querySelectorAll('input[type="text"]').forEach(inp=>{
-      inp.oninput = e=>{
-        const i = +e.target.id.slice(4);
-        cfg.teams[i].name = e.target.value||`Team ${String.fromCharCode(65+i)}`;
-        updateCourt(); save();
-      };
-    });
-    els.teams.querySelectorAll('input[type="color"]').forEach(inp=>{
-      inp.oninput = e=>{
-        const i = +e.target.id.slice(3);
-        cfg.teams[i].color = e.target.value;
-        updateCourt(); save();
-      };
-    });
-    updateCourt(); save();
-  }
-  ;['input','change'].forEach(evt=>{
-    els.teamCount.addEventListener(evt,e=>{
-      cfg.teamCount = +e.target.value;
-      renderTeams();
-    });
-  });
-  els.teamCount.value = cfg.teamCount;
-
-  // rules UI
-  els.stepSel.value = cfg.step;
-  els.stepSel.onchange = e=>{ cfg.step = +e.target.value; save() };
-
-  function syncLimit(){
-    els.limitRow.classList.toggle('hidden', !els.limitToggle.checked);
-    cfg.limitEnabled = els.limitToggle.checked; save();
-  }
-  els.limitToggle.checked = cfg.limitEnabled;
-  els.limitToggle.onchange = syncLimit;
-  els.limitRange.value = cfg.limit;
-  els.limitVal.textContent = cfg.limit;
-  els.limitRange.oninput = e=>{
-    cfg.limit = +e.target.value;
-    els.limitVal.textContent = e.target.value;
+    cfg.startTime     ||= Date.now();
+    cfg.leadChanges   ||= 0;
+    cfg.previousLeader = cfg.previousLeader>=0?cfg.previousLeader:-1;
     save();
-  };
-  syncLimit();
 
-  function syncCD(){
-    els.cdRow.classList.toggle('hidden', !els.cdToggle.checked);
-    cfg.countdownEnabled = els.cdToggle.checked;
-    resetClock(); save();
-  }
-  els.cdToggle.checked = cfg.countdownEnabled;
-  els.cdToggle.onchange = syncCD;
-  els.cdRange.value = cfg.countdown/60000;
-  els.cdVal.textContent = cfg.countdown/60000;
-  els.cdRange.oninput = e=>{
-    cfg.countdown = +e.target.value*60000;
-    els.cdVal.textContent = e.target.value;
-    resetClock(); save();
-  };
-  syncCD();
-
-  // court
-  function updateCourt(){
-    let tpl;
-    switch(cfg.teamCount){
-      case 1: tpl = '1fr / 1fr'; break;
-      case 2: tpl = '1fr 1fr / 1fr'; break;
-      case 3: tpl = '1fr / 1fr 1fr 1fr'; break; /* three columns */
-      case 4: tpl = '1fr 1fr / 1fr 1fr'; break;
-    }
-    els.court.style.gridTemplate = tpl;
-    els.court.innerHTML = '';
-    cfg.teams.forEach((t,i)=>{
-      const b = document.createElement('div');
-      b.className = 'teamBox';
-      b.dataset.i = i;
-      b.style.color = t.color; /* for currentColor */
-      b.innerHTML = `
-        <div class="teamName" style="color:${t.color}">${t.name}</div>
-        <div class="teamScore" style="color:${t.color}">${t.score}</div>`;
-      b.addEventListener('pointerdown', e=>startPress(e,b));
-      els.court.append(b);
-    });
-    updateScores(); highlightLeader();
-  }
-  function updateScores(){
-    document.querySelectorAll('.teamScore').forEach((el,i)=>{
-      el.textContent = cfg.teams[i].score;
-    });
-  }
-  function highlightLeader(){
-    const max = Math.max(...cfg.teams.map(t=>t.score));
-    const leaders = cfg.teams.map((t,i)=>t.score===max&&max>0?i:-1).filter(i=>i>=0);
-    const tie = leaders.length>1;
-    document.querySelectorAll('.teamBox').forEach((b,i)=>{
-      b.classList.remove('leader');
-      b.style.borderColor = 'transparent';
-      if(leaders.includes(i)){
-        b.classList.add('leader');
-        if(tie){
-          b.style.borderColor = document.body.classList.contains('light')?'#000':'#fff';
-        } else {
-          b.style.borderColor = cfg.teams[i].color;
-        }
-      }
-    });
-    const newLead = leaders.length===1?leaders[0]:-1;
-    if(cfg.previousLeader>=0 && newLead!==cfg.previousLeader){
-      cfg.leadChanges++; save();
-    }
-    cfg.previousLeader = newLead;
-  }
-
-  // tap / long‑press
-  let longId, wasLong=false;
-  function startPress(e,box){
-    const i = +box.dataset.i, st = cfg.step;
-    wasLong = false;
-    longId = setTimeout(()=>{
-      changeScore(i, -st);
-      wasLong = true;
-    }, 500);
-    const end = ()=>{
-      clearTimeout(longId);
-      if(!wasLong) changeScore(i, st);
-      box.removeEventListener('pointerup', end);
-      box.removeEventListener('pointercancel', end);
+    // refs
+    const els = {
+      gear:$('settingsBtn'), panel:$('settingsPanel'),
+      preview:$('preview'),
+      teamCount:$('teamCount'), teams:$('teamsConfig'),
+      stepSel:$('stepSel'),
+      limitToggle:$('limitToggle'),
+      limitRow:$('limitRow'),
+      limitRange:$('limitRange'),
+      limitVal:$('limitVal'),
+      cdToggle:$('cdToggle'),
+      cdRow:$('cdRow'),
+      cdRange:$('cdRange'),
+      cdVal:$('cdVal'),
+      themeSel:$('themeSel'),
+      undo:$('undoBtn'), reset:$('resetBtn'),
+      timerBtn:$('timerBtn'),
+      court:$('court'),
+      timerDisp:$('matchTimer'),
+      winner:$('winnerBanner'),
+      winnerText:$('winnerText'),
+      stats:$('statsWrap'),
+      resetStats:$('resetStats')
     };
-    box.addEventListener('pointerup', end);
-    box.addEventListener('pointercancel', end);
-  }
-  function changeScore(i,d){
-    cfg.teams[i].score = Math.max(0, cfg.teams[i].score + d);
-    cfg.history.push({team:i,delta:d});
-    if(cfg.history.length>300) cfg.history.shift();
-    updateScores(); highlightLeader(); haptic(); checkWin(i); save();
-  }
 
-  // undo / reset
-  els.undo.onclick = ()=>{
-    const h = cfg.history.pop();
-    if(!h) return;
-    cfg.teams[h.team].score = Math.max(0, cfg.teams[h.team].score - h.delta);
-    updateScores(); highlightLeader(); save();
-  };
-  function resetGame(){
-    cfg.teams.forEach(t=>t.score=0);
-    cfg.history = []; updateScores(); highlightLeader();
-    cfg.startTime=Date.now(); cfg.leadChanges=0; cfg.previousLeader=-1;
-    els.winner.style.display='none'; save();
-  }
-  els.reset.onclick = resetGame;
+    // drawer toggle
+    els.gear.onclick = ()=>{
+      els.panel.classList.toggle('open');
+      document.body.classList.toggle('panel-open',
+        els.panel.classList.contains('open')
+      );
+    };
 
-  // win & stats
-  function checkWin(i){
-    if(cfg.limitEnabled && cfg.teams[i].score>=cfg.limit){
-      confetti({particleCount:200,spread:70,startVelocity:45});
-      els.winnerText.textContent = `🏆 ${cfg.teams[i].name} wins!`;
-      els.winner.style.display='flex';
-      cfg.wins[cfg.teams[i].name] = (cfg.wins[cfg.teams[i].name]||0)+1;
-      cfg.games++; cfg.pointsTotal += cfg.teams.reduce((s,t)=>s+t.score,0);
-      renderStats(); save();
+    // theme
+    function applyTheme(){
+      const sys = matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+      document.body.classList.toggle('light',
+        cfg.theme==='light'||(cfg.theme==='auto'&&sys==='light')
+      );
+      document.body.classList.toggle('dark',
+        cfg.theme==='dark'||(cfg.theme==='auto'&&sys==='dark')
+      );
+      els.themeSel.value = cfg.theme;
     }
-  }
-  function renderStats(){
-    els.stats.innerHTML = '';
-    els.stats.insertAdjacentHTML('beforeend',`<div><strong>Pts/tap:</strong> +${cfg.step}</div>`);
-    const el = Date.now() - cfg.startTime,
-          mm = Math.floor(el/60000),
-          ss = String(Math.floor((el%60000)/1000)).padStart(2,'0');
-    els.stats.insertAdjacentHTML('beforeend',`<div><strong>Time:</strong> ${mm}:${ss}</div>`);
-    els.stats.insertAdjacentHTML('beforeend',`<div><strong>Leads:</strong> ${cfg.leadChanges}</div>`);
-    Object.entries(cfg.wins).forEach(([n,w])=>{
-      els.stats.insertAdjacentHTML('beforeend',`<div>${n}: ${w} wins</div>`);
+    els.themeSel.onchange = e=>{
+      cfg.theme = e.target.value; applyTheme(); save();
+    };
+    applyTheme();
+
+    // render preview
+    function updatePreview(){
+      // set grid columns based on teamCount + orientation
+      const w=innerWidth, h=innerHeight;
+      let cols;
+      if(cfg.teamCount===4) cols='1fr 1fr';
+      else if(cfg.teamCount===3) cols = h>w? '1fr': '1fr 1fr 1fr';
+      else if(cfg.teamCount===2) cols='1fr 1fr';
+      else cols='1fr';
+      els.preview.style.gridTemplateColumns = cols;
+
+      // content
+      els.preview.innerHTML = '';
+      cfg.teams.forEach(t=>{
+        els.preview.insertAdjacentHTML('beforeend',`
+          <div class="previewBox">
+            <span style="color:${t.color}">${t.name}</span>
+            <small style="color:${t.color}">${t.score}</small>
+          </div>`);
+      });
+    }
+    addEventListener('resize', updatePreview);
+
+    // teams config
+    function renderTeams(){
+      cfg.teams = Array.from({length:cfg.teamCount},(_,i)=>{
+        const p=cfg.teams[i]||{};
+        return {
+          name:p.name||`Team ${String.fromCharCode(65+i)}`,
+          color:p.color||defaults[i],
+          score:p.score||0
+        };
+      });
+
+      // preview + inputs
+      updatePreview();
+      els.teams.innerHTML = '';
+      cfg.teams.forEach((t,i)=>{
+        els.teams.insertAdjacentHTML('beforeend',`
+          <label class="row">
+            <span>Team ${String.fromCharCode(65+i)}</span>
+            <input type="text" id="name${i}" value="${t.name}">
+            <input type="color" id="clr${i}" value="${t.color}">
+          </label>`);
+      });
+
+      // listeners
+      els.teams.querySelectorAll('input[type="text"]').forEach(inp=>{
+        inp.oninput = e=>{
+          const i = +e.target.id.slice(4);
+          cfg.teams[i].name = e.target.value||`Team ${String.fromCharCode(65+i)}`;
+          updateCourt(); updatePreview(); save();
+        };
+      });
+      els.teams.querySelectorAll('input[type="color"]').forEach(inp=>{
+        inp.oninput = e=>{
+          const i = +e.target.id.slice(3);
+          cfg.teams[i].color = e.target.value;
+          updateCourt(); updatePreview(); save();
+        };
+      });
+
+      updateCourt(); save();
+    }
+    ;['input','change'].forEach(evt=>{
+      els.teamCount.addEventListener(evt,e=>{
+        cfg.teamCount = +e.target.value;
+        renderTeams();
+      });
     });
-    if(cfg.games){
-      const avg=(cfg.pointsTotal/cfg.games).toFixed(1);
-      els.stats.insertAdjacentHTML('beforeend',`<div>Avg/game: ${avg}</div>`);
-      els.resetStats.style.display='';
-    } else els.resetStats.style.display='none';
-  }
-  els.resetStats.onclick = ()=>{
-    cfg.wins={}; cfg.games=cfg.pointsTotal=0; renderStats(); save();
-  };
-  renderStats();
+    els.teamCount.value = cfg.teamCount;
 
-  // countdown
-  function resetClock(){
-    if(!cfg.countdownEnabled){
-      els.timerDisp.textContent = '00:00';
-      els.timerBtn.style.display = 'none';
-      return;
+    // points per tap
+    els.stepSel.value = cfg.step;
+    els.stepSel.onchange = e=>{
+      cfg.step = +e.target.value; save();
+    };
+
+    // score limit
+    function syncLimit(){
+      els.limitRow.classList.toggle('hidden',!els.limitToggle.checked);
+      cfg.limitEnabled = els.limitToggle.checked; save();
     }
-    els.timerBtn.style.display = 'inline-block';
-    cfg.timer.elapsed = cfg.countdown;
-    cfg.timer.running = false;
-    els.timerBtn.textContent = '⏱';
-  }
-  resetClock();
-  els.timerBtn.onclick = ()=>{
-    if(!cfg.countdownEnabled) return;
-    const t = cfg.timer;
-    if(t.running){
-      t.running = false;
-      t.elapsed = Math.max(0, t.start + cfg.countdown - Date.now());
-      els.timerBtn.textContent = '⏱';
-    } else {
-      t.running = true;
-      t.start = Date.now() - (cfg.countdown - t.elapsed || 0);
-      els.timerBtn.textContent = '⏸';
+    els.limitToggle.checked = cfg.limitEnabled;
+    els.limitToggle.onchange = syncLimit;
+    els.limitRange.value = cfg.limit;
+    els.limitVal.textContent = cfg.limit;
+    els.limitRange.oninput = e=>{
+      cfg.limit = +e.target.value;
+      els.limitVal.textContent = e.target.value;
+      save();
+    };
+    syncLimit();
+
+    // countdown
+    function syncCD(){
+      els.cdRow.classList.toggle('hidden',!els.cdToggle.checked);
+      cfg.countdownEnabled = els.cdToggle.checked;
+      resetClock(); save();
     }
-    save();
-  };
-  (function loop(){
-    const t = cfg.timer;
-    if(t.running && cfg.countdownEnabled){
-      const r = Math.max(0, t.start + cfg.countdown - Date.now());
-      els.timerDisp.textContent = fmt(r);
-      if(r===0){ t.running=false; confetti({particleCount:180,spread:100}); }
+    els.cdToggle.checked = cfg.countdownEnabled;
+    els.cdToggle.onchange = syncCD;
+    els.cdRange.value = cfg.countdown/60000;
+    els.cdVal.textContent = cfg.countdown/60000;
+    els.cdRange.oninput = e=>{
+      cfg.countdown = +e.target.value*60000;
+      els.cdVal.textContent = e.target.value;
+      resetClock(); save();
+    };
+    syncCD();
+
+    // court
+    function updateCourt(){
+      let tpl;
+      const w=innerWidth, h=innerHeight;
+      switch(cfg.teamCount){
+        case 1: tpl='1fr / 1fr'; break;
+        case 2: tpl='1fr 1fr / 1fr'; break;
+        case 3:
+          tpl = (h>w)? '1fr 1fr 1fr / 1fr' // portrait stack
+                   : '1fr / 1fr 1fr 1fr';  // landscape
+          break;
+        case 4: tpl='1fr 1fr / 1fr 1fr'; break;
+      }
+      els.court.style.gridTemplate = tpl;
+      els.court.innerHTML = '';
+      cfg.teams.forEach((t,i)=>{
+        const b=document.createElement('div');
+        b.className='teamBox'; b.dataset.i=i;
+        b.innerHTML=`
+          <div class="teamName" style="color:${t.color}">${t.name}</div>
+          <div class="teamScore" style="color:${t.color}">${t.score}</div>`;
+        b.addEventListener('pointerdown',e=>startPress(e,b));
+        els.court.append(b);
+      });
+      updateScores(); highlightLeader();
     }
-    requestAnimationFrame(loop);
-  })();
+    function updateScores(){
+      document.querySelectorAll('.teamScore').forEach((el,i)=>{
+        el.textContent = cfg.teams[i].score;
+      });
+    }
+    function highlightLeader(){
+      const max = Math.max(...cfg.teams.map(t=>t.score));
+      const leaders = cfg.teams.map((t,i)=>t.score===max&&max>0?i:-1).filter(i=>i>=0);
+      const tie = leaders.length>1;
+      document.querySelectorAll('.teamBox').forEach((b,i)=>{
+        b.style.borderColor='transparent';
+        if(leaders.includes(i)){
+          if(tie) b.style.borderColor = document.body.classList.contains('light')?'#000':'#fff';
+          else b.style.borderColor = cfg.teams[i].color;
+        }
+      });
+      const newLead = leaders.length===1?leaders[0]:-1;
+      if(cfg.previousLeader>=0 && newLead!==cfg.previousLeader){
+        cfg.leadChanges++; save();
+      }
+      cfg.previousLeader = newLead;
+    }
 
-  // haptic click
-  let audioCtx;
-  function haptic(){
-    try{
-      audioCtx = audioCtx||new(AudioContext||webkitAudioContext)();
-      const o = audioCtx.createOscillator(),
-            g = audioCtx.createGain();
-      o.connect(g); g.connect(audioCtx.destination);
-      o.frequency.value=200; g.gain.value=.8;
-      o.start(); o.stop(audioCtx.currentTime+.02);
-    }catch{}
-  }
+    // tap/long‑press
+    let longId, wasLong=false;
+    function startPress(e,box){
+      const i=+box.dataset.i,st=cfg.step;
+      wasLong=false;
+      longId = setTimeout(()=>{
+        changeScore(i,-st); wasLong=true;
+      },500);
+      const end=()=>{
+        clearTimeout(longId);
+        if(!wasLong) changeScore(i,st);
+        box.removeEventListener('pointerup',end);
+        box.removeEventListener('pointercancel',end);
+      };
+      box.addEventListener('pointerup',end);
+      box.addEventListener('pointercancel',end);
+    }
+    function changeScore(i,d){
+      cfg.teams[i].score = Math.max(0,cfg.teams[i].score+d);
+      cfg.history.push({team:i,delta:d});
+      if(cfg.history.length>300) cfg.history.shift();
+      updateScores(); highlightLeader(); haptic(); checkWin(i); save();
+    }
 
-  // block double‑tap zoom
-  let last=0;
-  document.addEventListener('touchend',e=>{
-    const now = e.timeStamp;
-    if(now - last < 300) e.preventDefault();
-    last = now;
-  },{passive:false});
+    // undo/reset
+    els.undo.onclick = ()=>{
+      const h = cfg.history.pop(); if(!h) return;
+      cfg.teams[h.team].score = Math.max(0,cfg.teams[h.team].score-h.delta);
+      updateScores(); highlightLeader(); save();
+    };
+    function resetGame(){
+      cfg.teams.forEach(t=>t.score=0);
+      cfg.history=[]; updateScores(); highlightLeader();
+      cfg.startTime=Date.now(); cfg.leadChanges=0; cfg.previousLeader=-1;
+      els.winner.style.display='none'; save();
+    }
+    els.reset.onclick = resetGame;
 
-  // initial
-  renderTeams();
+    // win & stats
+    function checkWin(i){
+      if(cfg.limitEnabled && cfg.teams[i].score>=cfg.limit){
+        confetti({particleCount:200,spread:70,startVelocity:45});
+        els.winnerText.textContent = `🏆 ${cfg.teams[i].name} wins!`;
+        els.winner.style.display='flex';
+        cfg.wins[cfg.teams[i].name] = (cfg.wins[cfg.teams[i].name]||0)+1;
+        cfg.games++; cfg.pointsTotal+=cfg.teams.reduce((s,t)=>s+t.score,0);
+        renderStats(); save();
+      }
+    }
+    function renderStats(){
+      els.stats.innerHTML = '';
+      els.stats.insertAdjacentHTML('beforeend',`<div><strong>Pts/tap:</strong> +${cfg.step}</div>`);
+      const el=Date.now()-cfg.startTime,mm=Math.floor(el/60000),ss=String(Math.floor((el%60000)/1000)).padStart(2,'0');
+      els.stats.insertAdjacentHTML('beforeend',`<div><strong>Time:</strong> ${mm}:${ss}</div>`);
+      els.stats.insertAdjacentHTML('beforeend',`<div><strong>Leads:</strong> ${cfg.leadChanges}</div>`);
+      Object.entries(cfg.wins).forEach(([n,w])=>{
+        els.stats.insertAdjacentHTML('beforeend',`<div>${n}: ${w} wins</div>`);
+      });
+      if(cfg.games){
+        const avg=(cfg.pointsTotal/cfg.games).toFixed(1);
+        els.stats.insertAdjacentHTML('beforeend',`<div>Avg/game: ${avg}</div>`);
+        els.resetStats.style.display='';
+      } else els.resetStats.style.display='none';
+    }
+    els.resetStats.onclick = ()=>{
+      cfg.wins={};cfg.games=cfg.pointsTotal=0;renderStats();save();
+    };
+    renderStats();
+
+    // countdown
+    function resetClock(){
+      if(!cfg.countdownEnabled){
+        els.timerDisp.textContent='00:00';
+        els.timerBtn.style.display='none';
+        return;
+      }
+      els.timerBtn.style.display='inline-block';
+      cfg.timer.elapsed=cfg.countdown; cfg.timer.running=false;
+      els.timerBtn.textContent='⏱';
+    }
+    resetClock();
+    els.timerBtn.onclick = ()=>{
+      if(!cfg.countdownEnabled) return;
+      const t=cfg.timer;
+      if(t.running){
+        t.running=false; t.elapsed=Math.max(0,t.start+cfg.countdown-Date.now());
+        els.timerBtn.textContent='⏱';
+      } else {
+        t.running=true; t.start=Date.now()-(cfg.countdown-t.elapsed||0);
+        els.timerBtn.textContent='⏸';
+      }
+      save();
+    };
+    (function loop(){
+      const t=cfg.timer;
+      if(t.running&&cfg.countdownEnabled){
+        const r=Math.max(0,t.start+cfg.countdown-Date.now());
+        els.timerDisp.textContent=fmt(r);
+        if(r===0){ t.running=false; confetti({particleCount:180,spread:100}); }
+      }
+      requestAnimationFrame(loop);
+    })();
+
+    // haptic click
+    let audioCtx;
+    function haptic(){
+      try{
+        audioCtx=audioCtx||new(AudioContext||webkitAudioContext)();
+        const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+        o.connect(g); g.connect(audioCtx.destination);
+        o.frequency.value=200; g.gain.value=.8;
+        o.start(); o.stop(audioCtx.currentTime+.02);
+      }catch{}
+    }
+
+    // block dbl‑tap zoom
+    let last=0;
+    document.addEventListener('touchend',e=>{
+      const n=e.timeStamp;
+      if(n-last<300) e.preventDefault();
+      last=n;
+    },{passive:false});
+
+    // initial render
+    renderTeams();
   </script>
 </body>
 </html>
