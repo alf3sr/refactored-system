@@ -4,18 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
   <title>Point Tracker</title>
-  <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#000000">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="./manifest.json">
   <link rel="apple-touch-icon" href="./Icon-192.png">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
-  /* ===== THEMES & BASE ===== */
+  /* ===== BASE VARIABLES ===== */
   :root {
     --bg:#000; --fg:#fff; --panel:#111; --border:#333;
-    --accent:#3498db; --box:#000; --gap:0;
+    --accent:#3498db; --box:#000;
   }
   @media (prefers-color-scheme: light) {
     :root {
@@ -34,6 +34,8 @@
     touch-action:manipulation; user-select:none;
   }
   button { font:inherit; }
+
+  /* ===== COMMON UI ===== */
   .pill {
     padding:.6rem 1rem; border-radius:8px;
     background:var(--panel); border:1px solid var(--border);
@@ -42,7 +44,7 @@
   }
   .pill:active { background:rgba(255,255,255,0.1); }
 
-  /* SETTINGS GEAR */
+  /* ===== SETTINGS TOGGLE ===== */
   #settingsBtn {
     position:fixed; top:12px; right:12px; z-index:100;
     width:44px; height:44px; background:var(--panel);
@@ -51,7 +53,7 @@
     box-shadow:0 2px 10px rgba(0,0,0,0.25);
   }
 
-  /* DRAWER */
+  /* ===== DRAWER ===== */
   #settingsPanel {
     position:fixed; top:0; right:0; width:320px; height:100%;
     background:var(--panel); border-left:1px solid var(--border);
@@ -65,11 +67,10 @@
     border-bottom:1px solid var(--border); padding-bottom:8px;
   }
   .section-header {
-    font-weight:600; opacity:.7; margin-top:16px;
-    margin-bottom:8px; font-size:1rem;
+    font-weight:600; opacity:.7; margin:16px 0 8px;
   }
 
-  /* LIVE PREVIEW */
+  /* ===== LIVE PREVIEW ===== */
   #preview {
     display:grid; gap:0; margin-bottom:16px;
   }
@@ -80,34 +81,34 @@
   .previewBox span { display:block; font-weight:600; }
   .previewBox small { display:block; opacity:.6; }
 
-  /* ROWS & INPUTS */
+  /* ===== ROWS & INPUT ===== */
   label.row {
     display:flex; align-items:center; font-size:1rem; margin:8px 0;
   }
   label.row > span { flex:1; }
 
-  /* text + select expanded less aggressively */
+  /* text & select */
   label.row > input[type="text"],
   label.row > select {
     flex:2; margin-left:16px; padding:.6rem .8rem;
     background:var(--box); border:1px solid var(--border);
     border-radius:6px; color:var(--fg);
-    appearance:none; background-repeat:no-repeat;
+    appearance:none;
+    background-repeat:no-repeat;
     background-position:right 12px center;
     background-image:url("data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path fill='currentColor' d='M0 0l5 6 5-6z'/></svg>");
+<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'>\
+<path fill='currentColor' d='M0 0l5 6 5-6z'/></svg>");
   }
-
-  /* colour picker sits beside, no flex */
+  /* colour-picker */
   label.row > input[type="color"] {
     flex:none; margin-left:16px; width:32px; height:32px; border:none;
   }
 
-  /* SLIDERS & TOGGLES */
+  /* ===== TOGGLES ===== */
   .toggle {
     position:relative; width:48px; height:28px; margin-left:16px;
   }
-  /* hidden, but full‑size click area */
   .toggle input {
     position:absolute; inset:0; width:100%; height:100%; opacity:0;
     margin:0; padding:0; cursor:pointer;
@@ -117,13 +118,14 @@
     border-radius:14px; transition:background .2s ease;
   }
   .slider:before {
-    content:""; position:absolute; top:4px; left:4px;
-    width:20px; height:20px; background:var(--fg);
-    border-radius:50%; transition:transform .2s ease;
+    content:""; position:absolute; width:20px; height:20px;
+    top:4px; left:4px; background:var(--fg); border-radius:50%;
+    transition:transform .2s ease;
   }
   input:checked + .slider { background:var(--accent); }
   input:checked + .slider:before { transform:translateX(20px); }
 
+  /* ===== SLIDERS ===== */
   .rangeRow {
     display:flex; align-items:center; gap:8px; margin:8px 0;
   }
@@ -140,25 +142,28 @@
     -webkit-appearance:none;
   }
 
-  /* STATS */
+  /* ===== STATS BOX ===== */
   .statsBox {
     margin-top:24px; border-top:1px solid var(--border);
     padding-top:16px; font-size:1rem;
   }
   .statsBox h3 { font-size:1.2rem; margin-bottom:8px; }
 
-  /* COURT */
+  /* ===== COURT GRID ===== */
   #court {
-    position:absolute; top:0; left:0; right:0; bottom:0;
-    display:grid; gap:0; transition:all .2s ease;
-  }
-  .teamBox {
-    background:var(--box); display:flex; flex-direction:column;
-    justify-content:center; align-items:center; padding:0;
-    border:4px solid transparent;
+    position:absolute; inset:0; display:grid; gap:0;
     transition:all .2s ease;
   }
+  .teamBox {
+    background:var(--box);
+    display:flex; flex-direction:column; justify-content:center;
+    align-items:center;
+    border:4px solid transparent;
+    transition:all .2s ease;
+    padding:12px;
+  }
   .teamBox:active { transform:scale(.97); }
+
   .teamName {
     font-size:clamp(5rem,12vw,7rem);
     font-family:'Bebas Neue',sans-serif; margin-bottom:8px;
@@ -169,18 +174,19 @@
     transition:transform .2s ease;
   }
 
-  /* three‑portrait override */
+  /* ===== SHRINK FOR 3‑PORTRAIT ===== */
   body.three-portrait .teamBox {
-    padding:8px;
+    padding:6px;
   }
   body.three-portrait .teamName {
     font-size:clamp(4rem,10vw,5rem);
+    margin-bottom:4px;
   }
   body.three-portrait .teamScore {
-    font-size:clamp(8rem,20vw,10rem);
+    font-size:clamp(8rem,20vw,12rem);
   }
 
-  /* WINNER OVERLAY */
+  /* ===== WINNER OVERLAY ===== */
   #winnerBanner {
     position:absolute; inset:0; display:none;
     background:rgba(0,0,0,0.7); color:#fff;
@@ -189,24 +195,31 @@
   }
   #winnerBanner button { margin-top:16px; }
 
-  /* TIMER */
+  /* ===== TIMER ===== */
   #matchTimer {
-    position:fixed; top:12px; left:50%;
+    position:fixed; top:54px; left:50%;
     transform:translateX(-50%);
     font-family:'Bebas Neue',sans-serif; font-size:1.2rem;
     z-index:100; transition:opacity .2s ease;
   }
   body.panel-open #matchTimer { opacity:0; }
 
-  /* FLOAT LEFT BAR */
+  /* ===== FLOAT‑BAR ===== */
   #floatbar {
-    position:fixed; bottom:60px; left:12px;
-    display:flex; flex-direction:column; gap:12px; z-index:100;
+    position:fixed; z-index:100;
+    left:12px; bottom:60px;
+    display:flex; flex-direction:column; gap:12px;
+    transition:all .2s ease;
   }
+  /* center at bottom on 4‑grid */
+  body.four-grid #floatbar {
+    left:50%; transform:translateX(-50%);
+    bottom:12px; flex-direction:row;
+  }
+
   html, body { touch-action:manipulation; }
   </style>
 </head>
-
 <body class="dark">
   <!-- TIMER DISPLAY -->
   <div id="matchTimer">00:00</div>
@@ -214,7 +227,7 @@
   <!-- SETTINGS GEAR -->
   <button id="settingsBtn" class="pill">⚙️</button>
 
-  <!-- FLOAT LEFT BAR -->
+  <!-- FLOAT‑BAR (undo / reset / timer) -->
   <div id="floatbar">
     <button id="undoBtn" class="pill">↩️</button>
     <button id="resetBtn" class="pill">🔄</button>
@@ -290,353 +303,371 @@
   </div>
 
   <script>
-    // shorthand & defaults
-    const $=id=>document.getElementById(id),
-          defaults=['#3498db','#e74c3c','#9b59b6','#f1c40f'],
-          fmt=ms=>{
-            let s=Math.floor(ms/1000),m=Math.floor(s/60),
-                ss=String(s%60).padStart(2,'0');
-            return `${m}:${ss}`;
-          };
+  // shorthand, defaults, formatter
+  const $=id=>document.getElementById(id),
+        defs=['#3498db','#e74c3c','#9b59b6','#f1c40f'],
+        fmt=ms=>{let s=Math.floor(ms/1000),m=Math.floor(s/60),ss=String(s%60).padStart(2,'0');return `${m}:${ss}`;};
 
-    // seed & load
-    const seed={teamCount:2,teams:[
+  // default state & load
+  const seed={
+    teamCount:2,
+    teams:[
       {name:'Team A',color:'#3498db',score:0},
       {name:'Team B',color:'#e74c3c',score:0}
-    ],step:1,limitEnabled:false,limit:11,
-      countdownEnabled:false,countdown:300000,
-      timer:{running:false,start:0,elapsed:0},
-      history:[],wins:{},games:0,pointsTotal:0,
-      theme:'auto',startTime:Date.now(),leadChanges:0,previousLeader:-1
-    };
-    let cfg=Object.assign(seed,JSON.parse(localStorage.getItem('pt-state')||'{}'));
-    const save=()=>localStorage.setItem('pt-state',JSON.stringify(cfg));
+    ],
+    step:1,limitEnabled:false,limit:11,
+    countdownEnabled:false,countdown:300000,
+    timer:{running:false,start:0,elapsed:0},
+    history:[],wins:{},games:0,pointsTotal:0,
+    theme:'auto',startTime:Date.now(),leadChanges:0,previousLeader:-1
+  };
+  let cfg=Object.assign(seed, JSON.parse(localStorage.getItem('pt-state')||'{}'));
+  const save=_=>localStorage.setItem('pt-state',JSON.stringify(cfg));
 
-    // sanitize
-    cfg.teams=Array.from({length:cfg.teamCount},(_,i)=>{
-      let t=cfg.teams[i]||{};
-      return {
-        name:t.name||`Team ${String.fromCharCode(65+i)}`,
-        color:(/^#0{3,6}$/i.test(t.color)||!t.color)?defaults[i]:t.color,
-        score:t.score||0
+  // sanitize colours
+  cfg.teams=Array.from({length:cfg.teamCount},(_,i)=>{
+    let t=cfg.teams[i]||{};
+    return {
+      name:t.name||`Team ${String.fromCharCode(65+i)}`,
+      color:(!t.color||/^#0+$/i.test(t.color))?defs[i]:t.color,
+      score:t.score||0
+    };
+  });
+  cfg.startTime ||= Date.now();
+  cfg.leadChanges ||= 0;
+  cfg.previousLeader = (cfg.previousLeader>=0?cfg.previousLeader:-1);
+  save();
+
+  // refs
+  const gear=$('settingsBtn'),
+        panel=$('settingsPanel'),
+        preview=$('preview'),
+        teamCount=$('teamCount'),
+        teamsDiv=$('teamsConfig'),
+        stepSel=$('stepSel'),
+        limitToggle=$('limitToggle'),
+        limitRow=$('limitRow'),
+        limitRange=$('limitRange'),
+        limitVal=$('limitVal'),
+        cdToggle=$('cdToggle'),
+        cdRow=$('cdRow'),
+        cdRange=$('cdRange'),
+        cdVal=$('cdVal'),
+        themeSel=$('themeSel'),
+        undoBtn=$('undoBtn'),
+        resetBtn=$('resetBtn'),
+        timerBtn=$('timerBtn'),
+        court=$('court'),
+        timerDisp=$('matchTimer'),
+        winner=$('winnerBanner'),
+        winnerText=$('winnerText'),
+        statsWrap=$('statsWrap'),
+        resetStats=$('resetStats');
+
+  // drawer toggle
+  gear.onclick=_=>{
+    panel.classList.toggle('open');
+    document.body.classList.toggle('panel-open',panel.classList.contains('open'));
+  };
+
+  // theme
+  function applyTheme(){
+    let sys=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+    document.body.classList.toggle('light',cfg.theme==='light'||(cfg.theme==='auto'&&sys==='light'));
+    document.body.classList.toggle('dark', cfg.theme==='dark'||(cfg.theme==='auto'&&sys==='dark'));
+    themeSel.value=cfg.theme;
+  }
+  themeSel.onchange=e=>{cfg.theme=e.target.value;applyTheme();save()};
+  applyTheme();
+
+  // preview sizing / 3‑portrait class / 4‑grid class
+  function updatePreview(){
+    let w=innerWidth,h=innerHeight;
+    // three‑portrait?
+    document.body.classList.toggle('three-portrait',cfg.teamCount===3 && h>w);
+    // four‑grid?
+    document.body.classList.toggle('four-grid',cfg.teamCount===4);
+    // grid template
+    if(cfg.teamCount===4){
+      preview.style.gridTemplate='auto auto / 1fr 1fr';
+    } else if(cfg.teamCount===3){
+      if(h>w) preview.style.gridTemplate='1fr 1fr 1fr / 1fr';
+      else    preview.style.gridTemplate='1fr / 1fr 1fr 1fr';
+    } else if(cfg.teamCount===2){
+      preview.style.gridTemplate='auto / 1fr 1fr';
+    } else {
+      preview.style.gridTemplate='auto / 1fr';
+    }
+    // fill boxes
+    preview.innerHTML='';
+    cfg.teams.forEach(t=>{
+      preview.insertAdjacentHTML('beforeend',`
+        <div class="previewBox">
+          <span style="color:${t.color}">${t.name}</span>
+          <small style="color:${t.color}">${t.score}</small>
+        </div>`);
+    });
+  }
+  addEventListener('resize',updatePreview);
+
+  // render the settings form
+  function renderTeams(){
+    cfg.teams=Array.from({length:cfg.teamCount},(_,i)=>({
+      name:cfg.teams[i]?.name||`Team ${String.fromCharCode(65+i)}`,
+      color:cfg.teams[i]?.color||defs[i],
+      score:cfg.teams[i]?.score||0
+    }));
+    updatePreview();
+    teamsDiv.innerHTML='';
+    cfg.teams.forEach((t,i)=>{
+      teamsDiv.insertAdjacentHTML('beforeend',`
+        <label class="row">
+          <span>Team ${String.fromCharCode(65+i)}</span>
+          <input type="text" id="name${i}" value="${t.name}">
+          <input type="color" id="clr${i}" value="${t.color}">
+        </label>`);
+    });
+    // name listeners
+    teamsDiv.querySelectorAll('input[type=text]').forEach(inp=>{
+      inp.oninput=e=>{
+        let ix=+e.target.id.slice(4);
+        cfg.teams[ix].name=e.target.value||`Team ${String.fromCharCode(65+ix)}`;
+        updateCourt(); updatePreview(); save();
       };
     });
-    cfg.startTime ||= Date.now();
-    cfg.leadChanges ||= 0;
-    cfg.previousLeader = cfg.previousLeader>=0?cfg.previousLeader:-1;
-    save();
-
-    // refs
-    const els={
-      gear:$('settingsBtn'), panel:$('settingsPanel'),
-      preview:$('preview'),
-      teamCount:$('teamCount'), teams:$('teamsConfig'),
-      stepSel:$('stepSel'),
-      limitToggle:$('limitToggle'), limitRow:$('limitRow'),
-      limitRange:$('limitRange'), limitVal:$('limitVal'),
-      cdToggle:$('cdToggle'), cdRow:$('cdRow'),
-      cdRange:$('cdRange'), cdVal:$('cdVal'),
-      themeSel:$('themeSel'),
-      undo:$('undoBtn'), reset:$('resetBtn'), timerBtn:$('timerBtn'),
-      court:$('court'),
-      timerDisp:$('matchTimer'),
-      winner:$('winnerBanner'), winnerText:$('winnerText'),
-      stats:$('statsWrap'), resetStats:$('resetStats')
-    };
-    const {gear,panel,preview,teamCount,teams,stepSel,
-           limitToggle,limitRow,limitRange,limitVal,
-           cdToggle,cdRow,cdRange,cdVal,themeSel,
-           undo,reset,timerBtn,court,timerDisp,
-           winner,winnerText,stats,resetStats} = els;
-
-    // drawer
-    gear.onclick = ()=>{
-      panel.classList.toggle('open');
-      document.body.classList.toggle('panel-open', panel.classList.contains('open'));
-    };
-
-    // theme
-    function applyTheme(){
-      let sys=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
-      document.body.classList.toggle('light', cfg.theme==='light'||(cfg.theme==='auto'&&sys==='light'));
-      document.body.classList.toggle('dark',  cfg.theme==='dark' ||(cfg.theme==='auto'&&sys==='dark'));
-      themeSel.value = cfg.theme;
-    }
-    themeSel.onchange = e=>{ cfg.theme=e.target.value; applyTheme(); save(); };
-    applyTheme();
-
-    // preview layout
-    function updatePreview(){
-      let w=innerWidth,h=innerHeight;
-      document.body.classList.toggle('three-portrait', cfg.teamCount===3 && h>w);
-      if(cfg.teamCount===4){
-        preview.style.gridTemplate='auto auto / 1fr 1fr';
-      } else if(cfg.teamCount===3){
-        if(h>w) preview.style.gridTemplate='1fr 1fr 1fr / 1fr';
-        else    preview.style.gridTemplate='1fr / 1fr 1fr 1fr';
-      } else if(cfg.teamCount===2){
-        preview.style.gridTemplate='auto / 1fr 1fr';
-      } else {
-        preview.style.gridTemplate='auto / 1fr';
-      }
-      preview.innerHTML='';
-      cfg.teams.forEach(t=>{
-        preview.insertAdjacentHTML('beforeend',`
-          <div class="previewBox">
-            <span style="color:${t.color}">${t.name}</span>
-            <small style="color:${t.color}">${t.score}</small>
-          </div>`);
-      });
-    }
-    addEventListener('resize', updatePreview);
-
-    // render teams in settings
-    function renderTeams(){
-      cfg.teams=Array.from({length:cfg.teamCount},(_,i)=>({
-        name:cfg.teams[i]?.name||`Team ${String.fromCharCode(65+i)}`,
-        color:cfg.teams[i]?.color||defaults[i],
-        score:cfg.teams[i]?.score||0
-      }));
-      updatePreview();
-      teams.innerHTML='';
-      cfg.teams.forEach((t,i)=>{
-        teams.insertAdjacentHTML('beforeend',`
-          <label class="row">
-            <span>Team ${String.fromCharCode(65+i)}</span>
-            <input type="text" id="name${i}" value="${t.name}">
-            <input type="color" id="clr${i}" value="${t.color}">
-          </label>`);
-      });
-      // listeners
-      teams.querySelectorAll('input[type=text]').forEach(inp=>{
-        inp.oninput=e=>{
-          let ix=+e.target.id.slice(4);
-          cfg.teams[ix].name=e.target.value||`Team ${String.fromCharCode(65+ix)}`;
-          updateCourt(); updatePreview(); save();
-        };
-      });
-      teams.querySelectorAll('input[type=color]').forEach(inp=>{
-        inp.oninput=e=>{
-          let ix=+e.target.id.slice(3);
-          cfg.teams[ix].color=e.target.value;
-          updateCourt(); updatePreview(); save();
-        };
-      });
-      updateCourt(); save();
-    }
-    ['input','change'].forEach(ev=>{
-      teamCount.addEventListener(ev,e=>{
-        cfg.teamCount=+e.target.value;
-        renderTeams();
-      });
+    // colour listeners
+    teamsDiv.querySelectorAll('input[type=color]').forEach(inp=>{
+      inp.oninput=e=>{
+        let ix=+e.target.id.slice(3);
+        cfg.teams[ix].color=e.target.value;
+        updateCourt(); updatePreview(); save();
+      };
     });
-    teamCount.value = cfg.teamCount;
+    updateCourt(); save();
+  }
+  ;['input','change'].forEach(evt=>{
+    teamCount.addEventListener(evt,e=>{
+      cfg.teamCount=+e.target.value;
+      renderTeams();
+    });
+  });
+  teamCount.value=cfg.teamCount;
 
-    // rules
-    stepSel.value=cfg.step;
-    stepSel.onchange=e=>{ cfg.step=+e.target.value; save(); };
+  // points/tap
+  stepSel.value=cfg.step;
+  stepSel.onchange=e=>{cfg.step=+e.target.value;save()};
 
-    // limit
-    function syncLimit(){
-      limitRow.classList.toggle('hidden',!limitToggle.checked);
-      cfg.limitEnabled=limitToggle.checked; save();
+  // score limit
+  function syncLimit(){
+    limitRow.classList.toggle('hidden',!limitToggle.checked);
+    cfg.limitEnabled=limitToggle.checked; save();
+  }
+  limitToggle.checked=cfg.limitEnabled;
+  limitToggle.onchange=syncLimit;
+  limitRange.value=cfg.limit; limitVal.textContent=cfg.limit;
+  limitRange.oninput=e=>{
+    cfg.limit=+e.target.value; limitVal.textContent=e.target.value; save();
+  };
+  syncLimit();
+
+  // countdown
+  function syncCD(){
+    cdRow.classList.toggle('hidden',!cdToggle.checked);
+    cfg.countdownEnabled=cdToggle.checked; resetClock(); save();
+  }
+  cdToggle.checked=cfg.countdownEnabled;
+  cdToggle.onchange=syncCD;
+  cdRange.value=cfg.countdown/60000; cdVal.textContent=cfg.countdown/60000;
+  cdRange.oninput=e=>{
+    cfg.countdown=+e.target.value*60000; cdVal.textContent=e.target.value;
+    resetClock(); save();
+  };
+  syncCD();
+
+  // draw the court
+  function updateCourt(){
+    let w=innerWidth,h=innerHeight;
+    if(cfg.teamCount===1){
+      court.style.gridTemplate='1fr / 1fr';
+    } else if(cfg.teamCount===2){
+      court.style.gridTemplate='1fr 1fr / 1fr';
+    } else if(cfg.teamCount===3){
+      if(h>w) court.style.gridTemplate='1fr 1fr 1fr / 1fr';
+      else    court.style.gridTemplate='1fr / 1fr 1fr 1fr';
+    } else {
+      court.style.gridTemplate='1fr 1fr / 1fr 1fr';
     }
-    limitToggle.checked=cfg.limitEnabled;
-    limitToggle.onchange=syncLimit;
-    limitRange.value=cfg.limit; limitVal.textContent=cfg.limit;
-    limitRange.oninput=e=>{
-      cfg.limit=+e.target.value; limitVal.textContent=e.target.value; save();
-    };
-    syncLimit();
-
-    // countdown
-    function syncCD(){
-      cdRow.classList.toggle('hidden',!cdToggle.checked);
-      cfg.countdownEnabled=cdToggle.checked; resetClock(); save();
-    }
-    cdToggle.checked=cfg.countdownEnabled;
-    cdToggle.onchange=syncCD;
-    cdRange.value=cfg.countdown/60000; cdVal.textContent=cfg.countdown/60000;
-    cdRange.oninput=e=>{
-      cfg.countdown=+e.target.value*60000; cdVal.textContent=e.target.value;
-      resetClock(); save();
-    };
-    syncCD();
-
-    // draw court
-    function updateCourt(){
-      let w=innerWidth,h=innerHeight;
-      if(cfg.teamCount===1){
-        court.style.gridTemplate='1fr / 1fr';
-      } else if(cfg.teamCount===2){
-        court.style.gridTemplate='1fr 1fr / 1fr';
-      } else if(cfg.teamCount===3){
-        if(h>w) court.style.gridTemplate='1fr 1fr 1fr / 1fr';
-        else    court.style.gridTemplate='1fr / 1fr 1fr 1fr';
-      } else {
-        court.style.gridTemplate='1fr 1fr / 1fr 1fr';
+    court.innerHTML='';
+    cfg.teams.forEach((t,i)=>{
+      let b=document.createElement('div');
+      b.className='teamBox'; b.dataset.i=i;
+      b.innerHTML=`
+        <div class="teamName" style="color:${t.color}">${t.name}</div>
+        <div class="teamScore" style="color:${t.color}">${t.score}</div>`;
+      // tap / long‑press / swipe
+      attachGestures(b,i);
+      court.append(b);
+    });
+    updateScores(); highlightLeader();
+  }
+  function updateScores(){
+    document.querySelectorAll('.teamScore').forEach((el,i)=>{
+      el.textContent=cfg.teams[i].score;
+    });
+  }
+  function highlightLeader(){
+    let max=Math.max(...cfg.teams.map(t=>t.score));
+    let leads=cfg.teams.map((t,i)=>t.score===max&&max>0?i:-1).filter(i=>i>=0);
+    let tie=leads.length>1;
+    document.querySelectorAll('.teamBox').forEach((b,i)=>{
+      b.style.borderColor='transparent';
+      if(leads.includes(i)){
+        b.style.borderColor = tie
+          ? (document.body.classList.contains('light')?'#000':'#fff')
+          : cfg.teams[i].color;
       }
-      court.innerHTML='';
-      cfg.teams.forEach((t,i)=>{
-        let b=document.createElement('div');
-        b.className='teamBox'; b.dataset.i=i;
-        b.innerHTML=`
-          <div class="teamName" style="color:${t.color}">${t.name}</div>
-          <div class="teamScore" style="color:${t.color}">${t.score}</div>`;
-        b.addEventListener('pointerdown',e=>startPress(e,b));
-        court.append(b);
-      });
-      updateScores(); highlightLeader();
+    });
+    let newLead=leads.length===1?leads[0]:-1;
+    if(cfg.previousLeader>=0 && newLead!==cfg.previousLeader){
+      cfg.leadChanges++; save();
     }
-    function updateScores(){
-      document.querySelectorAll('.teamScore').forEach((el,i)=>{
-        el.textContent=cfg.teams[i].score;
-      });
-    }
-    function highlightLeader(){
-      let max=Math.max(...cfg.teams.map(t=>t.score));
-      let leads=cfg.teams.map((t,i)=>t.score===max&&max>0?i:-1).filter(i=>i>=0);
-      let tie=leads.length>1;
-      document.querySelectorAll('.teamBox').forEach((b,i)=>{
-        b.style.borderColor='transparent';
-        if(leads.includes(i)){
-          b.style.borderColor = tie
-            ? (document.body.classList.contains('light')?'#000':'#fff')
-            : cfg.teams[i].color;
-        }
-      });
-      let newLead=leads.length===1?leads[0]:-1;
-      if(cfg.previousLeader>=0 && newLead!==cfg.previousLeader){
-        cfg.leadChanges++; save();
-      }
-      cfg.previousLeader=newLead;
-    }
+    cfg.previousLeader=newLead;
+  }
 
-    // tap / long‑press
-    let longId, wasLong=false;
-    function startPress(e,box){
-      let i=+box.dataset.i, st=cfg.step;
+  // attach gestures (tap, long‑press, swipe)
+  function attachGestures(el,i){
+    let startX, startY, startT, longId, wasLong=false;
+    el.onpointerdown=e=>{
+      startX=e.clientX; startY=e.clientY; startT=Date.now();
       wasLong=false;
       longId=setTimeout(()=>{
-        changeScore(i,-st); wasLong=true;
+        changeScore(i,-cfg.step);
+        wasLong=true;
       },500);
-      let up=()=>{
-        clearTimeout(longId);
-        if(!wasLong) changeScore(i,st);
-        box.removeEventListener('pointerup', up);
-        box.removeEventListener('pointercancel', up);
-      };
-      box.addEventListener('pointerup', up);
-      box.addEventListener('pointercancel', up);
-    }
-    function changeScore(i,d){
-      cfg.teams[i].score=Math.max(0,cfg.teams[i].score+d);
-      cfg.history.push({team:i,delta:d});
-      if(cfg.history.length>300) cfg.history.shift();
-      updateScores(); highlightLeader(); haptic(); checkWin(i); save(); updatePreview();
-    }
-
-    // undo / reset
-    undo.onclick=()=>{
-      let h=cfg.history.pop(); if(!h) return;
-      cfg.teams[h.team].score = Math.max(0,cfg.teams[h.team].score-h.delta);
-      updateScores(); highlightLeader(); save(); updatePreview();
     };
-    reset.onclick=()=>{
-      if(!confirm('Really reset this match?')) return;
-      resetGame(); updatePreview();
-    };
-    function resetGame(){
-      cfg.teams.forEach(t=>t.score=0);
-      cfg.history=[]; updateScores(); highlightLeader();
-      cfg.startTime=Date.now(); cfg.leadChanges=0; cfg.previousLeader=-1;
-      winner.style.display='none'; save();
-    }
-
-    // win & stats
-    function checkWin(i){
-      if(cfg.limitEnabled && cfg.teams[i].score>=cfg.limit){
-        confetti({particleCount:200,spread:70,startVelocity:45});
-        winnerText.textContent=`🏆 ${cfg.teams[i].name} wins!`;
-        winner.style.display='flex';
-        cfg.wins[cfg.teams[i].name]=(cfg.wins[cfg.teams[i].name]||0)+1;
-        cfg.games++; cfg.pointsTotal += cfg.teams.reduce((s,t)=>s+t.score,0);
-        renderStats(); save();
+    el.onpointerup=e=>{
+      clearTimeout(longId);
+      let dx=e.clientX-startX, dy=e.clientY-startY, dt=Date.now()-startT;
+      if(!wasLong){
+        if(Math.abs(dx)>30 && Math.abs(dx)>Math.abs(dy) && dt<500){
+          // swipe
+          changeScore(i,-cfg.step);
+        } else {
+          // tap
+          changeScore(i,cfg.step);
+        }
       }
-    }
-    function renderStats(){
-      stats.innerHTML='';
-      stats.insertAdjacentHTML('beforeend',`<div><strong>Pts/tap:</strong> +${cfg.step}</div>`);
-      let e=Date.now()-cfg.startTime,
-          m=Math.floor(e/60000), s=String(Math.floor((e%60000)/1000)).padStart(2,'0');
-      stats.insertAdjacentHTML('beforeend',`<div><strong>Time:</strong> ${m}:${s}</div>`);
-      stats.insertAdjacentHTML('beforeend',`<div><strong>Leads:</strong> ${cfg.leadChanges}</div>`);
-      Object.entries(cfg.wins).forEach(([n,w])=>{
-        stats.insertAdjacentHTML('beforeend',`<div>${n}: ${w} wins</div>`);
-      });
-      if(cfg.games){
-        let avg=(cfg.pointsTotal/cfg.games).toFixed(1);
-        stats.insertAdjacentHTML('beforeend',`<div>Avg/game: ${avg}</div>`);
-        resetStats.style.display='';
-      } else resetStats.style.display='none';
-    }
-    resetStats.onclick=()=>{
-      cfg.wins={}; cfg.games=cfg.pointsTotal=0; renderStats(); save();
     };
-    renderStats();
+    el.onpointercancel=_=>clearTimeout(longId);
+  }
 
-    // countdown
-    function resetClock(){
-      if(!cfg.countdownEnabled){
-        timerDisp.textContent='00:00'; timerBtn.style.display='none'; return;
-      }
-      timerBtn.style.display='inline-block';
-      cfg.timer.elapsed=cfg.countdown; cfg.timer.running=false;
+  function changeScore(i,delta){
+    cfg.teams[i].score=Math.max(0,cfg.teams[i].score+delta);
+    cfg.history.push({team:i,delta});
+    if(cfg.history.length>300) cfg.history.shift();
+    updateScores(); highlightLeader(); haptic(); checkWin(i); save(); updatePreview();
+  }
+
+  // undo / reset
+  undoBtn.onpointerdown=_=>{
+    let h=cfg.history.pop(); if(!h) return;
+    cfg.teams[h.team].score=Math.max(0,cfg.teams[h.team].score-h.delta);
+    updateScores(); highlightLeader(); save(); updatePreview();
+  };
+  resetBtn.onpointerdown=_=>{
+    if(!confirm('Really reset this match?')) return;
+    resetGame(); updatePreview();
+  };
+  function resetGame(){
+    cfg.teams.forEach(t=>t.score=0);
+    cfg.history=[]; updateScores(); highlightLeader();
+    cfg.startTime=Date.now(); cfg.leadChanges=0; cfg.previousLeader=-1;
+    winner.style.display='none'; save();
+  }
+
+  // win & stats
+  function checkWin(i){
+    if(cfg.limitEnabled && cfg.teams[i].score>=cfg.limit){
+      confetti({particleCount:200,spread:70,startVelocity:45});
+      winnerText.textContent=`🏆 ${cfg.teams[i].name} wins!`;
+      winner.style.display='flex';
+      cfg.wins[cfg.teams[i].name]=(cfg.wins[cfg.teams[i].name]||0)+1;
+      cfg.games++; cfg.pointsTotal+=cfg.teams.reduce((s,t)=>s+t.score,0);
+      renderStats(); save();
+    }
+  }
+  function renderStats(){
+    statsWrap.innerHTML='';
+    statsWrap.insertAdjacentHTML('beforeend',`<div><strong>Pts/tap:</strong> +${cfg.step}</div>`);
+    let e=Date.now()-cfg.startTime, m=Math.floor(e/60000), s=String(Math.floor((e%60000)/1000)).padStart(2,'0');
+    statsWrap.insertAdjacentHTML('beforeend',`<div><strong>Time:</strong> ${m}:${s}</div>`);
+    statsWrap.insertAdjacentHTML('beforeend',`<div><strong>Leads:</strong> ${cfg.leadChanges}</div>`);
+    Object.entries(cfg.wins).forEach(([n,w])=>{
+      statsWrap.insertAdjacentHTML('beforeend',`<div>${n}: ${w} wins</div>`);
+    });
+    if(cfg.games){
+      let avg=(cfg.pointsTotal/cfg.games).toFixed(1);
+      statsWrap.insertAdjacentHTML('beforeend',`<div>Avg/game: ${avg}</div>`);
+      resetStats.style.display='';
+    } else resetStats.style.display='none';
+  }
+  resetStats.onpointerdown=_=>{
+    cfg.wins={}; cfg.games=cfg.pointsTotal=0; renderStats(); save();
+  };
+  renderStats();
+
+  // countdown
+  function resetClock(){
+    if(!cfg.countdownEnabled){
+      timerDisp.textContent='00:00'; timerBtn.style.display='none'; return;
+    }
+    timerBtn.style.display='inline-block';
+    cfg.timer.elapsed=cfg.countdown; cfg.timer.running=false;
+    timerBtn.textContent='⏱';
+  }
+  resetClock();
+  timerBtn.onpointerdown=_=>{
+    if(!cfg.countdownEnabled) return;
+    let t=cfg.timer;
+    if(t.running){
+      t.running=false; t.elapsed=Math.max(0,t.start+cfg.countdown-Date.now());
       timerBtn.textContent='⏱';
+    } else {
+      t.running=true; t.start=Date.now()-(cfg.countdown-t.elapsed||0);
+      timerBtn.textContent='⏸';
     }
-    resetClock();
-    timerBtn.onclick=()=>{
-      if(!cfg.countdownEnabled) return;
-      let t=cfg.timer;
-      if(t.running){
-        t.running=false; t.elapsed=Math.max(0,t.start+cfg.countdown-Date.now());
-        timerBtn.textContent='⏱';
-      } else {
-        t.running=true; t.start=Date.now()-(cfg.countdown-t.elapsed||0);
-        timerBtn.textContent='⏸';
-      }
-      save();
-    };
-    (function loop(){
-      let t=cfg.timer;
-      if(t.running&&cfg.countdownEnabled){
-        let r=Math.max(0,t.start+cfg.countdown-Date.now());
-        timerDisp.textContent=fmt(r);
-        if(r===0){ t.running=false; confetti({particleCount:180,spread:100}); }
-      }
-      requestAnimationFrame(loop);
-    })();
-
-    // haptic
-    let audioCtx;
-    function haptic(){
-      try{
-        audioCtx=audioCtx||new(AudioContext||webkitAudioContext)();
-        let o=audioCtx.createOscillator(), g=audioCtx.createGain();
-        o.connect(g); g.connect(audioCtx.destination);
-        o.frequency.value=200; g.gain.value=.8;
-        o.start(); o.stop(audioCtx.currentTime+.02);
-      } catch{}
+    save();
+  };
+  (function loop(){
+    let t=cfg.timer;
+    if(t.running && cfg.countdownEnabled){
+      let r=Math.max(0,t.start+cfg.countdown-Date.now());
+      timerDisp.textContent=fmt(r);
+      if(r===0){ t.running=false; confetti({particleCount:180,spread:100}); }
     }
+    requestAnimationFrame(loop);
+  })();
 
-    // block dbl‑tap zoom
-    let last=0;
-    document.addEventListener('touchend',e=>{
-      let n=e.timeStamp; if(n-last<300) e.preventDefault(); last=n;
-    },{passive:false});
+  // haptic feedback
+  let audioCtx;
+  function haptic(){
+    try{
+      audioCtx=audioCtx||new(AudioContext||webkitAudioContext)();
+      let o=audioCtx.createOscillator(),g=audioCtx.createGain();
+      o.connect(g);g.connect(audioCtx.destination);
+      o.frequency.value=200;g.gain.value=.8;
+      o.start();o.stop(audioCtx.currentTime+.02);
+    }catch{}
+  }
 
-    // first render
-    renderTeams();
+  // block double‑tap zoom
+  let last=0;
+  document.addEventListener('touchend',e=>{
+    let n=e.timeStamp; if(n-last<300) e.preventDefault(); last=n;
+  },{passive:false});
+
+  // initial draw
+  renderTeams();
   </script>
 </body>
 </html>
