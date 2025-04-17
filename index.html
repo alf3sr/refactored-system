@@ -19,163 +19,165 @@
       --panel-border: #333;
       --text: #fff;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing:border-box; margin:0; padding:0; }
     body {
-      height: 100vh;
-      background: var(--bg);
-      color: var(--text);
-      font-family: system-ui, sans-serif;
-      overflow: hidden;
+      height:100vh;
+      background:var(--bg);
+      color:var(--text);
+      font-family:system-ui,sans-serif;
+      overflow:hidden;
     }
 
-    /* —— Settings button (minimal circle) —— */
+    /* —— Minimal ⚙️ button —— */
     #settingsBtn {
-      position: fixed;
-      top: 1rem; right: 1rem;
-      z-index: 100;
-      width: 2.8rem; height: 2.8rem;
-      background: rgba(255,255,255,0.1);
-      border: none;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.4rem;
-      cursor: pointer;
+      position:fixed;
+      top:1rem; right:1rem;
+      z-index:100;
+      width:2.5rem; height:2.5rem;
+      background:none;
+      border:2px solid rgba(255,255,255,0.6);
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:1.4rem;
+      color:rgba(255,255,255,0.9);
+      cursor:pointer;
     }
 
     /* —— Slide‑out panel —— */
     #settingsPanel {
-      position: fixed; top: 0; right: 0;
-      width: 300px; height: 100%;
-      background: var(--panel-bg);
-      border-left: 1px solid var(--panel-border);
-      transform: translateX(100%);
-      transition: transform .3s;
-      padding: 1rem;
-      overflow-y: auto;
-      z-index: 99;
+      position:fixed; top:0; right:0;
+      width:300px; height:100%;
+      background:var(--panel-bg);
+      border-left:1px solid var(--panel-border);
+      transform:translateX(100%);
+      transition:transform .3s;
+      padding:1rem;
+      overflow-y:auto;
+      z-index:99;
     }
-    #settingsPanel.open { transform: translateX(0); }
+    #settingsPanel.open { transform:translateX(0); }
     #settingsPanel h2 {
-      margin-bottom: .5rem;
-      font-size: 1.2rem;
-      border-bottom: 1px solid var(--panel-border);
-      padding-bottom: .3rem;
+      margin-bottom:.5rem;
+      font-size:1.2rem;
+      border-bottom:1px solid var(--panel-border);
+      padding-bottom:.3rem;
     }
     #settingsPanel label {
-      display: flex; align-items: center;
-      margin: .6rem 0;
-      font-size: .95rem;
+      display:flex; align-items:center;
+      margin:.6rem 0;
+      font-size:.95rem;
     }
-    #settingsPanel label > span { flex: 1; }
+    #settingsPanel label>span { flex:1; }
     #settingsPanel input[type="text"],
     #settingsPanel input[type="number"],
     #settingsPanel select {
-      flex: 1;
-      padding: .4rem .6rem;
-      background: #1a1a1a;
-      border: 1px solid #444;
-      border-radius: 6px;
-      color: var(--text);
+      flex:1;
+      padding:.4rem .6rem;
+      background:#1a1a1a;
+      border:1px solid #444;
+      border-radius:6px;
+      color:var(--text);
     }
     #settingsPanel input[type="color"] {
-      width: 2.2rem; height: 2.2rem;
-      padding: 0; border: none; background: none;
+      width:2.2rem; height:2.2rem;
+      padding:0; border:none; background:none;
     }
     .toggle {
-      position: relative;
-      width: 40px; height: 20px;
-      margin-left: .6rem;
+      position:relative;
+      width:40px; height:20px;
+      margin-left:.6rem;
     }
     .toggle input {
-      opacity: 0; width: 0; height: 0;
+      opacity:0; width:0; height:0;
     }
     .slider {
-      position: absolute; cursor: pointer;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: #444; border-radius: 20px;
-      transition: .2s;
+      position:absolute; cursor:pointer;
+      top:0; left:0; right:0; bottom:0;
+      background:#444; border-radius:20px;
+      transition:.2s;
     }
     .slider:before {
-      position: absolute; content: "";
-      height: 16px; width: 16px;
-      left: 2px; bottom: 2px;
-      background: var(--text);
-      border-radius: 50%;
-      transition: .2s;
+      position:absolute; content:"";
+      height:16px; width:16px;
+      left:2px; bottom:2px;
+      background:var(--text);
+      border-radius:50%;
+      transition:.2s;
     }
     input:checked + .slider {
-      background: #3498db;
+      background:#3498db;
     }
     input:checked + .slider:before {
-      transform: translateX(20px);
+      transform:translateX(20px);
     }
     #applySettings {
-      margin-top: 1rem;
-      width: 100%;
-      padding: .6rem;
-      background: #3498db;
-      border: none;
-      color: #fff;
-      font-size: 1rem;
-      border-radius: 6px;
-      cursor: pointer;
+      margin-top:1rem;
+      width:100%;
+      padding:.6rem;
+      background:#3498db;
+      border:none;
+      color:#fff;
+      font-size:1rem;
+      border-radius:6px;
+      cursor:pointer;
     }
 
     /* —— Scoreboard grid —— */
     #court {
-      position: absolute; inset: 0;
-      display: grid;
+      position:absolute; inset:0;
+      display:grid;
     }
     .teamBox {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      border: 1px solid #111;
-      user-select: none;
-      cursor: pointer;
-      transition: background .15s;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      border:1px solid #111;
+      user-select:none;
+      cursor:pointer;
+      transition:background .15s;
     }
-    .teamBox:active { background: #111; }
+    .teamBox:active {
+      background:#111;
+    }
 
-    /* bigger, fluid text */
+    /* larger, responsive text */
     .teamName {
-      font-size: clamp(2rem, 6vw, 4rem);
-      font-weight: 600;
-      text-shadow: 0 0 6px #0008;
+      font-size:clamp(2.5rem, 8vw, 5rem);
+      font-weight:600;
+      text-shadow:0 0 6px #0008;
     }
     .teamScore {
-      font-size: clamp(5rem, 12vw, 10rem);
-      font-weight: 800;
-      text-shadow: 0 0 12px #000c;
+      font-size:clamp(6rem, 15vw, 12rem);
+      font-weight:800;
+      text-shadow:0 0 12px #000c;
     }
 
     /* —— Winner overlay —— */
     #winnerBanner {
-      position: absolute; inset: 0;
-      display: none;
-      background: rgba(0,0,0,.8);
-      color: #fff;
-      font-size: 2.4rem;
-      font-weight: 700;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      z-index: 200;
+      position:absolute; inset:0;
+      display:none;
+      background:rgba(0,0,0,.8);
+      color:#fff;
+      font-size:2.4rem;
+      font-weight:700;
+      justify-content:center;
+      align-items:center;
+      flex-direction:column;
+      z-index:200;
     }
     #winnerBanner button {
-      margin-top: 1rem;
-      padding: .5rem 1rem;
-      border-radius: 6px;
-      background: #222;
-      border: 1px solid #555;
-      color: #fff;
+      margin-top:1rem;
+      padding:.5rem 1rem;
+      border-radius:6px;
+      background:#222;
+      border:1px solid #555;
+      color:#fff;
     }
   </style>
 </head>
-
 <body>
 
   <!-- Settings toggle -->
@@ -251,20 +253,28 @@ const els = {
 /* — Toggle panel — */
 els.settingsBtn.onclick = () => els.panel.classList.toggle('open');
 
-/* — Render team‑config inputs — */
+/* — Default colors for up to 4 teams — */
+const defaultColors = ['#3498db','#e74c3c','#9b59b6','#f1c40f'];
+
+/* — Render the team‑config fields (based on dropdown) — */
 function renderTeamConfig() {
+  const count = +els.teamCount.value;
   els.teamsConfig.innerHTML = '';
-  for (let i = 0; i < config.teamCount; i++) {
-    // ensure config.teams[i] exists
+  for (let i = 0; i < count; i++) {
+    // prep defaults if they don't exist
     if (!config.teams[i]) {
-      config.teams[i] = { name: `Team ${i+1}`, color: '#888', score: 0 };
+      config.teams[i] = {
+        name: `Team ${String.fromCharCode(65+i)}`,
+        color: defaultColors[i],
+        score: 0
+      };
     }
     const t = config.teams[i];
     const div = document.createElement('div');
     div.style.margin = '.5rem 0';
     div.innerHTML = `
       <label style="display:flex;align-items:center;gap:.5rem">
-        <span>Team ${i+1}:</span>
+        <span>Team ${String.fromCharCode(65+i)}:</span>
         <input type="text" id="name${i}" value="${t.name}">
       </label>
       <label style="display:flex;align-items:center;gap:.5rem">
@@ -275,36 +285,38 @@ function renderTeamConfig() {
   }
 }
 renderTeamConfig();
-
-/* — When team‑count changes live — */
 els.teamCount.onchange = renderTeamConfig;
 
-/* — Apply settings — */
+/* — Apply button — */
 els.apply.onclick = () => {
-  config.teamCount = +els.teamCount.value;
+  const count = +els.teamCount.value;
   config.limitEnabled = els.limitToggle.checked;
   config.limit = Math.max(1, +els.limitInput.value || 1);
 
-  // read names/colors, reset scores
-  config.teams = config.teams.slice(0, config.teamCount);
-  for (let i = 0; i < config.teamCount; i++) {
-    config.teams[i].name = document.getElementById(`name${i}`).value || `Team ${i+1}`;
-    config.teams[i].color = document.getElementById(`clr${i}`).value;
-    config.teams[i].score = 0;
+  // rebuild teams array from inputs
+  const newTeams = [];
+  for (let i = 0; i < count; i++) {
+    const name = document.getElementById(`name${i}`).value.trim() ||
+                 `Team ${String.fromCharCode(65+i)}`;
+    const color = document.getElementById(`clr${i}`).value;
+    newTeams.push({ name, color, score: 0 });
   }
+  config.teamCount = count;
+  config.teams = newTeams;
   config.history = [];
+
   els.panel.classList.remove('open');
   drawCourt();
 };
 
-/* — Draw the grid — */
+/* — Draw the grid of teams — */
 function drawCourt() {
-  els.court.style.gridTemplate = 
-    config.teamCount === 2
-      ? '1fr 1fr / 1fr'
-      : '1fr 1fr / 1fr 1fr';
+  // 2 teams = 2 rows × 1 col; 3 or 4 = 2×2
+  els.court.style.gridTemplate =
+    config.teamCount === 2 ? '1fr 1fr / 1fr' : '1fr 1fr / 1fr 1fr';
   els.court.innerHTML = '';
-  config.teams.forEach((t, i) => {
+
+  config.teams.forEach((t,i) => {
     const box = document.createElement('div');
     box.className = 'teamBox';
     box.dataset.index = i;
@@ -317,7 +329,7 @@ function drawCourt() {
 }
 drawCourt();
 
-/* — Score & UI — */
+/* — Scoring & UI — */
 function updateScores() {
   document.querySelectorAll('.teamBox').forEach(box => {
     const i = +box.dataset.index;
@@ -352,7 +364,7 @@ function undo() {
 window.resetGame = resetGame;
 window.undo = undo;
 
-/* — PWA service‑worker — */
+/* — Register SW — */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () =>
     navigator.serviceWorker.register('./sw.js').catch(console.error)
