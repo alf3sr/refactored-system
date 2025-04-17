@@ -5,48 +5,76 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Point Tracker</title>
 
-<!-- PWA hooks (all paths are relative for GitHub Pages) -->
+<!-- PWA hooks -->
 <link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<link rel="apple-touch-icon" href="./icon-192.png"> <!-- 192 px square -->
+<link rel="apple-touch-icon" href="./icon-192.png">
 
 <style>
   :root{--top-clr:#3498db;--bot-clr:#e74c3c;}
-  *{box-sizing:border-box;margin:0;padding:0;font-family:sans-serif;}
-  body{display:flex;flex-direction:column;height:100vh;}
-  header{padding:0.6rem 1rem;background:#222;color:#fff;display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;}
-  header input[type="number"]{width:5rem;padding:0.2rem;}
-  header label{font-size:0.88rem;}
-  .court{flex:1;display:flex;flex-direction:column;}
-  .half{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;user-select:none;cursor:pointer;transition:opacity .15s;}
-  .half:active{opacity:0.7;}
-  .name{font-size:1.8rem;font-weight:600;color:#fff;text-shadow:1px 1px 2px #000;}
-  .score{font-size:4rem;font-weight:700;color:#fff;text-shadow:2px 2px 3px #000;}
-  #top{background:var(--top-clr);}
-  #bot{background:var(--bot-clr);}
-  #winnerBanner{position:absolute;inset:0;display:none;justify-content:center;align-items:center;background:rgba(0,0,0,.75);color:#fff;font-size:3rem;font-weight:700;flex-direction:column;text-align:center;}
-  #winnerBanner button{margin-top:1rem;font-size:1.1rem;padding:0.4rem 0.8rem;}
-  footer{padding:0.5rem;display:flex;gap:0.5rem;justify-content:center;}
-  footer button{font-size:1rem;padding:0.4rem 0.8rem;}
+  *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,sans-serif;color:#fff;}
+  body{display:flex;flex-direction:column;height:100vh;background:#000;}
+
+  /* ---------- tidy, modern header ---------- */
+  header{
+    padding:.6rem 1rem;background:#111;border-bottom:1px solid #333;
+    display:flex;flex-wrap:wrap;gap:.7rem;align-items:center
+  }
+  header label{font-size:.9rem;display:flex;flex-direction:column;gap:.2rem}
+  header input{
+    border:1px solid #444;border-radius:7px;background:#1a1a1a;
+    padding:.35rem .55rem;font-size:1rem;color:#fff;min-width:8ch
+  }
+  header input[type="color"]{padding:0;border:none;background:none;width:2.2rem;height:2.2rem}
+
+  /* ---------- scoreboard ---------- */
+  .court{flex:1;display:flex;flex-direction:column}
+  .half{
+    flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;
+    user-select:none;cursor:pointer;transition:background .15s;position:relative
+  }
+  .half:active{background:#111}
+  .half:not(:last-child){border-bottom:2px solid #222}
+
+  #top .name, #top .score{color:var(--top-clr)}
+  #bot .name, #bot .score{color:var(--bot-clr)}
+  .name{font-size:2rem;font-weight:600;text-shadow:0 0 6px #0008}
+  .score{font-size:5.2rem;font-weight:800;text-shadow:0 0 12px #000c}
+
+  /* ---------- winner overlay ---------- */
+  #winnerBanner{
+    position:absolute;inset:0;display:none;justify-content:center;align-items:center;
+    background:rgba(0,0,0,.78);flex-direction:column;text-align:center;font-size:3rem
+  }
+  #winnerBanner button{
+    margin-top:1rem;font-size:1.1rem;padding:.45rem .9rem;border-radius:6px;
+    background:#222;border:1px solid #555;color:#fff
+  }
+  footer{padding:.6rem;background:#111;border-top:1px solid #333;display:flex;gap:.6rem;justify-content:center}
+  footer button{
+    font-size:1rem;padding:.4rem .9rem;border-radius:6px;background:#222;border:1px solid #555;color:#fff
+  }
 </style>
 </head>
 <body>
 <header>
-  <label>Top name <input id="topNameInput" type="text" value="Team A"></label>
-  <label>Top colour <input id="topClrInput" type="color" value="#3498db"></label>
-  <label>Bottom name <input id="botNameInput" type="text" value="Team B"></label>
-  <label>Bottom colour <input id="botClrInput" type="color" value="#e74c3c"></label>
-  <label>Points to win <input id="targetInput" type="number" min="1" value="11"></label>
+  <label>Top name<input id="topNameInput" type="text" value="Team A"></label>
+  <label>Colour<input id="topClrInput" type="color" value="#3498db"></label>
+
+  <label>Bottom name<input id="botNameInput" type="text" value="Team B"></label>
+  <label>Colour<input id="botClrInput" type="color" value="#e74c3c"></label>
+
+  <label>Points to win<input id="targetInput" type="number" min="1" value="11"></label>
 </header>
 
 <div class="court">
-  <div id="top" class="half" data-side="top">
+  <div id="top" class="half">
     <div class="name" id="topName">Team A</div>
     <div class="score" id="topScore">0</div>
   </div>
-  <div id="bot" class="half" data-side="bot">
+  <div id="bot" class="half">
     <div class="name" id="botName">Team B</div>
     <div class="score" id="botScore">0</div>
   </div>
@@ -63,37 +91,47 @@
 </footer>
 
 <script>
-/* ---------------- state ---------------- */
-const state={top:0,bot:0,target:parseInt(targetInput.value,10),history:[]};
-const els={topScore:topScore,botScore:botScore,topHalf:top,botHalf:bot,
-           banner:winnerBanner,winnerT:winnerText};
+/* -------- grab elements safely (no clash with window.top) -------- */
+const els={
+  topHalf : document.getElementById('top'),
+  botHalf : document.getElementById('bot'),
+  topScore: document.getElementById('topScore'),
+  botScore: document.getElementById('botScore'),
+  banner  : document.getElementById('winnerBanner'),
+  winnerT : document.getElementById('winnerText')
+};
 
-/* -------------- helpers --------------- */
+/* ----------------- state ----------------- */
+const state={top:0,bot:0,target:+targetInput.value,history:[]};
+
+/* --------------- helpers --------------- */
 function updateDisplay(){
   els.topScore.textContent=state.top;
   els.botScore.textContent=state.bot;
 }
+function haptic(){ if(navigator.vibrate) navigator.vibrate(10); }      // no‑op on iOS
 function checkWinner(side){
   if(state[side]>=state.target){
     els.winnerT.innerHTML=`🏆 ${document.getElementById(side+'Name').textContent} wins!`;
     els.banner.style.display='flex';
-    document.body.style.pointerEvents='none';
+    document.body.style.pointerEvents='none';       // lock further taps
     els.banner.style.pointerEvents='auto';
   }
 }
 
-/* -------------- scoring --------------- */
+/* --------------- score taps --------------- */
 function addPoint(e){
-  const s=e.currentTarget.dataset.side;
-  state[s]++; state.history.push(s);
-  updateDisplay(); checkWinner(s);
+  const side=(e.currentTarget===els.topHalf)?'top':'bot';
+  state[side]++; state.history.push(side);
+  updateDisplay(); haptic(); checkWinner(side);
 }
-top.addEventListener('click',addPoint);
-bot.addEventListener('click',addPoint);
+els.topHalf.addEventListener('click',addPoint);
+els.botHalf.addEventListener('click',addPoint);
 
+/* ------------- undo / reset --------------- */
 function undo(){
-  const s=state.history.pop(); if(!s) return;
-  state[s]=Math.max(0,state[s]-1); updateDisplay();
+  const side=state.history.pop(); if(!side) return;
+  state[side]=Math.max(0,state[side]-1); updateDisplay();
 }
 function resetGame(){
   state.top=state.bot=0; state.history=[];
@@ -101,14 +139,14 @@ function resetGame(){
   updateDisplay();
 }
 
-/* -------- live settings bindings ------ */
-topNameInput.oninput=e=>topName.textContent=e.target.value||' ';
-botNameInput.oninput=e=>botName.textContent=e.target.value||' ';
-topClrInput.oninput=e=>document.documentElement.style.setProperty('--top-clr',e.target.value);
-botClrInput.oninput=e=>document.documentElement.style.setProperty('--bot-clr',e.target.value);
-targetInput .oninput=e=>state.target=Math.max(1,parseInt(e.target.value||1,10));
+/* ------- live settings bindings ------- */
+topNameInput .oninput=e=>topName.textContent=e.target.value||' ';
+botNameInput .oninput=e=>botName.textContent=e.target.value||' ';
+topClrInput .oninput=e=>document.documentElement.style.setProperty('--top-clr',e.target.value);
+botClrInput .oninput=e=>document.documentElement.style.setProperty('--bot-clr',e.target.value);
+targetInput  .oninput=e=>state.target=Math.max(1,parseInt(e.target.value||1,10));
 
-/* ------- service‑worker register ------- */
+/* --------- PWA service‑worker --------- */
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(console.error));
 }
