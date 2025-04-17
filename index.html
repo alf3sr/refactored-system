@@ -12,58 +12,58 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <link rel="apple-touch-icon" href="./Icon-192.png">
 
+<!-- confetti -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
 <style>
 :root{
   --bg:#000;--panel-bg:#111;--panel-border:#333;--text:#fff;
   --pill-bg:#181818;--pill-br:#444;--pill-fg:#fff
 }
-*{box-sizing:border-box;margin:0;padding:0}
+.light{--bg:#fff;--panel-bg:#f4f4f4;--panel-border:#ccc;--text:#000;--pill-bg:#eee;--pill-br:#bbb;--pill-fg:#000}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{
   height:100vh;background:var(--bg);color:var(--text);
   font-family:system-ui,sans-serif;overflow:hidden;
-  touch-action:manipulation;          /* prevent double‑tap zoom */
+  touch-action:manipulation;
 }
-button{font:inherit}
 
-.pill{
-  padding:.4rem .9rem;border-radius:20px;
-  background:var(--pill-bg);border:1px solid var(--pill-br);
-  color:var(--pill-fg);cursor:pointer;display:flex;align-items:center;gap:.3rem;
-}
+.userNone{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+
+button{font:inherit}
+.pill{padding:.45rem .9rem;border-radius:20px;background:var(--pill-bg);
+      border:1px solid var(--pill-br);color:var(--pill-fg);
+      cursor:pointer;display:flex;align-items:center;gap:.35rem}
 .pill:active{background:#222}
 
-#settingsBtn{
-  position:fixed;top:1rem;right:1rem;z-index:90;font-size:1.3rem;
-  width:2.4rem;height:2.4rem;justify-content:center
-}
-
+#settingsBtn{position:fixed;top:1rem;right:1rem;z-index:90;font-size:1.3rem;width:2.4rem;height:2.4rem;justify-content:center}
 #cornerBtns{position:fixed;bottom:1rem;left:1rem;z-index:90;display:flex;gap:.6rem}
 #timerBtn{position:fixed;bottom:1rem;right:1rem;z-index:90}
+#resetStats{position:fixed;top:1rem;left:1rem;z-index:90}
 
 #settingsPanel{
-  position:fixed;top:0;right:0;width:320px;height:100%;
+  position:fixed;top:0;right:0;width:340px;height:100%;
   background:var(--panel-bg);border-left:1px solid var(--panel-border);
   transform:translateX(100%);transition:.3s;padding:1rem;overflow-y:auto;z-index:80
 }
 #settingsPanel.open{transform:translateX(0)}
-#settingsPanel h2{margin-bottom:.6rem;font-size:1.2rem;border-bottom:1px solid var(--panel-border);padding-bottom:.3rem}
+#settingsPanel h2{margin-bottom:.7rem;font-size:1.2rem;border-bottom:1px solid var(--panel-border);padding-bottom:.4rem}
 
-#preview{display:grid;grid-template-columns:repeat(2,1fr);gap:.3rem;margin-bottom:1rem}
-.previewBox{padding:.4rem;border:1px solid #222;text-align:center;font-size:.85rem;border-radius:6px}
+#preview{display:grid;grid-template-columns:repeat(2,1fr);gap:.3rem;margin-bottom:.8rem}
+.previewBox{padding:.4rem;border:1px solid #222;text-align:center;font-size:.85rem;border-radius:6px;background:#000}
+.light #preview .previewBox{background:#fff;border-color:#ddd}
 .previewBox span{display:block;font-weight:600}
 
 label.row{display:flex;align-items:center;margin:.55rem 0;font-size:.93rem}
 label.row>span{flex:1}
 .row input[type="text"], .row select{
   flex:1;padding:.35rem .55rem;background:#1a1a1a;border:1px solid #444;
-  border-radius:6px;color:var(--text)
-}
+  border-radius:6px;color:var(--text)}
+.light .row input[type="text"], .light .row select{background:#fff;border:1px solid #bbb;color:#000}
 .row input[type="color"]{width:2rem;height:2rem;padding:0;border:none;background:none}
 .swatchWrap{display:flex;gap:.25rem;margin-top:.25rem}
-
-.swatch{
-  width:1.2rem;height:1.2rem;border-radius:50%;cursor:pointer;border:1px solid #666
-}
+.swatch{width:1.2rem;height:1.2rem;border-radius:50%;cursor:pointer;border:1px solid #666}
 
 .toggle{position:relative;width:40px;height:20px;margin-left:.6rem}
 .toggle input{opacity:0;width:0;height:0}
@@ -73,113 +73,115 @@ input:checked+.slider{background:#3498db}
 input:checked+.slider:before{transform:translateX(20px)}
 
 .rangeRow{display:flex;align-items:center;gap:.6rem;font-size:.9rem}
-#limitRange{flex:1}
-
-#applySettings{margin-top:1rem;width:100%;text-align:center}
+.rangeRow input[type=range]{flex:1}
 
 #court{position:absolute;inset:0;display:grid}
-.teamBox{display:flex;flex-direction:column;justify-content:center;align-items:center;border:1px solid #111;user-select:none;cursor:pointer;transition:background .15s,transform .1s}
+.teamBox{display:flex;flex-direction:column;justify-content:center;align-items:center;border:1px solid #111;cursor:pointer;transition:background .15s,transform .1s}
 .teamBox:active{background:#111;transform:scale(.96)}
 .teamName{font-size:clamp(2.5rem,8vw,5rem);font-weight:600;text-shadow:0 0 6px #0008}
 .teamScore{font-size:clamp(6rem,15vw,12rem);font-weight:800;text-shadow:0 0 12px #000c}
 
 #winnerBanner{position:absolute;inset:0;display:none;background:rgba(0,0,0,.8);z-index:95;color:#fff;font-size:2.4rem;font-weight:700;justify-content:center;align-items:center;flex-direction:column;text-align:center}
-#winnerBanner button{margin-top:1rem}.hidden{display:none}
+#winnerBanner button{margin-top:1rem}
 
 #matchTimer{position:fixed;top:1rem;left:50%;transform:translateX(-50%);font-size:1.2rem;letter-spacing:.5px;z-index:89}
+
+.statsBox{margin-top:1rem;border-top:1px solid var(--panel-border);padding-top:.8rem;font-size:.9rem}
+.statsBox h3{font-size:1rem;margin-bottom:.5rem}
 </style>
 </head>
-<body ontouchstart><!-- iOS double‑tap prevention hack -->
+<body class="userNone">
 
-<!-- live match timer -->
 <div id="matchTimer">00:00</div>
 
-<!-- gear -->
 <button id="settingsBtn" class="pill">⚙️</button>
-
-<!-- undo / reset -->
 <div id="cornerBtns">
   <button id="undoBtn"  class="pill">Undo</button>
   <button id="resetBtn" class="pill">Reset</button>
 </div>
+<button id="timerBtn"  class="pill">⏵ Timer</button>
+<button id="resetStats" class="pill hidden">Reset stats</button>
 
-<!-- timer control -->
-<button id="timerBtn" class="pill">⏵ Timer</button>
-
-<!-- panel -->
 <div id="settingsPanel">
   <h2>Settings</h2>
 
-  <!-- live preview -->
   <div id="preview"></div>
 
-  <label class="row"><span>Number of teams</span>
-    <select id="teamCount">
-      <option value="2">2</option><option value="3">3</option><option value="4">4</option>
-    </select>
+  <label class="row"><span>Theme</span>
+    <select id="themeSel"><option value="dark">Dark</option><option value="light">Light</option></select>
+  </label>
+
+  <label class="row"><span>Teams</span>
+    <select id="teamCount"><option>2</option><option>3</option><option>4</option></select>
   </label>
 
   <div id="teamsConfig"></div>
 
-  <label class="row"><span>Enable score limit</span>
-    <div class="toggle"><input type="checkbox" id="limitToggle" checked><span class="slider"></span></div>
+  <label class="row"><span>Points / tap</span>
+    <select id="stepSel"><option>1</option><option>2</option><option>3</option><option>5</option></select>
   </label>
 
-  <div id="limitRow" class="rangeRow">
-    <span>Limit</span>
-    <input type="range" id="limitRange" min="1" max="100" value="11">
-    <span id="limitVal">11</span>
+  <label class="row"><span>Score limit</span>
+    <div class="toggle"><input type="checkbox" id="limitToggle"><span class="slider"></span></div>
+  </label>
+
+  <div id="limitRow" class="rangeRow hidden">
+    <span>to</span><input type="range" id="limitRange" min="1" max="100" value="11"><span id="limitVal">11</span>
   </div>
 
-  <button id="applySettings" class="pill">Apply</button>
+  <label class="row"><span>Countdown timer</span>
+    <div class="toggle"><input type="checkbox" id="cdToggle"><span class="slider"></span></div>
+  </label>
+
+  <div id="cdRow" class="rangeRow hidden">
+    <span>min</span><input type="range" id="cdRange" min="1" max="60" value="5"><span id="cdVal">5</span>
+  </div>
+
+  <div class="statsBox">
+    <h3>Stats</h3>
+    <div id="statsWrap"></div>
+  </div>
 </div>
 
-<!-- court -->
 <div id="court"></div>
 
-<!-- winner -->
-<div id="winnerBanner"><div id="winnerText">🏆 Winner!</div><button onclick="resetGame()" class="pill">New game</button></div>
+<div id="winnerBanner"><div id="winnerText">🏆 Winner!</div>
+  <button onclick="resetGame()" class="pill">New game</button></div>
 
 <script>
-/* ---------- Saved state ---------- */
-const saved = JSON.parse(localStorage.getItem('pt-state')||'null');
-let config = saved || {
-  teamCount:2,
-  teams:[
-    {name:'Team A',color:'#3498db',score:0},
-    {name:'Team B',color:'#e74c3c',score:0}
-  ],
-  limitEnabled:true,
-  limit:11,
-  history:[],
-  timer:{running:false,elapsed:0,start:0}
-};
-function save(){localStorage.setItem('pt-state',JSON.stringify(config))}
+/* ---------- Utils ---------- */
+const $=id=>document.getElementById(id);
+const swatches=['#3498db','#e74c3c','#9b59b6','#f1c40f','#1abc9c','#fff','#000'];
+function fmt(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60),ss=String(s%60).padStart(2,'0');return`${m}:${ss}`}
+
+/* ---------- Persisted state ---------- */
+const seed={teamCount:2,teams:[{name:'Team A',color:'#3498db',score:0},{name:'Team B',color:'#e74c3c',score:0}],step:1,
+            limitEnabled:false,limit:11,countdownEnabled:false,countdown:5*60000,timer:{t:0,running:false,start:0},
+            history:[],wins:{},theme:'dark',games:0,pointsTotal:0};
+let cfg=Object.assign(seed,JSON.parse(localStorage.getItem('pt-state')||'{}'));
+function save(){localStorage.setItem('pt-state',JSON.stringify(cfg))}
 
 /* ---------- Elements ---------- */
-const $ = id => document.getElementById(id);
-const els = {
-  court:$('court'),panel:$('settingsPanel'),settingsBtn:$('settingsBtn'),
-  teamCount:$('teamCount'),teamsCfg:$('teamsConfig'),limitToggle:$('limitToggle'),
-  limitRange:$('limitRange'),limitVal:$('limitVal'),apply:$('applySettings'),
-  undoBtn:$('undoBtn'),resetBtn:$('resetBtn'),winner:$('winnerBanner'),
-  winnerText:$('winnerText'),preview:$('preview'),timerBtn:$('timerBtn'),
-  timerDisp:$('matchTimer')
-};
-const swatches=['#3498db','#e74c3c','#9b59b6','#f1c40f','#1abc9c','#fff','#000'];
+const els={court:$('court'),panel:$('settingsPanel'),settingsBtn:$('settingsBtn'),
+  themeSel:$('themeSel'),teamCount:$('teamCount'),teamsCfg:$('teamsConfig'),stepSel:$('stepSel'),
+  limitToggle:$('limitToggle'),limitRow:$('limitRow'),limitRange:$('limitRange'),limitVal:$('limitVal'),
+  cdToggle:$('cdToggle'),cdRow:$('cdRow'),cdRange:$('cdRange'),cdVal:$('cdVal'),
+  undoBtn:$('undoBtn'),resetBtn:$('resetBtn'),winner:$('winnerBanner'),winnerText:$('winnerText'),
+  preview:$('preview'),timerBtn:$('timerBtn'),timerDisp:$('matchTimer'),statsWrap:$('statsWrap'),
+  resetStats:$('resetStats')};
 
-/* ---------- Panel toggle ---------- */
-els.settingsBtn.onclick=()=>els.panel.classList.toggle('open');
+/* ---------- Theme ---------- */
+function applyTheme(){document.body.classList.toggle('light',cfg.theme==='light');els.themeSel.value=cfg.theme}
+els.themeSel.onchange=e=>{cfg.theme=e.target.value;applyTheme();save()}
+applyTheme();
 
-/* ---------- Build team inputs ---------- */
-function renderTeamInputs(){
-  const n=+els.teamCount.value;
+/* ---------- Team inputs ---------- */
+function renderTeams(){
   els.teamsCfg.innerHTML='';
-  for(let i=0;i<n;i++){
-    if(!config.teams[i])config.teams[i]={name:`Team ${String.fromCharCode(65+i)}`,color:swatches[i%swatches.length],score:0};
-    const t=config.teams[i];
-    const row=document.createElement('div');
-    row.innerHTML=`
+  for(let i=0;i<cfg.teamCount;i++){
+    if(!cfg.teams[i])cfg.teams[i]={name:`Team ${String.fromCharCode(65+i)}`,color:swatches[i%swatches.length],score:0};
+    const t=cfg.teams[i];
+    els.teamsCfg.insertAdjacentHTML('beforeend',`
       <label class="row">
         <span>Team ${String.fromCharCode(65+i)}</span>
         <input type="text" id="name${i}" value="${t.name}">
@@ -188,70 +190,52 @@ function renderTeamInputs(){
         <span style="visibility:hidden">Colour</span>
         <input type="color" id="clr${i}" value="${t.color}">
       </label>
-      <div class="swatchWrap" id="sw${i}"></div>`;
-    els.teamsCfg.append(row);
-    // swatches
-    const wrap=row.querySelector(`#sw${i}`);
+      <div class="swatchWrap" id="sw${i}"></div>`);
     swatches.forEach(c=>{
-      const s=document.createElement('div');
-      s.className='swatch';s.style.background=c;
-      s.onclick=()=>{row.querySelector(`#clr${i}`).value=c;updatePreview();}
-      wrap.append(s);
+      const d=document.createElement('div');d.className='swatch';d.style.background=c;
+      d.onclick=()=>{$(`clr${i}`).value=c;updatePreview();updateCourt();save()};
+      $(`sw${i}`).append(d);
     });
   }
-  updatePreview();
+  updatePreview();updateCourt();
 }
-els.teamCount.onchange=renderTeamInputs;
-renderTeamInputs();
+els.teamCount.oninput=e=>{cfg.teamCount=+e.target.value;renderTeams();save()};
 
-/* ---------- Limit slider ---------- */
-function syncLimitUI(){
-  els.limitRange.disabled=!els.limitToggle.checked;
-  els.limitVal.textContent=els.limitRange.value;
-}
-els.limitToggle.onchange=syncLimitUI;
-els.limitRange.oninput=()=>els.limitVal.textContent=els.limitRange.value;
-syncLimitUI();
+/* ---------- Live hooks ---------- */
+els.stepSel.value=cfg.step;
+els.stepSel.oninput=e=>{cfg.step=+e.target.value;save()}
 
-/* ---------- Live preview ---------- */
+els.limitToggle.checked=cfg.limitEnabled;
+els.limitRange.value=cfg.limit;els.limitVal.textContent=cfg.limit;
+function syncLimit(){cfg.limitEnabled=els.limitToggle.checked;els.limitRow.classList.toggle('hidden',!cfg.limitEnabled);save();}
+els.limitToggle.onchange=syncLimit;
+els.limitRange.oninput=e=>{cfg.limit=+e.target.value;els.limitVal.textContent=e.target.value;save()}
+syncLimit();
+
+els.cdToggle.checked=cfg.countdownEnabled;
+els.cdRange.value=cfg.countdown/60000;els.cdVal.textContent=cfg.countdown/60000;
+function syncCD(){cfg.countdownEnabled=els.cdToggle.checked;els.cdRow.classList.toggle('hidden',!cfg.countdownEnabled);resetClock();save();}
+els.cdToggle.onchange=syncCD;
+els.cdRange.oninput=e=>{cfg.countdown=+e.target.value*60000;els.cdVal.textContent=e.target.value;resetClock();save();}
+syncCD();
+
+/* ---------- Preview ---------- */
 function updatePreview(){
   els.preview.innerHTML='';
-  const n=+els.teamCount.value;
-  for(let i=0;i<n;i++){
-    const name=$(`name${i}`)?.value||`Team ${String.fromCharCode(65+i)}`;
-    const colour=$(`clr${i}`)?.value||swatches[i%swatches.length];
+  cfg.teams.forEach(t=>{
     els.preview.insertAdjacentHTML('beforeend',`
-      <div class="previewBox" style="background:#000;border-color:${colour}20">
-        <span style="color:${colour}">${name}</span>
-        <small style="color:${colour}">0</small>
+      <div class="previewBox" style="border-color:${t.color}40">
+        <span style="color:${t.color}">${t.name}</span><small style="color:${t.color}">0</small>
       </div>`);
-  }
+  });
 }
-els.teamsCfg.addEventListener('input',updatePreview);
-
-/* ---------- Apply ---------- */
-els.apply.onclick=()=>{
-  const n=+els.teamCount.value;
-  config.teamCount=n;
-  config.teams.length=n;
-  for(let i=0;i<n;i++){
-    const name=$(`name${i}`).value.trim()||`Team ${String.fromCharCode(65+i)}`;
-    const color=$(`clr${i}`).value;
-    config.teams[i]={name,color,score:0};
-  }
-  config.limitEnabled=els.limitToggle.checked;
-  config.limit=+els.limitRange.value;
-  config.history=[];
-  save();drawCourt();els.panel.classList.remove('open');
-};
 
 /* ---------- Court ---------- */
-function drawCourt(){
-  els.court.style.gridTemplate=config.teamCount===2?'1fr 1fr / 1fr':'1fr 1fr / 1fr 1fr';
+function updateCourt(){
+  els.court.style.gridTemplate=cfg.teamCount===2?'1fr 1fr / 1fr':'1fr 1fr / 1fr 1fr';
   els.court.innerHTML='';
-  config.teams.forEach((t,i)=>{
-    const box=document.createElement('div');
-    box.className='teamBox';box.dataset.i=i;
+  cfg.teams.forEach((t,i)=>{
+    const box=document.createElement('div');box.className='teamBox userNone';box.dataset.i=i;
     box.innerHTML=`<div class="teamName" style="color:${t.color}">${t.name}</div>
                    <div class="teamScore" style="color:${t.color}">${t.score}</div>`;
     box.addEventListener('pointerdown',e=>handlePress(e,box));
@@ -259,69 +243,117 @@ function drawCourt(){
   });
   updateScores();
 }
-drawCourt();
-function updateScores(){document.querySelectorAll('.teamScore').forEach((el,i)=>el.textContent=config.teams[i].score)}
+renderTeams();
 
-/* ---------- Tap + / long‑press – ---------- */
+/* ---------- Scores ---------- */
+function animateNumber(el,from,to){
+  const dur=200, start=performance.now();
+  function step(now){const p=Math.min((now-start)/dur,1);el.textContent=Math.round(from+p*(to-from));if(p<1)requestAnimationFrame(step);}
+  requestAnimationFrame(step);
+}
+function updateScores(){
+  document.querySelectorAll('.teamScore').forEach((el,i)=>{
+    animateNumber(el, +el.textContent, cfg.teams[i].score);
+  });
+}
+
+/* ---------- Tap (+) / long‑press (–) ---------- */
 let pressTimer=null;
 function handlePress(e,box){
-  e.preventDefault();const i=+box.dataset.i;
-  pressTimer=setTimeout(()=>changeScore(i,-1),450);
-  box.addEventListener('pointerup',()=>{clearTimeout(pressTimer);if(e.timeStamp-e.timeStamp<450)changeScore(i,1)},{once:true});
+  e.preventDefault();
+  const i=+box.dataset.i, inc=cfg.step;
+  pressTimer=setTimeout(()=>changeScore(i,-inc),450);
+  box.addEventListener('pointerup',()=>{clearTimeout(pressTimer);changeScore(i,inc)},{once:true});
   box.addEventListener('pointercancel',()=>clearTimeout(pressTimer),{once:true});
 }
-function changeScore(idx,delta){
-  config.teams[idx].score=Math.max(0,config.teams[idx].score+delta);
-  config.history.push({team:idx,delta});if(config.history.length>100)config.history.shift();
-  updateScores();haptic();checkWinner(idx);save();
+function changeScore(i,delta){
+  cfg.teams[i].score=Math.max(0,cfg.teams[i].score+delta);
+  cfg.history.push({team:i,delta});if(cfg.history.length>100)cfg.history.shift();
+  updateScores();haptic();checkWinner(i);save();
 }
 
-/* ---------- Undo / Reset ---------- */
-els.undoBtn.onclick=()=>{const rec=config.history.pop();if(!rec)return;config.teams[rec.team].score=Math.max(0,config.teams[rec.team].score-rec.delta);updateScores();save()};
-function resetGame(){config.teams.forEach(t=>t.score=0);config.history=[];updateScores();els.winner.style.display='none';save();}
+/* ---------- Undo / reset ---------- */
+els.undoBtn.onclick=()=>{const rec=cfg.history.pop();if(!rec)return;cfg.teams[rec.team].score=Math.max(0,cfg.teams[rec.team].score-rec.delta);updateScores();save();}
+function resetGame(){cfg.teams.forEach(t=>t.score=0);cfg.history=[];updateScores();els.winner.style.display='none';save();}
 els.resetBtn.onclick=resetGame;
 
-/* ---------- Winner ---------- */
+/* ---------- Winner & stats ---------- */
 function checkWinner(i){
-  if(config.limitEnabled&&config.teams[i].score>=config.limit){
-    els.winnerText.textContent=`🏆 ${config.teams[i].name} wins!`;
+  if(cfg.limitEnabled&&cfg.teams[i].score>=cfg.limit){
+    confetti({particleCount:250,spread:70,origin:{y:0.7}});
+    els.winnerText.textContent=`🏆 ${cfg.teams[i].name} wins!`;
     els.winner.style.display='flex';
+    // stats
+    cfg.wins[cfg.teams[i].name]=(cfg.wins[cfg.teams[i].name]||0)+1;
+    cfg.games++;cfg.pointsTotal+=cfg.teams.reduce((s,t)=>s+t.score,0);
+    renderStats();save();
   }
 }
 
-/* ---------- Match timer ---------- */
-function fmt(ms){const s=Math.floor(ms/1000);const m=Math.floor(s/60);const ss=String(s%60).padStart(2,'0');return `${m}:${ss}`}
-function updateTimerDisp(){
-  const now=Date.now();
-  if(config.timer.running)config.timer.elapsed=now-config.timer.start;
-  els.timerDisp.textContent=fmt(config.timer.elapsed);
-  requestAnimationFrame(updateTimerDisp);
+/* ---------- Stats ---------- */
+function renderStats(){
+  els.statsWrap.innerHTML='';
+  Object.entries(cfg.wins).forEach(([name,w])=>{
+    els.statsWrap.insertAdjacentHTML('beforeend',`<div>${name}: ${w} wins</div>`);
+  });
+  if(cfg.games)els.statsWrap.insertAdjacentHTML('beforeend',`<div>Avg points/game: ${(cfg.pointsTotal/cfg.games).toFixed(1)}</div>`);
+  els.resetStats.classList.toggle('hidden',!cfg.games);
 }
-updateTimerDisp();
+els.resetStats.onclick=()=>{cfg.wins={};cfg.games=0;cfg.pointsTotal=0;renderStats();save();}
+renderStats();
+
+/* ---------- Timer ---------- */
+function resetClock(){
+  if(!cfg.countdownEnabled){els.timerDisp.textContent='00:00';return;}
+  cfg.timer.elapsed=cfg.countdown;cfg.timer.running=false;els.timerBtn.textContent='⏵ Timer';
+}
+resetClock();
+function tick(){
+  let t=cfg.timer;
+  if(t.running){
+    const now=Date.now(),remain=Math.max(0,t.start+t.elapsed-now);
+    els.timerDisp.textContent=fmt(remain);
+    if(remain===0){t.running=false;confetti({particleCount:180,spread:100});}
+  }
+  requestAnimationFrame(tick);
+}
+tick();
 els.timerBtn.onclick=()=>{
-  if(config.timer.running){
-    config.timer.running=false;
-    config.timer.elapsed=Date.now()-config.timer.start;
+  if(!cfg.countdownEnabled)return;
+  const t=cfg.timer;
+  if(t.running){
+    t.running=false;t.elapsed=+els.timerDisp.textContent.split(':').reduce((m,s)=>m*60+ +s)*1000;
     els.timerBtn.textContent='⏵ Timer';
   }else{
-    config.timer.running=true;
-    config.timer.start=Date.now()-config.timer.elapsed;
+    t.running=true;t.start=Date.now()-(t.elapsed||cfg.countdown);
     els.timerBtn.textContent='⏸ Timer';
-  }
-  save();
+  }save();
 };
 
-/* ---------- Simulated click haptic ---------- */
+/* pause timer & hide clock when panel open */
+const obs=new MutationObserver(()=>{const open=els.panel.classList.contains('open');els.timerDisp.style.opacity=open?0:1});
+obs.observe(els.panel,{attributes:true,attributeFilter:['class']});
+
+/* ---------- Haptic (audio click) ---------- */
 let audioCtx=null;
-function haptic(){try{audioCtx=audioCtx||new(AudioContext||webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.frequency.value=200;g.gain.value=.9;o.start();o.stop(audioCtx.currentTime+.02)}catch{}}
+function haptic(){try{audioCtx=audioCtx||new(AudioContext||webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.frequency.value=200;g.gain.value=.9;o.start();o.stop(audioCtx.currentTime+.02);}catch{}}
 
-/* ---------- Restore ---------- */
-syncLimitUI();updatePreview();
+/* ---------- Preview & court live updates ---------- */
+els.teamsCfg.addEventListener('input',e=>{
+  const idx=[...e.currentTarget.querySelectorAll('input[type="text"]')].indexOf(e.target);
+  if(idx>-1){cfg.teams[idx].name=e.target.value||`Team ${String.fromCharCode(65+idx)}`;updateCourt();updatePreview();save();}
+});
+els.teamsCfg.addEventListener('input',e=>{
+  if(e.target.type==='color'){const i=e.target.id.match(/\d+/)[0];cfg.teams[i].color=e.target.value;updateCourt();updatePreview();save();}
+});
 
-/* ---------- Stop iOS double‑tap zoom (extra) ---------- */
-let lastTouch=0;document.addEventListener('touchend',e=>{const now=e.timeStamp;if(now-lastTouch<=300)e.preventDefault();lastTouch=now},{passive:false});
+/* ---------- Initial scores ---------- */
+updateScores();
 
-/* ---------- SW ---------- */
+/* ---------- Stop iOS double‑tap zoom extra ---------- */
+let last=0;document.addEventListener('touchend',e=>{const now=e.timeStamp;if(now-last<300)e.preventDefault();last=now},{passive:false});
+
+/* ---------- Service worker ---------- */
 if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js').catch(console.error)}
 </script>
 </body>
