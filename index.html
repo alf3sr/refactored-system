@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Point Tracker</title>
 
-<!-- PWA hooks -->
+<!-- PWA manifest & icons -->
 <link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,142 +13,362 @@
 <link rel="apple-touch-icon" href="./icon-192.png">
 
 <style>
-  :root{--top-clr:#3498db;--bot-clr:#e74c3c;}
-  *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,sans-serif;color:#fff;}
-  body{display:flex;flex-direction:column;height:100vh;background:#000;}
+  :root {
+    --bg: #000;
+    --panel-bg: #111;
+    --panel-border: #333;
+    --text: #fff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, sans-serif;
+    overflow: hidden;
+  }
+  /* ⚙️ Settings button */
+  #settingsBtn {
+    position: fixed;
+    top: 1rem; right: 1rem;
+    z-index: 100;
+    font-size: 1.8rem;
+    background: none; border: none;
+    color: var(--text);
+    cursor: pointer;
+  }
+  /* Slide‑out panel */
+  #settingsPanel {
+    position: fixed; top: 0; right: 0;
+    width: 300px; height: 100%;
+    background: var(--panel-bg);
+    border-left: 1px solid var(--panel-border);
+    transform: translateX(100%);
+    transition: transform .3s;
+    padding: 1rem;
+    overflow-y: auto;
+    z-index: 99;
+  }
+  #settingsPanel.open { transform: translateX(0); }
 
-  /* ---------- tidy, modern header ---------- */
-  header{
-    padding:.6rem 1rem;background:#111;border-bottom:1px solid #333;
-    display:flex;flex-wrap:wrap;gap:.7rem;align-items:center
+  #settingsPanel h2 {
+    margin-bottom: .5rem;
+    font-size: 1.2rem;
+    border-bottom: 1px solid var(--panel-border);
+    padding-bottom: .3rem;
   }
-  header label{font-size:.9rem;display:flex;flex-direction:column;gap:.2rem}
-  header input{
-    border:1px solid #444;border-radius:7px;background:#1a1a1a;
-    padding:.35rem .55rem;font-size:1rem;color:#fff;min-width:8ch
+  #settingsPanel label {
+    display: flex; align-items: center;
+    margin: .6rem 0;
+    font-size: .95rem;
   }
-  header input[type="color"]{padding:0;border:none;background:none;width:2.2rem;height:2.2rem}
+  #settingsPanel label > span { flex: 1; }
+  #settingsPanel input[type="text"],
+  #settingsPanel input[type="number"] {
+    flex: 1;
+    padding: .4rem .6rem;
+    background: #1a1a1a;
+    border: 1px solid #444;
+    border-radius: 6px;
+    color: var(--text);
+  }
+  #settingsPanel input[type="color"] {
+    width: 2.2rem; height: 2.2rem;
+    padding: 0; border: none; background: none;
+  }
+  /* Toggle switch */
+  .toggle {
+    position: relative;
+    width: 40px; height: 20px;
+    margin-left: .6rem;
+  }
+  .toggle input {
+    opacity: 0; width: 0; height: 0;
+  }
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0;
+    right: 0; bottom: 0;
+    background: #444;
+    border-radius: 20px;
+    transition: .2s;
+  }
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 16px; width: 16px;
+    left: 2px; bottom: 2px;
+    background: var(--text);
+    border-radius: 50%;
+    transition: .2s;
+  }
+  input:checked + .slider {
+    background: #3498db;
+  }
+  input:checked + .slider:before {
+    transform: translateX(20px);
+  }
 
-  /* ---------- scoreboard ---------- */
-  .court{flex:1;display:flex;flex-direction:column}
-  .half{
-    flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;
-    user-select:none;cursor:pointer;transition:background .15s;position:relative
+  /* Apply button */
+  #applySettings {
+    margin-top: 1rem;
+    width: 100%;
+    padding: .6rem;
+    background: #3498db;
+    border: none;
+    color: #fff;
+    font-size: 1rem;
+    border-radius: 6px;
+    cursor: pointer;
   }
-  .half:active{background:#111}
-  .half:not(:last-child){border-bottom:2px solid #222}
 
-  #top .name, #top .score{color:var(--top-clr)}
-  #bot .name, #bot .score{color:var(--bot-clr)}
-  .name{font-size:2rem;font-weight:600;text-shadow:0 0 6px #0008}
-  .score{font-size:5.2rem;font-weight:800;text-shadow:0 0 12px #000c}
+  /* Scoreboard grid */
+  #court {
+    position: absolute; inset: 0;
+    display: grid;
+  }
+  .teamBox {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #111;
+    user-select: none;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .teamBox:active {
+    background: #111;
+  }
+  .teamName {
+    font-size: 2rem;
+    font-weight: 600;
+    text-shadow: 0 0 6px #0008;
+  }
+  .teamScore {
+    font-size: 5rem;
+    font-weight: 800;
+    text-shadow: 0 0 12px #000c;
+  }
 
-  /* ---------- winner overlay ---------- */
-  #winnerBanner{
-    position:absolute;inset:0;display:none;justify-content:center;align-items:center;
-    background:rgba(0,0,0,.78);flex-direction:column;text-align:center;font-size:3rem
+  /* Winner overlay */
+  #winnerBanner {
+    position: absolute; inset: 0;
+    display: none;
+    background: rgba(0,0,0,.8);
+    color: #fff;
+    font-size: 2.4rem;
+    font-weight: 700;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    z-index: 200;
   }
-  #winnerBanner button{
-    margin-top:1rem;font-size:1.1rem;padding:.45rem .9rem;border-radius:6px;
-    background:#222;border:1px solid #555;color:#fff
-  }
-  footer{padding:.6rem;background:#111;border-top:1px solid #333;display:flex;gap:.6rem;justify-content:center}
-  footer button{
-    font-size:1rem;padding:.4rem .9rem;border-radius:6px;background:#222;border:1px solid #555;color:#fff
+  #winnerBanner button {
+    margin-top: 1rem;
+    padding: .5rem 1rem;
+    border-radius: 6px;
+    background: #222;
+    border: 1px solid #555;
+    color: #fff;
   }
 </style>
 </head>
+
 <body>
-<header>
-  <label>Top name<input id="topNameInput" type="text" value="Team A"></label>
-  <label>Colour<input id="topClrInput" type="color" value="#3498db"></label>
 
-  <label>Bottom name<input id="botNameInput" type="text" value="Team B"></label>
-  <label>Colour<input id="botClrInput" type="color" value="#e74c3c"></label>
+  <!-- Settings toggle -->
+  <button id="settingsBtn">⚙️</button>
 
-  <label>Points to win<input id="targetInput" type="number" min="1" value="11"></label>
-</header>
+  <!-- Slide‑out settings panel -->
+  <div id="settingsPanel">
+    <h2>Settings</h2>
 
-<div class="court">
-  <div id="top" class="half">
-    <div class="name" id="topName">Team A</div>
-    <div class="score" id="topScore">0</div>
+    <label>
+      <span>Number of teams</span>
+      <select id="teamCount">
+        <option value="2">2 teams</option>
+        <option value="4">4 teams</option>
+      </select>
+    </label>
+
+    <div id="teamsConfig">
+      <!-- will be populated by JS -->
+    </div>
+
+    <label>
+      <span>Enable score limit</span>
+      <div class="toggle">
+        <input type="checkbox" id="limitToggle" checked>
+        <span class="slider"></span>
+      </div>
+    </label>
+
+    <label>
+      <span>Points to win</span>
+      <input type="number" id="limitInput" min="1" value="11">
+    </label>
+
+    <button id="applySettings">Apply</button>
   </div>
-  <div id="bot" class="half">
-    <div class="name" id="botName">Team B</div>
-    <div class="score" id="botScore">0</div>
+
+  <!-- Scoreboard grid -->
+  <div id="court"></div>
+
+  <!-- Winner overlay -->
+  <div id="winnerBanner">
+    <div id="winnerText">🏆 Winner!</div>
+    <button onclick="resetGame()">New game</button>
   </div>
-</div>
-
-<div id="winnerBanner">
-  <div id="winnerText">🏆 Winner!</div>
-  <button onclick="resetGame()">New game</button>
-</div>
-
-<footer>
-  <button onclick="undo()">Undo</button>
-  <button onclick="resetGame()">Reset scores</button>
-</footer>
 
 <script>
-/* -------- grab elements safely (no clash with window.top) -------- */
-const els={
-  topHalf : document.getElementById('top'),
-  botHalf : document.getElementById('bot'),
-  topScore: document.getElementById('topScore'),
-  botScore: document.getElementById('botScore'),
-  banner  : document.getElementById('winnerBanner'),
-  winnerT : document.getElementById('winnerText')
+/* ———————— State ———————— */
+let config = {
+  teamCount: 2,
+  teams: [
+    { name: 'Team A', color: '#3498db', score: 0 },
+    { name: 'Team B', color: '#e74c3c', score: 0 }
+  ],
+  limitEnabled: true,
+  limit: 11,
+  history: []
 };
 
-/* ----------------- state ----------------- */
-const state={top:0,bot:0,target:+targetInput.value,history:[]};
+/* ——————— Init ——————— */
+const els = {
+  court:    document.getElementById('court'),
+  settingsBtn: document.getElementById('settingsBtn'),
+  panel:    document.getElementById('settingsPanel'),
+  apply:    document.getElementById('applySettings'),
+  teamCountSelect: document.getElementById('teamCount'),
+  teamsConfig: document.getElementById('teamsConfig'),
+  limitToggle: document.getElementById('limitToggle'),
+  limitInput: document.getElementById('limitInput'),
+  winnerBanner: document.getElementById('winnerBanner'),
+  winnerText: document.getElementById('winnerText')
+};
 
-/* --------------- helpers --------------- */
-function updateDisplay(){
-  els.topScore.textContent=state.top;
-  els.botScore.textContent=state.bot;
+// Toggle settings panel
+els.settingsBtn.onclick = ()=> els.panel.classList.toggle('open');
+
+// Populate the teamsConfig panel
+function renderTeamConfig() {
+  els.teamsConfig.innerHTML = '';
+  for(let i=0;i<config.teamCount;i++){
+    const t = config.teams[i] || {name:'Team '+(i+1),color:'#888',score:0};
+    config.teams[i] = t;
+    const div = document.createElement('div');
+    div.style.margin = '.5rem 0';
+    div.innerHTML = `
+      <label style="display:flex;align-items:center;gap:.5rem">
+        <span>Team ${i+1}:</span>
+        <input type="text" id="name${i}" value="${t.name}">
+      </label>
+      <label style="display:flex;align-items:center;gap:.5rem">
+        <span>Colour:</span>
+        <input type="color" id="clr${i}" value="${t.color}">
+      </label>`;
+    els.teamsConfig.append(div);
+  }
 }
-function haptic(){ if(navigator.vibrate) navigator.vibrate(10); }      // no‑op on iOS
-function checkWinner(side){
-  if(state[side]>=state.target){
-    els.winnerT.innerHTML=`🏆 ${document.getElementById(side+'Name').textContent} wins!`;
-    els.banner.style.display='flex';
-    document.body.style.pointerEvents='none';       // lock further taps
-    els.banner.style.pointerEvents='auto';
+renderTeamConfig();
+
+// Apply button
+els.apply.onclick = ()=>{
+  // read settings
+  config.teamCount = parseInt(els.teamCountSelect.value,10);
+  config.limitEnabled = els.limitToggle.checked;
+  config.limit = Math.max(1, parseInt(els.limitInput.value,10)||1);
+
+  // read names/colors
+  for(let i=0;i<config.teamCount;i++){
+    config.teams[i].name = document.getElementById(`name${i}`).value || `Team ${i+1}`;
+    config.teams[i].color = document.getElementById(`clr${i}`).value;
+    config.teams[i].score = 0;
+  }
+  config.teams.length = config.teamCount;
+  config.history = [];
+
+  // hide panel & redraw
+  els.panel.classList.remove('open');
+  drawCourt();
+};
+
+/* ——————— Draw court ——————— */
+function drawCourt(){
+  // grid layout
+  if(config.teamCount===2){
+    els.court.style.gridTemplate = '1fr 1fr / 1fr';
+  } else {
+    els.court.style.gridTemplate = '1fr 1fr / 1fr 1fr';
+  }
+  els.court.innerHTML = '';
+
+  // create boxes
+  config.teams.forEach((t,i)=>{
+    const box = document.createElement('div');
+    box.className = 'teamBox';
+    box.dataset.index = i;
+    box.innerHTML = `
+      <div class="teamName" style="color:${t.color}">${t.name}</div>
+      <div class="teamScore" style="color:${t.color}">0</div>`;
+    box.onclick = onTeamClick;
+    els.court.append(box);
+  });
+
+  // hide any leftover grid cells
+  // (won’t matter—court.innerHTML exactly equals number of teams)
+}
+drawCourt();
+
+/* ——————— Scoring & UI ——————— */
+function updateScores(){
+  document.querySelectorAll('.teamBox').forEach(box=>{
+    const i = +box.dataset.index;
+    box.querySelector('.teamScore').textContent = config.teams[i].score;
+  });
+}
+function haptic(){ if(navigator.vibrate) navigator.vibrate(10); }
+function checkWinner(i){
+  if(config.limitEnabled && config.teams[i].score >= config.limit){
+    els.winnerText.innerHTML = `🏆 ${config.teams[i].name} wins!`;
+    els.winnerBanner.style.display = 'flex';
   }
 }
 
-/* --------------- score taps --------------- */
-function addPoint(e){
-  const side=(e.currentTarget===els.topHalf)?'top':'bot';
-  state[side]++; state.history.push(side);
-  updateDisplay(); haptic(); checkWinner(side);
+function onTeamClick(e){
+  const i = +e.currentTarget.dataset.index;
+  config.teams[i].score++;
+  config.history.push(i);
+  updateScores();
+  haptic();
+  checkWinner(i);
 }
-els.topHalf.addEventListener('click',addPoint);
-els.botHalf.addEventListener('click',addPoint);
 
-/* ------------- undo / reset --------------- */
-function undo(){
-  const side=state.history.pop(); if(!side) return;
-  state[side]=Math.max(0,state[side]-1); updateDisplay();
-}
 function resetGame(){
-  state.top=state.bot=0; state.history=[];
-  els.banner.style.display='none'; document.body.style.pointerEvents='auto';
-  updateDisplay();
+  config.teams.forEach(t=>t.score=0);
+  config.history = [];
+  els.winnerBanner.style.display = 'none';
+  updateScores();
 }
 
-/* ------- live settings bindings ------- */
-topNameInput .oninput=e=>topName.textContent=e.target.value||' ';
-botNameInput .oninput=e=>botName.textContent=e.target.value||' ';
-topClrInput .oninput=e=>document.documentElement.style.setProperty('--top-clr',e.target.value);
-botClrInput .oninput=e=>document.documentElement.style.setProperty('--bot-clr',e.target.value);
-targetInput  .oninput=e=>state.target=Math.max(1,parseInt(e.target.value||1,10));
+/* ——————— Undo ——————— */
+function undo(){
+  const i = config.history.pop();
+  if(i==null) return;
+  config.teams[i].score = Math.max(0, config.teams[i].score - 1);
+  updateScores();
+}
 
-/* --------- PWA service‑worker --------- */
+window.resetGame = resetGame;
+window.undo = undo;
+
+/* ————— PWA service‑worker ————— */
 if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(console.error));
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js').catch(console.error);
+  });
 }
 </script>
 </body>
