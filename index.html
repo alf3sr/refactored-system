@@ -51,9 +51,12 @@
       transform:translateX(100%); transition:transform .3s;
       padding:1rem; overflow-y:auto; z-index:99;
     }
-    #settingsPanel.open { transform:translateX(0) }
+    #settingsPanel.open {
+      transform:translateX(0);
+    }
     #settingsPanel h2 {
-      margin-bottom:.5rem; font-size:1.2rem;
+      margin-bottom:.5rem;
+      font-size:1.2rem;
       border-bottom:1px solid var(--panel-border);
       padding-bottom:.3rem;
     }
@@ -61,7 +64,7 @@
       display:flex; align-items:center;
       margin:.6rem 0; font-size:.95rem;
     }
-    #settingsPanel label>span { flex:1 }
+    #settingsPanel label>span { flex:1; }
     #settingsPanel input[type="text"],
     #settingsPanel input[type="number"],
     #settingsPanel select {
@@ -70,14 +73,14 @@
       border-radius:6px; color:var(--text);
     }
     #settingsPanel input[type="color"] {
-      width:2.2rem; height:2.2rem; padding:0;
-      border:none; background:none;
+      width:2.2rem; height:2.2rem;
+      padding:0; border:none; background:none;
     }
     .toggle {
       position:relative; width:40px; height:20px;
       margin-left:.6rem;
     }
-    .toggle input { opacity:0; width:0; height:0 }
+    .toggle input { opacity:0; width:0; height:0; }
     .slider {
       position:absolute; cursor:pointer;
       top:0; left:0; right:0; bottom:0;
@@ -190,7 +193,7 @@
   </div>
 
 <script>
-/* — State — */
+// — State —
 let config = {
   teamCount: 2,
   teams: [
@@ -202,27 +205,27 @@ let config = {
   history: []
 };
 
-/* — Elements — */
+// — Elements —
 const els = {
-  court:         document.getElementById('court'),
-  settingsBtn:   document.getElementById('settingsBtn'),
-  panel:         document.getElementById('settingsPanel'),
-  apply:         document.getElementById('applySettings'),
-  teamCount:     document.getElementById('teamCount'),
-  teamsConfig:   document.getElementById('teamsConfig'),
-  limitToggle:   document.getElementById('limitToggle'),
-  limitInput:    document.getElementById('limitInput'),
-  winnerBanner:  document.getElementById('winnerBanner'),
-  winnerText:    document.getElementById('winnerText')
+  court:        document.getElementById('court'),
+  settingsBtn:  document.getElementById('settingsBtn'),
+  panel:        document.getElementById('settingsPanel'),
+  apply:        document.getElementById('applySettings'),
+  teamCount:    document.getElementById('teamCount'),
+  teamsConfig:  document.getElementById('teamsConfig'),
+  limitToggle:  document.getElementById('limitToggle'),
+  limitInput:   document.getElementById('limitInput'),
+  winnerBanner: document.getElementById('winnerBanner'),
+  winnerText:   document.getElementById('winnerText')
 };
 
-/* — Panel toggle — */
+// — Toggle panel —
 els.settingsBtn.onclick = () => els.panel.classList.toggle('open');
 
-/* — Default colors A–D — */
+// — Default colors A–D —
 const defaultColors = ['#3498db','#e74c3c','#9b59b6','#f1c40f'];
 
-/* — Render team inputs — */
+// — Render team inputs —
 function renderTeamConfig() {
   const n = +els.teamCount.value;
   els.teamsConfig.innerHTML = '';
@@ -252,7 +255,7 @@ function renderTeamConfig() {
 renderTeamConfig();
 els.teamCount.onchange = renderTeamConfig;
 
-/* — Apply settings — */
+// — Apply settings —
 els.apply.onclick = () => {
   const n = +els.teamCount.value;
   config.limitEnabled = els.limitToggle.checked;
@@ -273,7 +276,7 @@ els.apply.onclick = () => {
   drawCourt();
 };
 
-/* — Draw grid — */
+// — Draw grid —
 function drawCourt() {
   els.court.style.gridTemplate =
     config.teamCount === 2 ? '1fr 1fr / 1fr'
@@ -292,7 +295,7 @@ function drawCourt() {
 }
 drawCourt();
 
-/* — Update scores — */
+// — Update scores —
 function updateScores() {
   document.querySelectorAll('.teamBox').forEach(box => {
     const i = +box.dataset.index;
@@ -300,28 +303,26 @@ function updateScores() {
   });
 }
 
-/* — Simulated feedback: CSS+Audio click — */
+// — Simulated feedback: CSS scale + audio click —
 let audioCtx = null;
 function haptic() {
-  // CSS scale is handled by .teamBox:active
-  // Audio “click”:
   try {
     if (!audioCtx) {
       audioCtx = new (AudioContext||webkitAudioContext)();
     }
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    o.connect(g); g.connect(audioCtx.destination);
-    o.frequency.value = 200;
-    g.gain.setValueAtTime(1, audioCtx.currentTime);
-    o.start(audioCtx.currentTime);
-    o.stop(audioCtx.currentTime + 0.02);
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.frequency.value = 200;
+    gain.gain.setValueAtTime(1, audioCtx.currentTime);
+    osc.start(audioCtx.currentTime);
+    osc.stop(audioCtx.currentTime + 0.02);
   } catch(e){
     console.warn('Audio feedback failed', e);
   }
 }
 
-/* — Winner check — */
+// — Winner check —
 function checkWinner(i) {
   if (config.limitEnabled && config.teams[i].score >= config.limit) {
     els.winnerText.innerHTML = `🏆 ${config.teams[i].name} wins!`;
@@ -329,7 +330,7 @@ function checkWinner(i) {
   }
 }
 
-/* — Tap handler — */
+// — Tap handler —
 function onTeamClick(e) {
   const i = +e.currentTarget.dataset.index;
   config.teams[i].score++;
@@ -339,27 +340,27 @@ function onTeamClick(e) {
   checkWinner(i);
 }
 
-/* — Reset / Undo — */
+// — Reset / Undo —
 function resetGame() {
-  config.teams.forEach(t=>t.score=0);
+  config.teams.forEach(t => t.score = 0);
   config.history = [];
-  els.winnerBanner.style.display='none';
+  els.winnerBanner.style.display = 'none';
   updateScores();
 }
 function undo() {
   const i = config.history.pop();
-  if (i==null) return;
-  config.teams[i].score = Math.max(0,config.teams[i].score-1);
+  if (i == null) return;
+  config.teams[i].score = Math.max(0, config.teams[i].score - 1);
   updateScores();
 }
 window.resetGame = resetGame;
 window.undo      = undo;
 
-/* — Service worker — */
+// — Service worker —
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./sw.js').catch(console.error);
-  });
+  window.addEventListener('load', () =>
+    navigator.serviceWorker.register('./sw.js').catch(console.error)
+  );
 }
 </script>
 </body>
