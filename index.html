@@ -25,12 +25,10 @@
 body{height:100vh;background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;
      overflow:hidden;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 button{font:inherit}
-.pill{padding:.45rem .9rem;border-radius:20px;background:var(--pill-bg);
-      border:1px solid var(--pill-br);color:var(--pill-fg);cursor:pointer}
+.pill{padding:.45rem .9rem;border-radius:20px;background:var(--pill-bg);border:1px solid var(--pill-br);color:var(--pill-fg);cursor:pointer}
 .pill:active{background:#222}
 
-#settingsBtn{position:fixed;top:1rem;right:1rem;z-index:90;width:2.6rem;height:2.6rem;
-             display:flex;align-items:center;justify-content:center}
+#settingsBtn{position:fixed;top:1rem;right:1rem;z-index:90;width:2.6rem;height:2.6rem;display:flex;align-items:center;justify-content:center}
 #cornerBtns{position:fixed;bottom:1rem;left:1rem;z-index:90;display:flex;gap:.7rem}
 #timerBtn{position:fixed;bottom:1rem;right:1rem;z-index:90}
 body.panel-open #cornerBtns,body.panel-open #timerBtn{opacity:.1;pointer-events:none}
@@ -42,8 +40,7 @@ body.panel-open #cornerBtns,body.panel-open #timerBtn{opacity:.1;pointer-events:
 #settingsPanel h2{margin-bottom:.7rem;font-size:1.2rem;border-bottom:1px solid var(--panel-border);padding-bottom:.4rem}
 
 #preview{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.3rem;margin-bottom:.8rem}
-.previewBox{padding:.4rem;text-align:center;font-size:.85rem;border-radius:6px;background:var(--box);
-            border:1px solid var(--panel-border)}
+.previewBox{padding:.4rem;text-align:center;font-size:.85rem;border-radius:6px;background:var(--box);border:1px solid var(--panel-border)}
 .previewBox span{display:block;font-weight:600}
 
 label.row{display:flex;align-items:center;margin:.55rem 0;font-size:.93rem}
@@ -53,7 +50,7 @@ label.row>span{flex:1}
 .row input[type="color"]{width:2rem;height:2rem;padding:0;border:none;background:none}
 
 .swatchWrap{display:flex;gap:.25rem;margin-top:.25rem}
-.swatch{width:1.2rem;height:1.2rem;border-radius:50%;cursor:pointer;border:1px solid #666}
+.swatch{width:1.2rem;height:1.2rem;border-radius:50%;border:1px solid #666;cursor:pointer}
 
 .toggle{position:relative;width:48px;height:27px;margin-left:.6rem}
 .toggle input{opacity:0;width:0;height:0}
@@ -72,8 +69,7 @@ input[type=range]:focus{outline:none}
 .statsBox h3{font-size:1rem;margin-bottom:.5rem}
 
 #court{position:absolute;inset:0;display:grid;gap:var(--gap)}
-.teamBox{background:var(--box);display:flex;flex-direction:column;justify-content:center;align-items:center;
-         cursor:pointer;padding:.4rem;transition:background .15s,transform .13s}
+.teamBox{background:var(--box);display:flex;flex-direction:column;justify-content:center;align-items:center;cursor:pointer;padding:.4rem;transition:background .15s,transform .13s}
 .teamBox:active{transform:scale(.96)}
 .teamName{font-size:clamp(4rem,10vw,6rem);font-family:'Bebas Neue',sans-serif}
 .teamScore{font-size:clamp(8rem,20vmin,16rem);font-family:'Bebas Neue',sans-serif;transition:transform .25s}
@@ -90,15 +86,12 @@ body.panel-open #matchTimer{opacity:0}
 </head>
 <body class="dark">
 
-<!-- clock -->
 <div id="matchTimer">00:00</div>
 
-<!-- floating controls -->
 <button id="settingsBtn" class="pill">⚙️</button>
 <div id="cornerBtns"><button id="undoBtn" class="pill">Undo</button><button id="resetBtn" class="pill">Reset</button></div>
 <button id="timerBtn" class="pill">⏵ Timer</button>
 
-<!-- drawer -->
 <div id="settingsPanel">
   <h2>Settings</h2>
   <div id="preview"></div>
@@ -106,12 +99,9 @@ body.panel-open #matchTimer{opacity:0}
   <label class="row"><span>Teams</span>
     <select id="teamCount"><option>2</option><option>3</option><option>4</option></select>
   </label>
-
   <div id="teamsConfig"></div>
 
-  <label class="row"><span>Points / tap</span>
-    <select id="stepSel"><option>1</option><option>2</option><option>3</option><option>5</option></select>
-  </label>
+  <label class="row"><span>Points / tap</span><select id="stepSel"><option>1</option><option>2</option><option>3</option><option>5</option></select></label>
 
   <label class="row"><span>Score limit</span>
     <div class="toggle"><input type="checkbox" id="limitToggle"><span class="slider"></span></div>
@@ -130,7 +120,6 @@ body.panel-open #matchTimer{opacity:0}
   <div class="statsBox"><h3>Stats</h3><div id="statsWrap"></div><button id="resetStats" class="pill" style="margin-top:.6rem;display:none">Reset stats</button></div>
 </div>
 
-<!-- court + winner -->
 <div id="court"></div>
 <div id="winnerBanner"><div id="winnerText">🏆 Winner!</div><button onclick="resetGame()" class="pill">New game</button></div>
 
@@ -151,40 +140,47 @@ const els={panel:$('settingsPanel'),gear:$('settingsBtn'),preview:$('preview'),
   timerBtn:$('timerBtn'),timerDisp:$('matchTimer'),winner:$('winnerBanner'),winnerText:$('winnerText'),
   stats:$('statsWrap'),resetStats:$('resetStats')};
 
-/* drawer */
 els.gear.addEventListener('click',()=>{els.panel.classList.toggle('open');document.body.classList.toggle('panel-open',els.panel.classList.contains('open'))});
 
-/* theme */
 function applyTheme(){const sys=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.body.classList.toggle('light',cfg.theme==='light'||(cfg.theme==='auto'&&sys==='light'));document.body.classList.toggle('dark',cfg.theme!=='light'&&(cfg.theme!=='auto'||sys==='dark'));els.themeSel.value=cfg.theme;}
 els.themeSel.oninput=e=>{cfg.theme=e.target.value;applyTheme();save()};applyTheme();
 
-/* teams input */
+/* ---- teams ---- */
 function renderTeams(){
-  cfg.teams.length=cfg.teamCount;
-  cfg.teams=cfg.teams.map((t,i)=>t||{name:`Team ${String.fromCharCode(65+i)}`,color:swatches[i%swatches.length],score:0});
+  cfg.teams = Array.from({length: cfg.teamCount}, (_,i)=>{
+    const prev=cfg.teams[i]||{};
+    return {
+      name : prev.name  || `Team ${String.fromCharCode(65+i)}`,
+      color: prev.color || swatches[i%swatches.length],
+      score: prev.score || 0
+    };
+  });
+
   els.teams.innerHTML='';
   cfg.teams.forEach((t,i)=>{
     els.teams.insertAdjacentHTML('beforeend',`
-      <label class="row"><span>Team ${String.fromCharCode(65+i)}</span><input type="text" id="name${i}" value="${t.name}"></label>
+      <label class="row"><span>Team ${String.fromCharCode(65+i)}</span><input type="text" id="name${i}" value="${t.name}"></label>
       <label class="row"><span style="visibility:hidden">Colour</span><input type="color" id="clr${i}" value="${t.color}"></label>
-      <div class="swatchWrap" id="sw${i}"></div>`);
+      <div class="swatchWrap" id="sw${i}"></div>
+    `);
     swatches.forEach(c=>{const d=document.createElement('div');d.className='swatch';d.style.background=c;d.onclick=()=>$(`clr${i}`).value=c, cfg.teams[i].color=c,updateCourt(),updatePreview(),save();$(`sw${i}`).append(d);});
   });
   updateCourt();updatePreview();save();
 }
-els.teamCount.value=cfg.teamCount;
-['change','input'].forEach(ev=>els.teamCount.addEventListener(ev,e=>{cfg.teamCount=+e.target.value;renderTeams()}));
+['change','input'].forEach(evt=>els.teamCount.addEventListener(evt,e=>{cfg.teamCount=+e.target.value;renderTeams()}));
 
 els.teams.addEventListener('input',e=>{
   const m=e.target.id.match(/(name|clr)(\d+)/);if(!m)return;
-  const i=+m[2];if(m[1]==='name')cfg.teams[i].name=e.target.value||`Team ${String.fromCharCode(65+i)}`;else cfg.teams[i].color=e.target.value;
+  const i=+m[2];
+  if(m[1]==='name')cfg.teams[i].name=e.target.value||`Team ${String.fromCharCode(65+i)}`;
+  else cfg.teams[i].color=e.target.value;
   updateCourt();updatePreview();save();
 });
 
-/* points/tap */
+/* points / tap */
 els.stepSel.value=cfg.step;els.stepSel.onchange=e=>{cfg.step=+e.target.value;save()}
 
-/* limit toggle */
+/* limit */
 function syncLimit(){els.limitRow.classList.toggle('hidden',!els.limitToggle.checked);cfg.limitEnabled=els.limitToggle.checked;save()}
 els.limitToggle.checked=cfg.limitEnabled;els.limitToggle.onchange=syncLimit;
 els.limitRange.value=cfg.limit;els.limitVal.textContent=cfg.limit;
@@ -204,22 +200,22 @@ function updatePreview(){els.preview.innerHTML='';cfg.teams.forEach(t=>els.previ
 /* court */
 function updateCourt(){els.court.style.gridTemplate=cfg.teamCount===2?'1fr 1fr / 1fr':'1fr 1fr / 1fr 1fr';els.court.innerHTML='';cfg.teams.forEach((t,i)=>{const b=document.createElement('div');b.className='teamBox';b.dataset.i=i;b.innerHTML=`<div class="teamName" style="color:${t.color}">${t.name}</div><div class="teamScore" style="color:${t.color}">${t.score}</div>`;b.addEventListener('pointerdown',e=>startPress(e,b));els.court.append(b);});updateScores();highlight();}
 
-/* scores */
+/* score display */
 function updateScores(){document.querySelectorAll('.teamScore').forEach((el,i)=>el.textContent=cfg.teams[i].score)}
-function highlight(){const m=Math.max(...cfg.teams.map(t=>t.score));document.querySelectorAll('.teamBox').forEach((b,i)=>b.classList.toggle('leader',cfg.teams[i].score===m&&m>0))}
+function highlight(){const mx=Math.max(...cfg.teams.map(t=>t.score));document.querySelectorAll('.teamBox').forEach((b,i)=>b.classList.toggle('leader',cfg.teams[i].score===mx&&mx>0))}
 
 /* press */
 let longId,wasLong=false;
 function startPress(e,b){const i=+b.dataset.i,s=cfg.step;wasLong=false;longId=setTimeout(()=>{change(i,-s);wasLong=true},500);const end=()=>{clearTimeout(longId);if(!wasLong)change(i,s);b.removeEventListener('pointerup',end);b.removeEventListener('pointercancel',end)};b.addEventListener('pointerup',end);b.addEventListener('pointercancel',end)}
-function anim(b,c){const s=b.querySelector('.teamScore');s.classList.add('pop');setTimeout(()=>s.classList.remove('pop'),250);b.animate([{background:c+'22'},{background:'transparent'}],{duration:250})}
-function change(i,d){cfg.teams[i].score=Math.max(0,cfg.teams[i].score+d);cfg.history.push({team:i,delta:d});if(cfg.history.length>300)cfg.history.shift();updateScores();anim(els.court.children[i],cfg.teams[i].color);highlight();haptic();win(i);save();}
+function pop(b,c){const sc=b.querySelector('.teamScore');sc.classList.add('pop');setTimeout(()=>sc.classList.remove('pop'),250);b.animate([{background:c+'22'},{background:'transparent'}],{duration:250})}
+function change(i,d){cfg.teams[i].score=Math.max(0,cfg.teams[i].score+d);cfg.history.push({team:i,delta:d});if(cfg.history.length>300)cfg.history.shift();updateScores();pop(els.court.children[i],cfg.teams[i].color);highlight();haptic();win(i);save();}
 
-/* undo & reset */
+/* undo / reset */
 els.undo.onclick=()=>{const h=cfg.history.pop();if(!h)return;cfg.teams[h.team].score=Math.max(0,cfg.teams[h.team].score-h.delta);updateScores();highlight();save()}
 function resetGame(){cfg.teams.forEach(t=>t.score=0);cfg.history=[];updateScores();highlight();els.winner.style.display='none';save()}
 els.reset.onclick=resetGame;
 
-/* winner & stats */
+/* winner */
 function win(i){if(cfg.limitEnabled&&cfg.teams[i].score>=cfg.limit){confetti({particleCount:200,spread:70,startVelocity:45});els.winnerText.textContent=`🏆 ${cfg.teams[i].name} wins!`;els.winner.style.display='flex';cfg.wins[cfg.teams[i].name]=(cfg.wins[cfg.teams[i].name]||0)+1;cfg.games++;cfg.pointsTotal+=cfg.teams.reduce((s,t)=>s+t.score,0);stats();}}
 function stats(){els.stats.innerHTML='';Object.entries(cfg.wins).forEach(([n,w])=>els.stats.insertAdjacentHTML('beforeend',`<div>${n}: ${w}</div>`));if(cfg.games){els.stats.insertAdjacentHTML('beforeend',`<div>Avg pts/game: ${(cfg.pointsTotal/cfg.games).toFixed(1)}</div>`);els.resetStats.style.display='';}else els.resetStats.style.display='none';}
 els.resetStats.onclick=()=>{cfg.wins={};cfg.games=cfg.pointsTotal=0;stats();save()};stats();
@@ -233,7 +229,7 @@ els.timerBtn.onclick=()=>{if(!cfg.countdownEnabled)return;const t=cfg.timer;if(t
 /* haptic */
 let audioCtx;function haptic(){try{audioCtx=audioCtx||new(AudioContext||webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.frequency.value=200;g.gain.value=.8;o.start();o.stop(audioCtx.currentTime+.02)}catch{}}
 
-/* double‑tap zoom block */
+/* dbl‑tap zoom */
 let last=0;document.addEventListener('touchend',e=>{const n=e.timeStamp;if(n-last<300)e.preventDefault();last=n},{passive:false});
 
 renderTeams();applyTheme();
