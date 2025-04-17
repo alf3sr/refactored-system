@@ -1,610 +1,474 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-  <title>Point Tracker</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Point Tracker</title>
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./Icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-  <link rel="manifest" href="./manifest.json">
-  <meta name="theme-color" content="#000000">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <link rel="apple-touch-icon" href="./Icon-192.png">
+<style>
+/* ===== BASE VARIABLES ===== */
+:root{
+  --bg:#000;--fg:#fff;--panel:#111;--border:#333;--accent:#3498db;--box:#000;
+}
+@media (prefers-color-scheme:light){
+  :root{--bg:#fff;--fg:#000;--panel:#f5f5f5;--border:#ccc;--accent:#156fd1;--box:#fff}
+}
+.light{--bg:#fff;--fg:#000;--box:#fff}
+.dark {--bg:#000;--fg:#fff;--box:#000}
 
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;touch-action:manipulation}
+body{
+  background:var(--bg);color:var(--fg);font-family:system-ui,sans-serif;
+  overflow:hidden;user-select:none;
+}
+button{font:inherit}
 
-  <style>
-    /* ===== THEMES & BASE ===== */
-    :root {
-      --bg:#000; --fg:#fff; --panel:#111; --border:#333;
-      --accent:#3498db; --box:#000; --gap:0;
-    }
-    @media (prefers-color-scheme: light) {
-      :root {
-        --bg:#fff; --fg:#000; --panel:#f5f5f5; --border:#ccc;
-        --accent:#156fd1; --box:#fff;
-      }
-    }
-    .light { --bg:#fff; --fg:#000; --box:#fff }
-    .dark  { --bg:#000; --fg:#fff; --box:#000 }
+/* ===== COMMON PILL BUTTON ===== */
+.pill{
+  padding:.6rem 1rem;border-radius:8px;background:var(--panel);
+  border:1px solid var(--border);color:var(--fg);
+  box-shadow:0 2px 10px rgba(0,0,0,0.25);transition:.2s;
+}
+.pill:active{background:rgba(255,255,255,0.1)}
 
-    * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-    body {
-      height:100vh; background:var(--bg); color:var(--fg);
-      font-family:system-ui,sans-serif; overflow:hidden;
-      touch-action:manipulation; user-select:none;
-    }
-    button{ font:inherit }
-    .pill {
-      padding:.6rem 1rem; border-radius:8px;
-      background:var(--panel); border:1px solid var(--border);
-      color:var(--fg); box-shadow:0 2px 10px rgba(0,0,0,0.25);
-      transition:all .2s ease;
-    }
-    .pill:active{ background:rgba(255,255,255,0.1) }
+/* ===== SETTINGS FAB ===== */
+#settingsBtn{
+  position:fixed;top:12px;right:12px;z-index:100;
+  width:44px;height:44px;background:var(--panel);
+  border:1px solid var(--border);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 10px rgba(0,0,0,0.25);
+}
 
-    /* SETTINGS GEAR */
-    #settingsBtn {
-      position:fixed; top:12px; right:12px; z-index:100;
-      width:44px; height:44px; background:var(--panel);
-      border:1px solid var(--border); border-radius:50%;
-      display:flex; align-items:center; justify-content:center;
-      box-shadow:0 2px 10px rgba(0,0,0,0.25);
-    }
+/* ===== RIGHT DRAWER ===== */
+#settingsPanel{
+  position:fixed;top:0;right:0;width:320px;height:100%;
+  background:var(--panel);border-left:1px solid var(--border);
+  box-shadow:-2px 0 10px rgba(0,0,0,0.25);
+  transform:translateX(100%);transition:.3s;z-index:90;
+  padding:16px;overflow-y:auto;
+}
+#settingsPanel.open{transform:translateX(0)}
+#settingsPanel h2{font-size:1.3rem;margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px}
+.section-header{font-weight:600;opacity:.75;margin:16px 0 8px}
 
-    /* DRAWER */
-    #settingsPanel {
-      position:fixed; top:0; right:0; width:300px; height:100%;
-      background:var(--panel); border-left:1px solid var(--border);
-      box-shadow:-2px 0 10px rgba(0,0,0,0.25);
-      transform:translateX(100%); transition:transform .3s ease;
-      padding:16px; overflow-y:auto; z-index:90;
-    }
-    #settingsPanel.open{ transform:translateX(0) }
-    #settingsPanel h2{
-      font-size:1.3rem; margin-bottom:12px;
-      border-bottom:1px solid var(--border); padding-bottom:8px;
-    }
-    .section-header{
-      font-weight:600; opacity:.7; margin-top:16px;
-      margin-bottom:8px; font-size:1rem;
-    }
+/* ===== LIVE PREVIEW ===== */
+#preview{display:grid;gap:0;margin-bottom:16px}
+.previewBox{background:var(--box);padding:8px;border-radius:8px;border:1px solid var(--border);text-align:center}
+.previewBox span{display:block;font-weight:600}
+.previewBox small{display:block;opacity:.6}
 
-    /* LIVE PREVIEW */
-    #preview{
-      display:grid; gap:8px; margin-bottom:16px;
-    }
-    .previewBox{
-      background:var(--box); padding:8px; border-radius:8px;
-      border:1px solid var(--border); text-align:center;
-      font-size:.85rem;
-    }
-    .previewBox span{ display:block; font-weight:600 }
-    .previewBox small{ display:block; opacity:.6 }
+/* ===== FORM ROWS ===== */
+label.row{display:flex;align-items:center;font-size:1rem;margin:8px 0}
+label.row>span{flex:1}
+label.row>input[type=text],label.row>select{
+  flex:2;margin-left:16px;padding:.6rem .8rem;background:var(--box);border:1px solid var(--border);
+  border-radius:6px;color:var(--fg);appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path fill='currentColor' d='M0 0l5 6 5-6z'/></svg>");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:2rem;
+}
+label.row>input[type=color]{flex:none;margin-left:16px;width:32px;height:32px;border:none}
 
-    /* ROWS & INPUTS */
-    label.row{
-      display:flex; align-items:center; font-size:1rem; margin:8px 0;
-    }
-    label.row>span{ flex:1 }
-    .row input[type="text"],
-    .row select{
-      flex:1; padding:.6rem .8rem;
-      background:var(--box); border:1px solid var(--border);
-      border-radius:6px; color:var(--fg);
-      -webkit-appearance:none; appearance:none;
-      background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path fill='currentColor' d='M0 0l5 6 5-6z'/></svg>");
-      background-repeat:no-repeat;
-      background-position:right 12px center;
-      padding-right:2rem; margin-left:16px;
-    }
-    .row input[type="color"]{
-      width:32px; height:32px; margin-left:16px; border:none;
-    }
+/* ===== TOGGLE ===== */
+.toggle{position:relative;width:48px;height:28px;margin-left:16px;overflow:hidden}
+.toggle input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.slider{position:absolute;inset:0;background:var(--border);border-radius:14px;transition:.2s}
+.slider:before{content:"";position:absolute;width:20px;height:20px;top:4px;left:4px;background:var(--fg);border-radius:50%;transition:.2s}
+input:checked+.slider{background:var(--accent)}
+input:checked+.slider:before{transform:translateX(20px)}
 
-    /* TOGGLE */
-    .toggle{
-      position:relative; width:48px; height:28px; margin-left:16px;
-    }
-    .toggle input{ opacity:0; width:0; height:0 }
-    .slider{
-      position:absolute; inset:0; background:var(--border);
-      border-radius:14px; transition:background .2s ease;
-    }
-    .slider:before{
-      content:""; position:absolute;
-      top:4px; left:4px; width:20px; height:20px;
-      background:var(--fg); border-radius:50%;
-      transition:transform .2s ease;
-    }
-    input:checked + .slider{ background:var(--accent) }
-    input:checked + .slider:before{ transform:translateX(20px) }
+/* ===== RANGE ===== */
+.rangeRow{display:flex;align-items:center;gap:8px;margin:8px 0}
+.rangeRow input[type=range]{flex:1;background:transparent;-webkit-appearance:none}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:var(--border);border-radius:4px}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:24px;height:24px;background:var(--accent);border-radius:50%;margin-top:-10px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.3)
+}
 
-    /* SLIDER */
-    .rangeRow{
-      display:flex; align-items:center; gap:8px;
-      font-size:1rem; margin:8px 0;
-    }
-    .rangeRow input[type=range]{
-      flex:1; -webkit-appearance:none; background:transparent;
-    }
-    input[type=range]::-webkit-slider-runnable-track{
-      height:4px; background:var(--border); border-radius:4px;
-    }
-    input[type=range]::-webkit-slider-thumb{
-      -webkit-appearance:none; width:24px; height:24px;
-      background:var(--accent); border-radius:50%;
-      margin-top:-10px; box-shadow:0 2px 6px rgba(0,0,0,0.3);
-      transition:all .2s ease;
-    }
+/* ===== STATS ===== */
+.statsBox{margin-top:24px;border-top:1px solid var(--border);padding-top:16px;font-size:1rem}
+.statsBox h3{font-size:1.2rem;margin-bottom:8px}
 
-    /* STATS */
-    .statsBox{
-      margin-top:24px; border-top:1px solid var(--border);
-      padding-top:16px; font-size:1rem;
-    }
-    .statsBox h3{ font-size:1.2rem; margin-bottom:8px }
+/* ===== TIMER ===== */
+#matchTimer{
+  position:fixed;top:12px;left:50%;transform:translateX(-50%);
+  font-family:'Bebas Neue',sans-serif;font-size:1.2rem;z-index:100;transition:opacity .2s;
+}
+body.panel-open #matchTimer{opacity:0}
 
-    /* TIMER */
-    #matchTimer{
-      position:fixed;
-      top:12px;         /* moved back up */
-      left:50%; transform:translateX(-50%);
-      font-family:'Bebas Neue',sans-serif; font-size:1.2rem;
-      letter-spacing:.5px; z-index:100;
-      transition:opacity .2s ease;
-    }
-    body.panel-open #matchTimer{ opacity:0 }
+/* ===== COURT GRID ===== */
+#court{
+  position:absolute;
+  top:48px;          /* room for timer */
+  bottom:72px;       /* room for float‑bar */
+  left:0;right:0;
+  display:grid;gap:0;transition:.2s;
+}
+.teamBox{
+  background:var(--box);display:flex;flex-direction:column;justify-content:center;align-items:center;
+  border:4px solid transparent;transition:.2s;padding:12px;
+}
+.teamBox:active{transform:scale(.97)}
+.teamName{font-size:clamp(5rem,12vw,7rem);font-family:'Bebas Neue',sans-serif;margin-bottom:8px}
+.teamScore{font-size:clamp(10rem,25vw,18rem);font-family:'Bebas Neue',sans-serif;transition:.2s}
 
-    /* COURT */
-    #court{
-      position:absolute;
-      top:64px;         /* leaves room under timer */
-      bottom:64px;      /* clears float‑bar */
-      left:0; right:0;
-      display:grid; gap:var(--gap);
-      transition:all .2s ease;
-    }
-    .teamBox{
-      background:var(--box);
-      display:flex; flex-direction:column; justify-content:center;
-      align-items:center; padding:12px; border-radius:8px;
-      box-shadow:0 2px 10px rgba(0,0,0,0.25);
-      transition:all .2s ease;
-      border:4px solid transparent;
-    }
-    .teamBox:active{ transform:scale(.97) }
-    .teamName{
-      font-size:clamp(5rem,12vw,7rem);
-      font-family:'Bebas Neue',sans-serif; margin-bottom:12px;
-    }
-    .teamScore{
-      font-size:clamp(10rem,25vw,18rem);
-      font-family:'Bebas Neue',sans-serif;
-      transition:transform .2s ease;
-    }
-    .pop{ transform:scale(1.3) }
+/* === Extra shrink for portrait‑3 === */
+body.three-portrait .teamBox{padding:6px}
+body.three-portrait .teamName{font-size:clamp(3.5rem,9vw,4.5rem);margin-bottom:4px}
+body.three-portrait .teamScore{font-size:clamp(7rem,18vw,11rem)}
 
-    /* WINNER OVERLAY */
-    #winnerBanner{
-      position:absolute; inset:0; display:none;
-      background:rgba(0,0,0,0.7); color:#fff;
-      font-size:2rem; font-weight:700;
-      justify-content:center; align-items:center; flex-direction:column;
-    }
-    #winnerBanner button{ margin-top:16px }
+/* ===== WINNER OVERLAY ===== */
+#winnerBanner{
+  position:absolute;inset:0;display:none;background:rgba(0,0,0,.7);
+  color:#fff;font-size:2rem;font-weight:700;justify-content:center;align-items:center;flex-direction:column
+}
+#winnerBanner button{margin-top:16px}
 
-    /* FLOAT LEFT BAR */
-    #floatbar{
-      position:fixed; bottom:12px; left:12px;
-      display:flex; flex-direction:column; gap:12px; z-index:100;
-    }
+/* ===== FLOAT‑BAR ===== */
+#floatbar{
+  position:fixed;left:12px;bottom:12px;display:flex;flex-direction:column;gap:12px;z-index:100
+}
+/* center when 4‑grid is active */
+body.four-grid #floatbar{left:50%;transform:translateX(-50%);flex-direction:row}
 
-    /* BLOCK DOUBLE‑TAP ZOOM */
-    html,body{ touch-action:manipulation }
-  </style>
+/* prevent double‑tap zoom */
+html,body{touch-action:manipulation}
+</style>
 </head>
+
 <body class="dark">
+<div id="matchTimer">00:00</div>
 
-  <!-- TIMER DISPLAY -->
-  <div id="matchTimer">00:00</div>
+<button id="settingsBtn" class="pill">⚙️</button>
 
-  <!-- SETTINGS GEAR -->
-  <button id="settingsBtn" class="pill">⚙️</button>
+<div id="floatbar">
+  <button id="undoBtn"   class="pill">↩️</button>
+  <button id="resetBtn"  class="pill">🔄</button>
+  <button id="timerBtn"  class="pill">⏱</button>
+</div>
 
-  <!-- FLOATING LEFT BAR -->
-  <div id="floatbar">
-    <button id="undoBtn" class="pill">↩️</button>
-    <button id="resetBtn" class="pill">🔄</button>
-    <button id="timerBtn" class="pill">⏱</button>
+<!-- SETTINGS PANEL -->
+<div id="settingsPanel">
+  <h2>Settings</h2>
+
+  <div class="section-header">── Team Names & Colours ──</div>
+  <div id="preview"></div>
+
+  <label class="row"><span>Number of Teams</span>
+    <select id="teamCount"><option>1</option><option>2</option><option>3</option><option>4</option></select>
+  </label>
+
+  <div id="teamsConfig"></div>
+
+  <div class="section-header">── Game Rules ──</div>
+  <label class="row"><span>➕ Points per tap</span>
+    <select id="stepSel"><option>1</option><option>2</option><option>3</option><option>5</option></select>
+  </label>
+
+  <label class="row"><span>🎯 Score limit</span>
+    <div class="toggle"><input type="checkbox" id="limitToggle"><span class="slider"></span></div>
+  </label>
+  <div id="limitRow" class="rangeRow hidden"><input type="range" id="limitRange" min="1" max="100"><span id="limitVal"></span></div>
+
+  <label class="row"><span>⏱ Countdown timer</span>
+    <div class="toggle"><input type="checkbox" id="cdToggle"><span class="slider"></span></div>
+  </label>
+  <div id="cdRow" class="rangeRow hidden"><input type="range" id="cdRange" min="1" max="60"><span id="cdVal"></span></div>
+
+  <label class="row"><span>🌗 Theme</span>
+    <select id="themeSel"><option value="auto">Auto</option><option value="dark">Dark</option><option value="light">Light</option></select>
+  </label>
+
+  <div class="section-header">── Stats ──</div>
+  <div class="statsBox">
+    <h3>Stats</h3>
+    <div id="statsWrap"></div>
+    <button id="resetStats" class="pill" style="display:none">🗑️</button>
   </div>
+</div>
 
-  <!-- SETTINGS DRAWER -->
-  <div id="settingsPanel">
-    <h2>Settings</h2>
-    <div class="section-header">── Team Names & Colours ──</div>
-    <div id="preview"></div>
+<div id="court"></div>
 
-    <label class="row">
-      <span>Number of Teams</span>
-      <select id="teamCount"><option>1</option><option>2</option><option>3</option><option>4</option></select>
-    </label>
+<div id="winnerBanner">
+  <div id="winnerText">🏆 Winner!</div>
+  <button onclick="resetGame()" class="pill">▶️ New game</button>
+</div>
 
-    <div id="teamsConfig"></div>
+<script>
+/* --- helpers & initial state ---------------------------------- */
+const $=id=>document.getElementById(id),
+      defs=['#3498db','#e74c3c','#9b59b6','#f1c40f'],
+      fmt=ms=>{const s=Math.floor(ms/1000),m=Math.floor(s/60),ss=String(s%60).padStart(2,'0');return`${m}:${ss}`};
 
-    <div class="section-header">── Game Rules ──</div>
-    <label class="row"><span>➕ Points per tap</span><select id="stepSel"><option>1</option><option>2</option><option>3</option><option>5</option></select></label>
-    <label class="row"><span>🎯 Score limit</span><div class="toggle"><input type="checkbox" id="limitToggle"><span class="slider"></span></div></label>
-    <div id="limitRow" class="rangeRow hidden"><input type="range" id="limitRange" min="1" max="100"><span id="limitVal"></span></div>
-    <label class="row"><span>⏱ Countdown timer</span><div class="toggle"><input type="checkbox" id="cdToggle"><span class="slider"></span></div></label>
-    <div id="cdRow" class="rangeRow hidden"><input type="range" id="cdRange" min="1" max="60"><span id="cdVal"></span></div>
-    <label class="row"><span>🌗 Theme</span><select id="themeSel"><option value="auto">Auto</option><option value="dark">Dark</option><option value="light">Light</option></select></label>
+const seed={teamCount:2,teams:[{name:'Team A',color:'#3498db',score:0},{name:'Team B',color:'#e74c3c',score:0}],
+  step:1,limitEnabled:false,limit:11,countdownEnabled:false,countdown:300000,
+  timer:{running:false,start:0,elapsed:0},history:[],wins:{},games:0,pointsTotal:0,
+  theme:'auto',startTime:Date.now(),leadChanges:0,previousLeader:-1};
 
-    <div class="section-header">── Stats ──</div>
-    <div class="statsBox">
-      <h3>Stats</h3>
-      <div id="statsWrap"></div>
-      <button id="resetStats" class="pill" style="display:none">🗑️</button>
-    </div>
-  </div>
+let cfg=Object.assign(seed,JSON.parse(localStorage.getItem('pt-state')||'{}'));
+const save=_=>localStorage.setItem('pt-state',JSON.stringify(cfg));
 
-  <!-- COURT & WINNER -->
-  <div id="court"></div>
-  <div id="winnerBanner">
-    <div id="winnerText">🏆 Winner!</div>
-    <button onclick="resetGame()" class="pill">▶️ New game</button>
-  </div>
+cfg.teams=Array.from({length:cfg.teamCount},(_,i)=>{
+  const t=cfg.teams[i]||{};
+  return {name:t.name||`Team ${String.fromCharCode(65+i)}`,color:t.color||defs[i],score:t.score||0};
+});
+cfg.startTime ||= Date.now();
+cfg.previousLeader=cfg.previousLeader>=0?cfg.previousLeader:-1;
+save();
 
-  <script>
-    const $=id=>document.getElementById(id),
-          defaults=['#3498db','#e74c3c','#9b59b6','#f1c40f'],
-          fmt=ms=>{const s=Math.floor(ms/1000),m=Math.floor(s/60),ss=String(s%60).padStart(2,'0');return`${m}:${ss}`;};
+/* --- element refs --------------------------------------------- */
+const gear=$('settingsBtn'),panel=$('settingsPanel'),preview=$('preview'),
+      teamCount=$('teamCount'),teamsDiv=$('teamsConfig'),stepSel=$('stepSel'),
+      limitToggle=$('limitToggle'),limitRow=$('limitRow'),limitRange=$('limitRange'),limitVal=$('limitVal'),
+      cdToggle=$('cdToggle'),cdRow=$('cdRow'),cdRange=$('cdRange'),cdVal=$('cdVal'),
+      themeSel=$('themeSel'),undo=$('undoBtn'),reset=$('resetBtn'),timerBtn=$('timerBtn'),
+      court=$('court'),timerDisp=$('matchTimer'),winner=$('winnerBanner'),winnerText=$('winnerText'),
+      stats=$('statsWrap'),resetStats=$('resetStats');
 
-    // seed & load
-    const seed={
-      teamCount:2,
-      teams:[
-        {name:'Team A',color:'#3498db',score:0},
-        {name:'Team B',color:'#e74c3c',score:0}
-      ],
-      step:1,limitEnabled:false,limit:11,
-      countdownEnabled:false,countdown:300000,
-      timer:{running:false,start:0,elapsed:0},
-      history:[],wins:{},games:0,pointsTotal:0,
-      theme:'auto',startTime:Date.now(),leadChanges:0,previousLeader:-1
+/* --- drawer ---------------------------------------------- */
+gear.onclick=_=>{
+  panel.classList.toggle('open');
+  document.body.classList.toggle('panel-open',panel.classList.contains('open'));
+};
+
+/* --- theme ------------------------------------------------ */
+function applyTheme(){
+  const sys=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+  document.body.classList.toggle('light',cfg.theme==='light'||(cfg.theme==='auto'&&sys==='light'));
+  document.body.classList.toggle('dark', cfg.theme==='dark'||(cfg.theme==='auto'&&sys==='dark'));
+  themeSel.value=cfg.theme;
+}
+themeSel.onchange=e=>{cfg.theme=e.target.value;applyTheme();save()};
+applyTheme();
+
+/* --- preview grid & helpers ------------------------------- */
+function updatePreview(){
+  const w=innerWidth,h=innerHeight;
+  document.body.classList.toggle('three-portrait',cfg.teamCount===3&&h>w);
+  document.body.classList.toggle('four-grid',cfg.teamCount===4);
+  if(cfg.teamCount===4)           preview.style.gridTemplate='auto auto / 1fr 1fr';
+  else if(cfg.teamCount===3){
+    preview.style.gridTemplate=(h>w)?'1fr 1fr 1fr / 1fr':'1fr / 1fr 1fr 1fr';
+  }else if(cfg.teamCount===2)     preview.style.gridTemplate='auto / 1fr 1fr';
+  else                            preview.style.gridTemplate='auto / 1fr';
+
+  preview.innerHTML='';
+  cfg.teams.forEach(t=>{
+    preview.insertAdjacentHTML('beforeend',`<div class="previewBox">
+      <span style="color:${t.color}">${t.name}</span><small style="color:${t.color}">${t.score}</small></div>`);
+  });
+}
+addEventListener('resize',updatePreview);
+
+/* --- teams in settings ------------------------------------ */
+function renderTeams(){
+  cfg.teams=Array.from({length:cfg.teamCount},(_,i)=>{
+    const p=cfg.teams[i]||{};
+    return {name:p.name||`Team ${String.fromCharCode(65+i)}`,color:p.color||defs[i],score:p.score||0};
+  });
+  updatePreview();
+  teamsDiv.innerHTML='';
+  cfg.teams.forEach((t,i)=>{
+    teamsDiv.insertAdjacentHTML('beforeend',`
+      <label class="row">
+        <span>Team ${String.fromCharCode(65+i)}</span>
+        <input type="text"  id="name${i}" value="${t.name}">
+        <input type="color" id="clr${i}"  value="${t.color}">
+      </label>`);});
+  teamsDiv.querySelectorAll('input[type=text]').forEach(inp=>{
+    inp.oninput=e=>{
+      const i=+e.target.id.slice(4);
+      cfg.teams[i].name=e.target.value||`Team ${String.fromCharCode(65+i)}`;
+      updateCourt();updatePreview();save();
     };
-    let cfg=Object.assign(seed,JSON.parse(localStorage.getItem('pt-state')||'{}'));
-    function save(){localStorage.setItem('pt-state',JSON.stringify(cfg));}
-
-    // sanitize & defaults
-    cfg.teams=Array.from({length:cfg.teamCount},(_,i)=>{
-      const t=cfg.teams[i]||{};
-      return {
-        name:t.name||`Team ${String.fromCharCode(65+i)}`,
-        color:t.color||defaults[i],
-        score:t.score||0
-      };
-    });
-    cfg.startTime ||= Date.now();
-    cfg.leadChanges ||= 0;
-    cfg.previousLeader = cfg.previousLeader>=0 ? cfg.previousLeader : -1;
-    save();
-
-    // refs
-    const els={
-      gear:$('settingsBtn'), panel:$('settingsPanel'),
-      preview:$('preview'),
-      teamCount:$('teamCount'), teams:$('teamsConfig'),
-      stepSel:$('stepSel'),
-      limitToggle:$('limitToggle'), limitRow:$('limitRow'), limitRange:$('limitRange'), limitVal:$('limitVal'),
-      cdToggle:$('cdToggle'), cdRow:$('cdRow'), cdRange:$('cdRange'), cdVal:$('cdVal'),
-      themeSel:$('themeSel'),
-      undo:$('undoBtn'), reset:$('resetBtn'), timerBtn:$('timerBtn'),
-      court:$('court'),
-      timerDisp:$('matchTimer'),
-      winner:$('winnerBanner'), winnerText:$('winnerText'),
-      stats:$('statsWrap'), resetStats:$('resetStats')
+  });
+  teamsDiv.querySelectorAll('input[type=color]').forEach(inp=>{
+    inp.oninput=e=>{
+      const i=+e.target.id.slice(3);
+      cfg.teams[i].color=e.target.value;
+      updateCourt();updatePreview();save();
     };
+  });
+  updateCourt();save();
+}
+['input','change'].forEach(evt=>{
+  teamCount.addEventListener(evt,e=>{cfg.teamCount=+e.target.value;renderTeams();});
+});
+teamCount.value=cfg.teamCount;
 
-    // drawer toggle
-    els.gear.onclick = ()=>{
-      els.panel.classList.toggle('open');
-      document.body.classList.toggle('panel-open', els.panel.classList.contains('open'));
-    };
+/* --- game‑rule inputs ------------------------------------- */
+stepSel.value=cfg.step;
+stepSel.onchange=e=>{cfg.step=+e.target.value;save()};
 
-    // theme
-    function applyTheme(){
-      const sys=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
-      document.body.classList.toggle('light', cfg.theme==='light'||(cfg.theme==='auto'&&sys==='light'));
-      document.body.classList.toggle('dark', cfg.theme==='dark'||(cfg.theme==='auto'&&sys==='dark'));
-      els.themeSel.value = cfg.theme;
-    }
-    els.themeSel.onchange = e=>{ cfg.theme=e.target.value; applyTheme(); save() };
-    applyTheme();
+function syncLimit(){
+  limitRow.classList.toggle('hidden',!limitToggle.checked);
+  cfg.limitEnabled=limitToggle.checked;save();
+}
+limitToggle.checked=cfg.limitEnabled;limitToggle.onchange=syncLimit;
+limitRange.value=cfg.limit;limitVal.textContent=cfg.limit;
+limitRange.oninput=e=>{cfg.limit=+e.target.value;limitVal.textContent=e.target.value;save()};
+syncLimit();
 
-    // live preview layout
-    function updatePreview(){
-      const w=innerWidth, h=innerHeight;
-      if(cfg.teamCount===4){
-        els.preview.style.gridTemplate='auto / 1fr 1fr';
-      } else if(cfg.teamCount===3){
-        if(h>w){
-          els.preview.style.gridTemplate='1fr 1fr 1fr / auto';
-        } else {
-          els.preview.style.gridTemplate='auto / 1fr 1fr 1fr';
-        }
-      } else if(cfg.teamCount===2){
-        els.preview.style.gridTemplate='auto / 1fr 1fr';
-      } else {
-        els.preview.style.gridTemplate='auto / 1fr';
-      }
-      els.preview.innerHTML='';
-      cfg.teams.forEach(t=>{
-        els.preview.insertAdjacentHTML('beforeend',`
-          <div class="previewBox">
-            <span style="color:${t.color}">${t.name}</span>
-            <small style="color:${t.color}">${t.score}</small>
-          </div>`);
-      });
-    }
-    addEventListener('resize',updatePreview);
+function syncCD(){
+  cdRow.classList.toggle('hidden',!cdToggle.checked);
+  cfg.countdownEnabled=cdToggle.checked;resetClock();save();
+}
+cdToggle.checked=cfg.countdownEnabled;cdToggle.onchange=syncCD;
+cdRange.value=cfg.countdown/60000;cdVal.textContent=cfg.countdown/60000;
+cdRange.oninput=e=>{cfg.countdown=+e.target.value*60000;cdVal.textContent=e.target.value;resetClock();save()};
+syncCD();
 
-    // teams config
-    function renderTeams(){
-      cfg.teams=Array.from({length:cfg.teamCount},(_,i)=>{
-        const p=cfg.teams[i]||{};
-        return {
-          name:p.name||`Team ${String.fromCharCode(65+i)}`,
-          color:p.color||defaults[i],
-          score:p.score||0
-        };
-      });
-      updatePreview();
-      els.teams.innerHTML='';
-      cfg.teams.forEach((t,i)=>{
-        els.teams.insertAdjacentHTML('beforeend',`
-          <label class="row">
-            <span>Team ${String.fromCharCode(65+i)}</span>
-            <input type="text" id="name${i}" value="${t.name}">
-            <input type="color" id="clr${i}" value="${t.color}">
-          </label>`);
-      });
-      // name listeners
-      els.teams.querySelectorAll('input[type="text"]').forEach(inp=>{
-        inp.oninput=e=>{
-          const i=+e.target.id.slice(4);
-          cfg.teams[i].name=e.target.value||`Team ${String.fromCharCode(65+i)}`;
-          updateCourt(); updatePreview(); save();
-        };
-      });
-      // color listeners
-      els.teams.querySelectorAll('input[type="color"]').forEach(inp=>{
-        inp.oninput=e=>{
-          const i=+e.target.id.slice(3);
-          cfg.teams[i].color=e.target.value;
-          updateCourt(); updatePreview(); save();
-        };
-      });
-      updateCourt(); save();
-    }
-    ['input','change'].forEach(evt=>{
-      els.teamCount.addEventListener(evt,e=>{
-        cfg.teamCount=+e.target.value;
-        renderTeams();
-      });
-    });
-    els.teamCount.value = cfg.teamCount;
+/* --- court grid ------------------------------------------- */
+function updateCourt(){
+  const w=innerWidth,h=innerHeight;
+  if(cfg.teamCount===4)        court.style.gridTemplate='1fr 1fr / 1fr 1fr';
+  else if(cfg.teamCount===3){
+    court.style.gridTemplate=(h>w)?'1fr 1fr 1fr / 1fr':'1fr / 1fr 1fr 1fr';
+  }else if(cfg.teamCount===2)  court.style.gridTemplate='1fr 1fr / 1fr';
+  else                         court.style.gridTemplate='1fr / 1fr';
 
-    // rules
-    els.stepSel.value=cfg.step;
-    els.stepSel.onchange=e=>{ cfg.step=+e.target.value; save() };
+  court.innerHTML='';
+  cfg.teams.forEach((t,i)=>{
+    const box=document.createElement('div');
+    box.className='teamBox';box.dataset.i=i;
+    box.innerHTML=`<div class="teamName" style="color:${t.color}">${t.name}</div>
+                   <div class="teamScore" style="color:${t.color}">${t.score}</div>`;
+    attachGestures(box,i);
+    court.append(box);
+  });
+  updateScores();highlightLeader();
+}
+function updateScores(){
+  document.querySelectorAll('.teamScore').forEach((el,i)=>el.textContent=cfg.teams[i].score);
+}
+function highlightLeader(){
+  const max=Math.max(...cfg.teams.map(t=>t.score));
+  const leaders=cfg.teams.map((t,i)=>t.score===max&&max>0?i:-1).filter(i=>i>=0);
+  const tie=leaders.length>1;
+  document.querySelectorAll('.teamBox').forEach((b,i)=>{
+    b.style.borderColor=leaders.includes(i)?
+      (tie?(document.body.classList.contains('light')?'#000':'#fff'):cfg.teams[i].color)
+      :'transparent';
+  });
+  const newLead=(leaders.length===1)?leaders[0]:-1;
+  if(cfg.previousLeader>=0&&newLead!==cfg.previousLeader){cfg.leadChanges++;save();}
+  cfg.previousLeader=newLead;
+}
 
-    function syncLimit(){
-      els.limitRow.classList.toggle('hidden',!els.limitToggle.checked);
-      cfg.limitEnabled=els.limitToggle.checked; save();
-    }
-    els.limitToggle.checked=cfg.limitEnabled;
-    els.limitToggle.onchange=syncLimit;
-    els.limitRange.value=cfg.limit;
-    els.limitVal.textContent=cfg.limit;
-    els.limitRange.oninput=e=>{
-      cfg.limit=+e.target.value;
-      els.limitVal.textContent=e.target.value;
-      save();
-    };
-    syncLimit();
+/* --- gestures (tap, long‑press, swipe‑left) --------------- */
+function attachGestures(el,i){
+  let sx,sy,st,longId,wasLong=false;
+  el.onpointerdown=e=>{
+    sx=e.clientX;sy=e.clientY;st=Date.now();wasLong=false;
+    longId=setTimeout(()=>{changeScore(i,-cfg.step);wasLong=true;},500);
+  };
+  el.onpointerup=e=>{
+    clearTimeout(longId);
+    if(wasLong) return;
+    const dx=e.clientX-sx,dy=e.clientY-sy,dt=Date.now()-st;
+    if(Math.abs(dx)>30&&Math.abs(dx)>Math.abs(dy)&&dt<500) changeScore(i,-cfg.step); // swipe
+    else changeScore(i,cfg.step); // tap
+  };
+  el.onpointercancel=_=>clearTimeout(longId);
+}
+function changeScore(i,d){
+  cfg.teams[i].score=Math.max(0,cfg.teams[i].score+d);
+  cfg.history.push({team:i,delta:d});
+  if(cfg.history.length>300) cfg.history.shift();
+  updateScores();highlightLeader();haptic();checkWin(i);save();updatePreview();
+}
 
-    function syncCD(){
-      els.cdRow.classList.toggle('hidden',!els.cdToggle.checked);
-      cfg.countdownEnabled=els.cdToggle.checked; resetClock(); save();
-    }
-    els.cdToggle.checked=cfg.countdownEnabled;
-    els.cdToggle.onchange=syncCD;
-    els.cdRange.value=cfg.countdown/60000;
-    els.cdVal.textContent=cfg.countdown/60000;
-    els.cdRange.oninput=e=>{
-      cfg.countdown=+e.target.value*60000;
-      els.cdVal.textContent=e.target.value;
-      resetClock(); save();
-    };
-    syncCD();
+/* --- undo / reset ----------------------------------------- */
+undo.onpointerdown=_=>{
+  const h=cfg.history.pop(); if(!h) return;
+  cfg.teams[h.team].score=Math.max(0,cfg.teams[h.team].score-h.delta);
+  updateScores();highlightLeader();save();updatePreview();
+};
+reset.onpointerdown=_=>{
+  if(confirm('Really reset this match?')){resetGame();updatePreview();}
+};
+function resetGame(){
+  cfg.teams.forEach(t=>t.score=0);
+  cfg.history=[];updateScores();highlightLeader();
+  cfg.startTime=Date.now();cfg.leadChanges=0;cfg.previousLeader=-1;
+  winner.style.display='none';save();
+}
 
-    // court layout & rendering
-    function updateCourt(){
-      const w=innerWidth, h=innerHeight;
-      if(cfg.teamCount===1){
-        els.court.style.gridTemplate='1fr / 1fr';
-      } else if(cfg.teamCount===2){
-        els.court.style.gridTemplate='1fr 1fr / 1fr';
-      } else if(cfg.teamCount===3){
-        if(h>w){
-          els.court.style.gridTemplate='1fr 1fr 1fr / 1fr';
-        } else {
-          els.court.style.gridTemplate='1fr / 1fr 1fr 1fr';
-        }
-      } else {
-        els.court.style.gridTemplate='1fr 1fr / 1fr 1fr';
-      }
-      els.court.innerHTML='';
-      cfg.teams.forEach((t,i)=>{
-        const b=document.createElement('div');
-        b.className='teamBox'; b.dataset.i=i;
-        b.innerHTML=`
-          <div class="teamName" style="color:${t.color}">${t.name}</div>
-          <div class="teamScore" style="color:${t.color}">${t.score}</div>`;
-        b.addEventListener('pointerdown',e=>startPress(e,b));
-        els.court.append(b);
-      });
-      updateScores(); highlightLeader();
-    }
-    function updateScores(){
-      document.querySelectorAll('.teamScore').forEach((el,i)=>{
-        el.textContent=cfg.teams[i].score;
-      });
-    }
-    function highlightLeader(){
-      const max=Math.max(...cfg.teams.map(t=>t.score));
-      const leaders=cfg.teams.map((t,i)=>t.score===max&&max>0?i:-1).filter(i=>i>=0);
-      const tie=leaders.length>1;
-      document.querySelectorAll('.teamBox').forEach((b,i)=>{
-        b.style.borderColor='transparent';
-        if(leaders.includes(i)){
-          b.style.borderColor = tie
-            ? (document.body.classList.contains('light')?'#000':'#fff')
-            : cfg.teams[i].color;
-        }
-      });
-      const newLead = leaders.length===1?leaders[0]:-1;
-      if(cfg.previousLeader>=0 && newLead!==cfg.previousLeader){
-        cfg.leadChanges++; save();
-      }
-      cfg.previousLeader=newLead;
-    }
+/* --- winner & stats --------------------------------------- */
+function checkWin(i){
+  if(cfg.limitEnabled&&cfg.teams[i].score>=cfg.limit){
+    confetti({particleCount:200,spread:70,startVelocity:45});
+    winnerText.textContent=`🏆 ${cfg.teams[i].name} wins!`;
+    winner.style.display='flex';
+    cfg.wins[cfg.teams[i].name]=(cfg.wins[cfg.teams[i].name]||0)+1;
+    cfg.games++;cfg.pointsTotal+=cfg.teams.reduce((s,t)=>s+t.score,0);
+    renderStats();save();
+  }
+}
+function renderStats(){
+  stats.innerHTML='';
+  stats.insertAdjacentHTML('beforeend',`<div><strong>Pts/tap:</strong> +${cfg.step}</div>`);
+  const e=Date.now()-cfg.startTime,m=Math.floor(e/60000),s=String(Math.floor((e%60000)/1000)).padStart(2,'0');
+  stats.insertAdjacentHTML('beforeend',`<div><strong>Time:</strong> ${m}:${s}</div>`);
+  stats.insertAdjacentHTML('beforeend',`<div><strong>Leads:</strong> ${cfg.leadChanges}</div>`);
+  Object.entries(cfg.wins).forEach(([n,w])=>stats.insertAdjacentHTML('beforeend',`<div>${n}: ${w} wins</div>`));
+  if(cfg.games){
+    stats.insertAdjacentHTML('beforeend',`<div>Avg/game: ${(cfg.pointsTotal/cfg.games).toFixed(1)}</div>`);
+    resetStats.style.display='';
+  }else resetStats.style.display='none';
+}
+resetStats.onpointerdown=_=>{cfg.wins={};cfg.games=cfg.pointsTotal=0;renderStats();save()};
+renderStats();
 
-    // tap/long‑press
-    let longId,wasLong=false;
-    function startPress(e,box){
-      const i=+box.dataset.i,st=cfg.step;
-      wasLong=false;
-      longId=setTimeout(()=>{
-        changeScore(i,-st); wasLong=true;
-      },500);
-      const end=()=>{
-        clearTimeout(longId);
-        if(!wasLong) changeScore(i,st);
-        box.removeEventListener('pointerup',end);
-        box.removeEventListener('pointercancel',end);
-      };
-      box.addEventListener('pointerup',end);
-      box.addEventListener('pointercancel',end);
-    }
-    function changeScore(i,d){
-      cfg.teams[i].score=Math.max(0,cfg.teams[i].score+d);
-      cfg.history.push({team:i,delta:d});
-      if(cfg.history.length>300) cfg.history.shift();
-      updateScores(); highlightLeader(); haptic(); checkWin(i); save();
-      updatePreview();
-    }
+/* --- countdown -------------------------------------------- */
+function resetClock(){
+  if(!cfg.countdownEnabled){timerDisp.textContent='00:00';timerBtn.style.display='none';return}
+  timerBtn.style.display='inline-block';
+  cfg.timer.elapsed=cfg.countdown;cfg.timer.running=false;timerBtn.textContent='⏱';
+}
+resetClock();
+timerBtn.onpointerdown=_=>{
+  if(!cfg.countdownEnabled)return;
+  const t=cfg.timer;
+  if(t.running){t.running=false;t.elapsed=Math.max(0,t.start+cfg.countdown-Date.now());timerBtn.textContent='⏱';}
+  else{t.running=true;t.start=Date.now()-(cfg.countdown-t.elapsed||0);timerBtn.textContent='⏸';}
+  save();
+};
+(function loop(){
+  const t=cfg.timer;
+  if(t.running&&cfg.countdownEnabled){
+    const r=Math.max(0,t.start+cfg.countdown-Date.now());
+    timerDisp.textContent=fmt(r);
+    if(r===0){t.running=false;confetti({particleCount:180,spread:100})}
+  }
+  requestAnimationFrame(loop);
+})();
 
-    // undo/reset
-    els.undo.onclick=()=>{
-      const h=cfg.history.pop(); if(!h) return;
-      cfg.teams[h.team].score=Math.max(0,cfg.teams[h.team].score-h.delta);
-      updateScores();highlightLeader();save(); updatePreview();
-    };
-    els.reset.onclick=()=>{
-      if(!confirm('Really reset this match?')) return;
-      resetGame(); updatePreview();
-    };
-    function resetGame(){
-      cfg.teams.forEach(t=>t.score=0);
-      cfg.history=[]; updateScores(); highlightLeader();
-      cfg.startTime=Date.now(); cfg.leadChanges=0; cfg.previousLeader=-1;
-      els.winner.style.display='none'; save();
-    }
+/* --- haptic beep ------------------------------------------ */
+let audioCtx;
+function haptic(){
+  try{
+    audioCtx=audioCtx||new(AudioContext||webkitAudioContext)();
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.connect(g);g.connect(audioCtx.destination);
+    o.frequency.value=200;g.gain.value=.8;o.start();o.stop(audioCtx.currentTime+.02);
+  }catch{}
+}
 
-    // win & stats
-    function checkWin(i){
-      if(cfg.limitEnabled && cfg.teams[i].score>=cfg.limit){
-        confetti({particleCount:200,spread:70,startVelocity:45});
-        els.winnerText.textContent=`🏆 ${cfg.teams[i].name} wins!`;
-        els.winner.style.display='flex';
-        cfg.wins[cfg.teams[i].name]=(cfg.wins[cfg.teams[i].name]||0)+1;
-        cfg.games++; cfg.pointsTotal+=cfg.teams.reduce((s,t)=>s+t.score,0);
-        renderStats(); save();
-      }
-    }
-    function renderStats(){
-      els.stats.innerHTML='';
-      els.stats.insertAdjacentHTML('beforeend',`<div><strong>Pts/tap:</strong> +${cfg.step}</div>`);
-      const el=Date.now()-cfg.startTime,mm=Math.floor(el/60000),ss=String(Math.floor((el%60000)/1000)).padStart(2,'0');
-      els.stats.insertAdjacentHTML('beforeend',`<div><strong>Time:</strong> ${mm}:${ss}</div>`);
-      els.stats.insertAdjacentHTML('beforeend',`<div><strong>Leads:</strong> ${cfg.leadChanges}</div>`);
-      Object.entries(cfg.wins).forEach(([n,w])=>{
-        els.stats.insertAdjacentHTML('beforeend',`<div>${n}: ${w} wins</div>`);
-      });
-      if(cfg.games){
-        const avg=(cfg.pointsTotal/cfg.games).toFixed(1);
-        els.stats.insertAdjacentHTML('beforeend',`<div>Avg/game: ${avg}</div>`);
-        els.resetStats.style.display='';
-      } else els.resetStats.style.display='none';
-    }
-    els.resetStats.onclick=()=>{
-      cfg.wins={};cfg.games=cfg.pointsTotal=0;renderStats();save();
-    };
+/* --- dbl‑tap zoom block ----------------------------------- */
+let last=0;
+addEventListener('touchend',e=>{const n=e.timeStamp;if(n-last<300)e.preventDefault();last=n},{passive:false});
 
-    // countdown
-    function resetClock(){
-      if(!cfg.countdownEnabled){
-        els.timerDisp.textContent='00:00'; els.timerBtn.style.display='none'; return;
-      }
-      els.timerBtn.style.display='inline-block';
-      cfg.timer.elapsed=cfg.countdown; cfg.timer.running=false;
-      els.timerBtn.textContent='⏱';
-    }
-    resetClock();
-    els.timerBtn.onclick=()=>{
-      if(!cfg.countdownEnabled) return;
-      const t=cfg.timer;
-      if(t.running){
-        t.running=false; t.elapsed=Math.max(0,t.start+cfg.countdown-Date.now());
-        els.timerBtn.textContent='⏱';
-      } else {
-        t.running=true; t.start=Date.now()-(cfg.countdown-t.elapsed||0);
-        els.timerBtn.textContent='⏸';
-      }
-      save();
-    };
-    (function loop(){
-      const t=cfg.timer;
-      if(t.running&&cfg.countdownEnabled){
-        const r=Math.max(0,t.start+cfg.countdown-Date.now());
-        els.timerDisp.textContent=fmt(r);
-        if(r===0){ t.running=false; confetti({particleCount:180,spread:100}); }
-      }
-      requestAnimationFrame(loop);
-    })();
-
-    // haptic
-    let audioCtx;
-    function haptic(){
-      try{
-        audioCtx=audioCtx||new(AudioContext||webkitAudioContext)();
-        const o=audioCtx.createOscillator(),g=audioCtx.createGain();
-        o.connect(g); g.connect(audioCtx.destination);
-        o.frequency.value=200; g.gain.value=.8;
-        o.start(); o.stop(audioCtx.currentTime+.02);
-      }catch{}
-    }
-
-    // block dbl‑tap zoom
-    let last=0;
-    document.addEventListener('touchend',e=>{
-      const n=e.timeStamp; if(n-last<300)e.preventDefault(); last=n;
-    },{passive:false});
-
-    // initial render
-    renderTeams();
-  </script>
+/* --- initial render --------------------------------------- */
+renderTeams();
+</script>
 </body>
 </html>
