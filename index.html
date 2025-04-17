@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Point Tracker</title>
+
+<!-- PWA hooks (all paths are relative for GitHub Pages) -->
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="apple-touch-icon" href="./icon-192.png"> <!-- 192 px square -->
+
+<style>
+  :root{--top-clr:#3498db;--bot-clr:#e74c3c;}
+  *{box-sizing:border-box;margin:0;padding:0;font-family:sans-serif;}
+  body{display:flex;flex-direction:column;height:100vh;}
+  header{padding:0.6rem 1rem;background:#222;color:#fff;display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;}
+  header input[type="number"]{width:5rem;padding:0.2rem;}
+  header label{font-size:0.88rem;}
+  .court{flex:1;display:flex;flex-direction:column;}
+  .half{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;user-select:none;cursor:pointer;transition:opacity .15s;}
+  .half:active{opacity:0.7;}
+  .name{font-size:1.8rem;font-weight:600;color:#fff;text-shadow:1px 1px 2px #000;}
+  .score{font-size:4rem;font-weight:700;color:#fff;text-shadow:2px 2px 3px #000;}
+  #top{background:var(--top-clr);}
+  #bot{background:var(--bot-clr);}
+  #winnerBanner{position:absolute;inset:0;display:none;justify-content:center;align-items:center;background:rgba(0,0,0,.75);color:#fff;font-size:3rem;font-weight:700;flex-direction:column;text-align:center;}
+  #winnerBanner button{margin-top:1rem;font-size:1.1rem;padding:0.4rem 0.8rem;}
+  footer{padding:0.5rem;display:flex;gap:0.5rem;justify-content:center;}
+  footer button{font-size:1rem;padding:0.4rem 0.8rem;}
+</style>
+</head>
+<body>
+<header>
+  <label>Top name <input id="topNameInput" type="text" value="Team A"></label>
+  <label>Top colour <input id="topClrInput" type="color" value="#3498db"></label>
+  <label>Bottom name <input id="botNameInput" type="text" value="Team B"></label>
+  <label>Bottom colour <input id="botClrInput" type="color" value="#e74c3c"></label>
+  <label>Points to win <input id="targetInput" type="number" min="1" value="11"></label>
+</header>
+
+<div class="court">
+  <div id="top" class="half" data-side="top">
+    <div class="name" id="topName">Team A</div>
+    <div class="score" id="topScore">0</div>
+  </div>
+  <div id="bot" class="half" data-side="bot">
+    <div class="name" id="botName">Team B</div>
+    <div class="score" id="botScore">0</div>
+  </div>
+</div>
+
+<div id="winnerBanner">
+  <div id="winnerText">🏆 Winner!</div>
+  <button onclick="resetGame()">New game</button>
+</div>
+
+<footer>
+  <button onclick="undo()">Undo</button>
+  <button onclick="resetGame()">Reset scores</button>
+</footer>
+
+<script>
+/* ---------------- state ---------------- */
+const state={top:0,bot:0,target:parseInt(targetInput.value,10),history:[]};
+const els={topScore:topScore,botScore:botScore,topHalf:top,botHalf:bot,
+           banner:winnerBanner,winnerT:winnerText};
+
+/* -------------- helpers --------------- */
+function updateDisplay(){
+  els.topScore.textContent=state.top;
+  els.botScore.textContent=state.bot;
+}
+function checkWinner(side){
+  if(state[side]>=state.target){
+    els.winnerT.innerHTML=`🏆 ${document.getElementById(side+'Name').textContent} wins!`;
+    els.banner.style.display='flex';
+    document.body.style.pointerEvents='none';
+    els.banner.style.pointerEvents='auto';
+  }
+}
+
+/* -------------- scoring --------------- */
+function addPoint(e){
+  const s=e.currentTarget.dataset.side;
+  state[s]++; state.history.push(s);
+  updateDisplay(); checkWinner(s);
+}
+top.addEventListener('click',addPoint);
+bot.addEventListener('click',addPoint);
+
+function undo(){
+  const s=state.history.pop(); if(!s) return;
+  state[s]=Math.max(0,state[s]-1); updateDisplay();
+}
+function resetGame(){
+  state.top=state.bot=0; state.history=[];
+  els.banner.style.display='none'; document.body.style.pointerEvents='auto';
+  updateDisplay();
+}
+
+/* -------- live settings bindings ------ */
+topNameInput.oninput=e=>topName.textContent=e.target.value||' ';
+botNameInput.oninput=e=>botName.textContent=e.target.value||' ';
+topClrInput.oninput=e=>document.documentElement.style.setProperty('--top-clr',e.target.value);
+botClrInput.oninput=e=>document.documentElement.style.setProperty('--bot-clr',e.target.value);
+targetInput .oninput=e=>state.target=Math.max(1,parseInt(e.target.value||1,10));
+
+/* ------- service‑worker register ------- */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(console.error));
+}
+</script>
+</body>
+</html>
