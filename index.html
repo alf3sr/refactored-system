@@ -46,83 +46,8 @@
     }
 
     /* —— Slide‑out panel —— */
-    #settingsPanel {
-      position:fixed; top:0; right:0;
-      width:300px; height:100%;
-      background:var(--panel-bg);
-      border-left:1px solid var(--panel-border);
-      transform:translateX(100%);
-      transition:transform .3s;
-      padding:1rem;
-      overflow-y:auto;
-      z-index:99;
-    }
-    #settingsPanel.open { transform:translateX(0); }
-    #settingsPanel h2 {
-      margin-bottom:.5rem;
-      font-size:1.2rem;
-      border-bottom:1px solid var(--panel-border);
-      padding-bottom:.3rem;
-    }
-    #settingsPanel label {
-      display:flex; align-items:center;
-      margin:.6rem 0;
-      font-size:.95rem;
-    }
-    #settingsPanel label>span { flex:1; }
-    #settingsPanel input[type="text"],
-    #settingsPanel input[type="number"],
-    #settingsPanel select {
-      flex:1;
-      padding:.4rem .6rem;
-      background:#1a1a1a;
-      border:1px solid #444;
-      border-radius:6px;
-      color:var(--text);
-    }
-    #settingsPanel input[type="color"] {
-      width:2.2rem; height:2.2rem;
-      padding:0; border:none; background:none;
-    }
-    .toggle {
-      position:relative;
-      width:40px; height:20px;
-      margin-left:.6rem;
-    }
-    .toggle input {
-      opacity:0; width:0; height:0;
-    }
-    .slider {
-      position:absolute; cursor:pointer;
-      top:0; left:0; right:0; bottom:0;
-      background:#444; border-radius:20px;
-      transition:.2s;
-    }
-    .slider:before {
-      position:absolute; content:"";
-      height:16px; width:16px;
-      left:2px; bottom:2px;
-      background:var(--text);
-      border-radius:50%;
-      transition:.2s;
-    }
-    input:checked + .slider {
-      background:#3498db;
-    }
-    input:checked + .slider:before {
-      transform:translateX(20px);
-    }
-    #applySettings {
-      margin-top:1rem;
-      width:100%;
-      padding:.6rem;
-      background:#3498db;
-      border:none;
-      color:#fff;
-      font-size:1rem;
-      border-radius:6px;
-      cursor:pointer;
-    }
+    #settingsPanel { /* unchanged… */ }
+    /* … your existing panel CSS here … */
 
     /* —— Scoreboard grid —— */
     #court {
@@ -137,13 +62,15 @@
       border:1px solid #111;
       user-select:none;
       cursor:pointer;
-      transition:background .15s;
+      /* add a quick transform transition */
+      transition: background .15s, transform .1s ease;
     }
     .teamBox:active {
       background:#111;
+      transform:scale(0.97);
     }
 
-    /* larger, responsive text */
+    /* fluid, larger text */
     .teamName {
       font-size:clamp(2.5rem, 8vw, 5rem);
       font-weight:600;
@@ -156,215 +83,61 @@
     }
 
     /* —— Winner overlay —— */
-    #winnerBanner {
-      position:absolute; inset:0;
-      display:none;
-      background:rgba(0,0,0,.8);
-      color:#fff;
-      font-size:2.4rem;
-      font-weight:700;
-      justify-content:center;
-      align-items:center;
-      flex-direction:column;
-      z-index:200;
-    }
-    #winnerBanner button {
-      margin-top:1rem;
-      padding:.5rem 1rem;
-      border-radius:6px;
-      background:#222;
-      border:1px solid #555;
-      color:#fff;
-    }
+    #winnerBanner { /* unchanged… */ }
+    /* … your existing winner CSS here … */
   </style>
 </head>
 <body>
 
-  <!-- Settings toggle -->
+  <!-- Settings toggle & panel (unchanged) -->
   <button id="settingsBtn">⚙️</button>
-
-  <!-- Slide‑out settings panel -->
-  <div id="settingsPanel">
-    <h2>Settings</h2>
-
-    <label>
-      <span>Number of teams</span>
-      <select id="teamCount">
-        <option value="2">2 teams</option>
-        <option value="3">3 teams</option>
-        <option value="4">4 teams</option>
-      </select>
-    </label>
-
-    <div id="teamsConfig"><!-- populated by JS --></div>
-
-    <label>
-      <span>Enable score limit</span>
-      <div class="toggle">
-        <input type="checkbox" id="limitToggle" checked>
-        <span class="slider"></span>
-      </div>
-    </label>
-
-    <label>
-      <span>Points to win</span>
-      <input type="number" id="limitInput" min="1" value="11">
-    </label>
-
-    <button id="applySettings">Apply</button>
-  </div>
+  <div id="settingsPanel">…</div>
 
   <!-- Scoreboard grid -->
   <div id="court"></div>
 
   <!-- Winner overlay -->
-  <div id="winnerBanner">
-    <div id="winnerText">🏆 Winner!</div>
-    <button onclick="resetGame()">New game</button>
-  </div>
+  <div id="winnerBanner">…</div>
 
 <script>
-/* — State — */
-let config = {
-  teamCount: 2,
-  teams: [
-    { name: 'Team A', color: '#3498db', score: 0 },
-    { name: 'Team B', color: '#e74c3c', score: 0 }
-  ],
-  limitEnabled: true,
-  limit: 11,
-  history: []
-};
+// — your existing state/setup/draw code here —
+// (no changes until the haptic function)
 
-/* — Elements — */
-const els = {
-  court: document.getElementById('court'),
-  settingsBtn: document.getElementById('settingsBtn'),
-  panel: document.getElementById('settingsPanel'),
-  apply: document.getElementById('applySettings'),
-  teamCount: document.getElementById('teamCount'),
-  teamsConfig: document.getElementById('teamsConfig'),
-  limitToggle: document.getElementById('limitToggle'),
-  limitInput: document.getElementById('limitInput'),
-  winnerBanner: document.getElementById('winnerBanner'),
-  winnerText: document.getElementById('winnerText')
-};
-
-/* — Toggle panel — */
-els.settingsBtn.onclick = () => els.panel.classList.toggle('open');
-
-/* — Default colors for up to 4 teams — */
-const defaultColors = ['#3498db','#e74c3c','#9b59b6','#f1c40f'];
-
-/* — Render the team‑config fields (based on dropdown) — */
-function renderTeamConfig() {
-  const count = +els.teamCount.value;
-  els.teamsConfig.innerHTML = '';
-  for (let i = 0; i < count; i++) {
-    // prep defaults if they don't exist
-    if (!config.teams[i]) {
-      config.teams[i] = {
-        name: `Team ${String.fromCharCode(65+i)}`,
-        color: defaultColors[i],
-        score: 0
-      };
+//
+// Replace your old haptic() with this:
+//
+let audioCtx = null;
+function haptic() {
+  try {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext||window.webkitAudioContext)();
     }
-    const t = config.teams[i];
-    const div = document.createElement('div');
-    div.style.margin = '.5rem 0';
-    div.innerHTML = `
-      <label style="display:flex;align-items:center;gap:.5rem">
-        <span>Team ${String.fromCharCode(65+i)}:</span>
-        <input type="text" id="name${i}" value="${t.name}">
-      </label>
-      <label style="display:flex;align-items:center;gap:.5rem">
-        <span>Colour:</span>
-        <input type="color" id="clr${i}" value="${t.color}">
-      </label>`;
-    els.teamsConfig.append(div);
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.frequency.value = 200;       // low‑tone “click”
+    gain.gain.setValueAtTime(1, audioCtx.currentTime);
+    osc.start(audioCtx.currentTime);
+    osc.stop(audioCtx.currentTime + 0.02); // 20 ms beep
+  } catch(e){
+    // if Web Audio isn’t available, silent fail
+    console.warn('Haptic audio failed', e);
   }
 }
-renderTeamConfig();
-els.teamCount.onchange = renderTeamConfig;
 
-/* — Apply button — */
-els.apply.onclick = () => {
-  const count = +els.teamCount.value;
-  config.limitEnabled = els.limitToggle.checked;
-  config.limit = Math.max(1, +els.limitInput.value || 1);
-
-  // rebuild teams array from inputs
-  const newTeams = [];
-  for (let i = 0; i < count; i++) {
-    const name = document.getElementById(`name${i}`).value.trim() ||
-                 `Team ${String.fromCharCode(65+i)}`;
-    const color = document.getElementById(`clr${i}`).value;
-    newTeams.push({ name, color, score: 0 });
-  }
-  config.teamCount = count;
-  config.teams = newTeams;
-  config.history = [];
-
-  els.panel.classList.remove('open');
-  drawCourt();
-};
-
-/* — Draw the grid of teams — */
-function drawCourt() {
-  // 2 teams = 2 rows × 1 col; 3 or 4 = 2×2
-  els.court.style.gridTemplate =
-    config.teamCount === 2 ? '1fr 1fr / 1fr' : '1fr 1fr / 1fr 1fr';
-  els.court.innerHTML = '';
-
-  config.teams.forEach((t,i) => {
-    const box = document.createElement('div');
-    box.className = 'teamBox';
-    box.dataset.index = i;
-    box.innerHTML = `
-      <div class="teamName" style="color:${t.color}">${t.name}</div>
-      <div class="teamScore" style="color:${t.color}">0</div>`;
-    box.onclick = onTeamClick;
-    els.court.append(box);
-  });
-}
-drawCourt();
-
-/* — Scoring & UI — */
-function updateScores() {
-  document.querySelectorAll('.teamBox').forEach(box => {
-    const i = +box.dataset.index;
-    box.querySelector('.teamScore').textContent = config.teams[i].score;
-  });
-}
-function haptic() { if (navigator.vibrate) navigator.vibrate(10); }
-function checkWinner(i) {
-  if (config.limitEnabled && config.teams[i].score >= config.limit) {
-    els.winnerText.innerHTML = `🏆 ${config.teams[i].name} wins!`;
-    els.winnerBanner.style.display = 'flex';
-  }
-}
+// — scoring handlers —
 function onTeamClick(e) {
   const i = +e.currentTarget.dataset.index;
   config.teams[i].score++;
   config.history.push(i);
-  updateScores(); haptic(); checkWinner(i);
-}
-function resetGame() {
-  config.teams.forEach(t => t.score = 0);
-  config.history = [];
-  els.winnerBanner.style.display = 'none';
   updateScores();
+  haptic();          // ← use our simulated feedback
+  checkWinner(i);
 }
-function undo() {
-  const i = config.history.pop();
-  if (i == null) return;
-  config.teams[i].score = Math.max(0, config.teams[i].score - 1);
-  updateScores();
-}
-window.resetGame = resetGame;
-window.undo = undo;
 
-/* — Register SW — */
+// — rest of your existing JS (drawCourt, undo, resetGame, etc.) —
+
+// Finally register the service worker…
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () =>
     navigator.serviceWorker.register('./sw.js').catch(console.error)
