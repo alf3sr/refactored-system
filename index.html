@@ -1,366 +1,255 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Point Tracker</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Point Tracker</title>
 
-  <!-- PWA manifest & icons -->
-  <link rel="manifest" href="./manifest.json">
-  <meta name="theme-color" content="#000000">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <link rel="apple-touch-icon" href="./Icon-192.png">
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="apple-touch-icon" href="./Icon-192.png">
 
-  <style>
-    :root {
-      --bg: #000;
-      --panel-bg: #111;
-      --panel-border: #333;
-      --text: #fff;
-    }
-    * { box-sizing:border-box; margin:0; padding:0; }
-    body {
-      height:100vh;
-      background:var(--bg);
-      color:var(--text);
-      font-family:system-ui,sans-serif;
-      overflow:hidden;
-    }
+<style>
+:root{--bg:#000;--panel-bg:#111;--panel-border:#333;--text:#fff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{height:100vh;background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;overflow:hidden}
 
-    /* —— Minimal ⚙️ button —— */
-    #settingsBtn {
-      position:fixed;
-      top:1rem; right:1rem;
-      z-index:100;
-      width:2.5rem; height:2.5rem;
-      background:none;
-      border:2px solid rgba(255,255,255,0.6);
-      border-radius:50%;
-      display:flex; align-items:center; justify-content:center;
-      font-size:1.4rem; color:rgba(255,255,255,0.9);
-      cursor:pointer;
-    }
+/* Gear */
+#settingsBtn{position:fixed;top:1rem;right:1rem;z-index:90;width:2.4rem;height:2.4rem;border:2px solid #666;border-radius:50%;background:none;display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:#aaa;cursor:pointer}
 
-    /* —— Slide‑out panel —— */
-    #settingsPanel {
-      position:fixed; top:0; right:0;
-      width:300px; height:100%;
-      background:var(--panel-bg);
-      border-left:1px solid var(--panel-border);
-      transform:translateX(100%); transition:transform .3s;
-      padding:1rem; overflow-y:auto; z-index:99;
-    }
-    #settingsPanel.open {
-      transform:translateX(0);
-    }
-    #settingsPanel h2 {
-      margin-bottom:.5rem;
-      font-size:1.2rem;
-      border-bottom:1px solid var(--panel-border);
-      padding-bottom:.3rem;
-    }
-    #settingsPanel label {
-      display:flex; align-items:center;
-      margin:.6rem 0; font-size:.95rem;
-    }
-    #settingsPanel label>span { flex:1; }
-    #settingsPanel input[type="text"],
-    #settingsPanel input[type="number"],
-    #settingsPanel select {
-      flex:1; padding:.4rem .6rem;
-      background:#1a1a1a; border:1px solid #444;
-      border-radius:6px; color:var(--text);
-    }
-    #settingsPanel input[type="color"] {
-      width:2.2rem; height:2.2rem;
-      padding:0; border:none; background:none;
-    }
-    .toggle {
-      position:relative; width:40px; height:20px;
-      margin-left:.6rem;
-    }
-    .toggle input { opacity:0; width:0; height:0; }
-    .slider {
-      position:absolute; cursor:pointer;
-      top:0; left:0; right:0; bottom:0;
-      background:#444; border-radius:20px;
-      transition:.2s;
-    }
-    .slider:before {
-      position:absolute; content:"";
-      height:16px; width:16px;
-      left:2px; bottom:2px;
-      background:var(--text);
-      border-radius:50%;
-      transition:.2s;
-    }
-    input:checked + .slider {
-      background:#3498db;
-    }
-    input:checked + .slider:before {
-      transform:translateX(20px);
-    }
-    #applySettings {
-      margin-top:1rem; width:100%; padding:.6rem;
-      background:#3498db; border:none; color:#fff;
-      font-size:1rem; border-radius:6px; cursor:pointer;
-    }
+/* Undo / Reset */
+#cornerBtns{position:fixed;bottom:1rem;left:1rem;z-index:90;display:flex;gap:.6rem}
+.corner{width:2.4rem;height:2.4rem;border:2px solid #666;border-radius:50%;background:none;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#aaa;cursor:pointer;backdrop-filter:blur(4px)}
 
-    /* —— Scoreboard grid —— */
-    #court {
-      position:absolute; inset:0; display:grid;
-    }
-    .teamBox {
-      display:flex; flex-direction:column;
-      justify-content:center; align-items:center;
-      border:1px solid #111; user-select:none;
-      cursor:pointer;
-      transition:background .15s, transform .1s ease;
-    }
-    .teamBox:active {
-      background:#111;
-      transform:scale(0.97);
-    }
+/* Panel */
+#settingsPanel{position:fixed;top:0;right:0;width:300px;height:100%;background:var(--panel-bg);border-left:1px solid var(--panel-border);transform:translateX(100%);transition:.3s;padding:1rem;overflow-y:auto;z-index:80}
+#settingsPanel.open{transform:translateX(0)}
+#settingsPanel h2{margin-bottom:.5rem;font-size:1.2rem;border-bottom:1px solid var(--panel-border);padding-bottom:.3rem}
+#settingsPanel label{display:flex;align-items:center;margin:.6rem 0;font-size:.95rem}
+#settingsPanel label>span{flex:1}
+#settingsPanel input[type="text"],#settingsPanel select{flex:1;padding:.35rem .55rem;background:#1a1a1a;border:1px solid #444;border-radius:6px;color:var(--text)}
+#settingsPanel input[type="color"]{width:2rem;height:2rem;padding:0;border:none;background:none}
+.rangeWrap{flex:1;display:flex;align-items:center;gap:.5rem}
+#limitRange{flex:1}
+.toggle{position:relative;width:40px;height:20px;margin-left:.6rem}
+.toggle input{opacity:0;width:0;height:0}
+.slider{position:absolute;top:0;left:0;right:0;bottom:0;border-radius:20px;background:#444;transition:.2s}
+.slider:before{content:"";position:absolute;height:16px;width:16px;left:2px;bottom:2px;background:var(--text);border-radius:50%;transition:.2s}
+input:checked+.slider{background:#3498db}
+input:checked+.slider:before{transform:translateX(20px)}
+#applySettings{margin-top:1rem;width:100%;padding:.6rem;background:#3498db;border:none;color:#fff;font-size:1rem;border-radius:6px;cursor:pointer}
 
-    .teamName {
-      font-size:clamp(2.5rem, 8vw, 5rem);
-      font-weight:600; text-shadow:0 0 6px #0008;
-    }
-    .teamScore {
-      font-size:clamp(6rem, 15vw, 12rem);
-      font-weight:800; text-shadow:0 0 12px #000c;
-    }
+/* Court */
+#court{position:absolute;inset:0;display:grid}
+.teamBox{display:flex;flex-direction:column;justify-content:center;align-items:center;border:1px solid #111;user-select:none;cursor:pointer;transition:background .15s,transform .1s}
+.teamBox:active{background:#111;transform:scale(.96)}
+.teamName{font-size:clamp(2.5rem,8vw,5rem);font-weight:600;text-shadow:0 0 6px #0008}
+.teamScore{font-size:clamp(6rem,15vw,12rem);font-weight:800;text-shadow:0 0 12px #000c}
 
-    /* —— Winner overlay —— */
-    #winnerBanner {
-      position:absolute; inset:0; display:none;
-      background:rgba(0,0,0,.8); color:#fff;
-      font-size:2.4rem; font-weight:700;
-      justify-content:center; align-items:center;
-      flex-direction:column; z-index:200;
-    }
-    #winnerBanner button {
-      margin-top:1rem; padding:.5rem 1rem;
-      border-radius:6px; background:#222;
-      border:1px solid #555; color:#fff;
-    }
-  </style>
+/* Winner */
+#winnerBanner{position:absolute;inset:0;display:none;background:rgba(0,0,0,.8);z-index:95;color:#fff;font-size:2.4rem;font-weight:700;justify-content:center;align-items:center;flex-direction:column;text-align:center}
+#winnerBanner button{margin-top:1rem;padding:.5rem 1rem;border-radius:6px;background:#222;border:1px solid #555;color:#fff}
+</style>
 </head>
 <body>
 
-  <!-- Settings toggle -->
-  <button id="settingsBtn">⚙️</button>
+<button id="settingsBtn">⚙️</button>
 
-  <!-- Settings panel -->
-  <div id="settingsPanel">
-    <h2>Settings</h2>
+<div id="cornerBtns">
+  <button id="undoBtn"   class="corner" title="Undo (↶)">↶</button>
+  <button id="resetBtn"  class="corner" title="Reset scores (⟲)">⟲</button>
+</div>
 
-    <label>
-      <span>Number of teams</span>
-      <select id="teamCount">
-        <option value="2">2 teams</option>
-        <option value="3">3 teams</option>
-        <option value="4">4 teams</option>
-      </select>
+<!-- Settings panel -->
+<div id="settingsPanel">
+  <h2>Settings</h2>
+
+  <label><span>Number of teams</span>
+    <select id="teamCount">
+      <option value="2">2 teams</option>
+      <option value="3">3 teams</option>
+      <option value="4">4 teams</option>
+    </select>
+  </label>
+
+  <div id="teamsConfig"></div>
+
+  <label><span>Enable score limit</span>
+    <div class="toggle">
+      <input type="checkbox" id="limitToggle" checked><span class="slider"></span>
+    </div>
+  </label>
+
+  <div id="limitRow">
+    <label class="rangeWrap">
+      <span style="width:4.2rem">Limit</span>
+      <input type="range" id="limitRange" min="1" max="50" value="11">
+      <span id="limitVal">11</span>
     </label>
-
-    <div id="teamsConfig"></div>
-
-    <label>
-      <span>Enable score limit</span>
-      <div class="toggle">
-        <input type="checkbox" id="limitToggle" checked>
-        <span class="slider"></span>
-      </div>
-    </label>
-
-    <label>
-      <span>Points to win</span>
-      <input type="number" id="limitInput" min="1" value="11">
-    </label>
-
-    <button id="applySettings">Apply</button>
   </div>
 
-  <!-- Scoreboard -->
-  <div id="court"></div>
+  <button id="applySettings">Apply</button>
+</div>
 
-  <!-- Winner overlay -->
-  <div id="winnerBanner">
-    <div id="winnerText">🏆 Winner!</div>
-    <button onclick="resetGame()">New game</button>
-  </div>
+<!-- Court -->
+<div id="court"></div>
+
+<!-- Winner -->
+<div id="winnerBanner">
+  <div id="winnerText">🏆 Winner!</div>
+  <button onclick="resetGame()">New game</button>
+</div>
 
 <script>
-// — State —
-let config = {
-  teamCount: 2,
-  teams: [
-    { name: 'Team A', color: '#3498db', score: 0 },
-    { name: 'Team B', color: '#e74c3c', score: 0 }
+/* ---------- State ---------- */
+const saved = JSON.parse(localStorage.getItem('pt-state')||'null');
+let config = saved || {
+  teamCount:2,
+  teams:[
+    {name:'Team A',color:'#3498db',score:0},
+    {name:'Team B',color:'#e74c3c',score:0}
   ],
-  limitEnabled: true,
-  limit: 11,
-  history: []
+  limitEnabled:true,
+  limit:11,
+  history:[]
 };
 
-// — Elements —
-const els = {
-  court:        document.getElementById('court'),
-  settingsBtn:  document.getElementById('settingsBtn'),
-  panel:        document.getElementById('settingsPanel'),
-  apply:        document.getElementById('applySettings'),
-  teamCount:    document.getElementById('teamCount'),
-  teamsConfig:  document.getElementById('teamsConfig'),
-  limitToggle:  document.getElementById('limitToggle'),
-  limitInput:   document.getElementById('limitInput'),
-  winnerBanner: document.getElementById('winnerBanner'),
-  winnerText:   document.getElementById('winnerText')
+/* ---------- Elements ---------- */
+const q=id=>document.getElementById(id);
+const els={
+  court:q('court'),settingsBtn:q('settingsBtn'),panel:q('settingsPanel'),
+  apply:q('applySettings'),teamCount:q('teamCount'),teamsCfg:q('teamsConfig'),
+  limitToggle:q('limitToggle'),limitRange:q('limitRange'),limitVal:q('limitVal'),
+  undoBtn:q('undoBtn'),resetBtn:q('resetBtn'),winnerBanner:q('winnerBanner'),
+  winnerText:q('winnerText')
 };
 
-// — Toggle panel —
-els.settingsBtn.onclick = () => els.panel.classList.toggle('open');
+/* ---------- Helpers ---------- */
+const defaultColors=['#3498db','#e74c3c','#9b59b6','#f1c40f'];
+function save(){localStorage.setItem('pt-state',JSON.stringify(config))}
+els.settingsBtn.onclick=()=>els.panel.classList.toggle('open');
 
-// — Default colors A–D —
-const defaultColors = ['#3498db','#e74c3c','#9b59b6','#f1c40f'];
-
-// — Render team inputs —
-function renderTeamConfig() {
-  const n = +els.teamCount.value;
-  els.teamsConfig.innerHTML = '';
-  for (let i = 0; i < n; i++) {
-    if (!config.teams[i]) {
-      config.teams[i] = {
-        name: `Team ${String.fromCharCode(65+i)}`,
-        color: defaultColors[i],
-        score: 0
-      };
-    }
-    const t = config.teams[i];
-    const div = document.createElement('div');
-    div.style.margin = '.5rem 0';
-    div.innerHTML = `
-      <label style="display:flex;align-items:center;gap:.5rem">
+/* ------- Team config UI ------- */
+function renderTeamInputs(){
+  const n=+els.teamCount.value;
+  els.teamsCfg.innerHTML='';
+  for(let i=0;i<n;i++){
+    if(!config.teams[i])config.teams[i]={name:`Team ${String.fromCharCode(65+i)}`,color:defaultColors[i],score:0};
+    const t=config.teams[i];
+    els.teamsCfg.insertAdjacentHTML('beforeend',`
+      <label style="display:flex;align-items:center;gap:.5rem;margin:.3rem 0">
         <span>Team ${String.fromCharCode(65+i)}:</span>
         <input type="text" id="name${i}" value="${t.name}">
       </label>
-      <label style="display:flex;align-items:center;gap:.5rem">
-        <span>Colour:</span>
+      <label style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem">
+        <span style="visibility:hidden">Colour</span>
         <input type="color" id="clr${i}" value="${t.color}">
-      </label>`;
-    els.teamsConfig.append(div);
+      </label>`);
   }
 }
-renderTeamConfig();
-els.teamCount.onchange = renderTeamConfig;
+renderTeamInputs();
+els.teamCount.onchange=renderTeamInputs;
 
-// — Apply settings —
-els.apply.onclick = () => {
-  const n = +els.teamCount.value;
-  config.limitEnabled = els.limitToggle.checked;
-  config.limit = Math.max(1, +els.limitInput.value || 1);
+/* ------- Limit slider toggle ------- */
+function syncLimitUI(){
+  const on=els.limitToggle.checked;
+  els.limitRange.disabled=!on;
+  els.limitVal.textContent=els.limitRange.value;
+}
+els.limitToggle.onchange=syncLimitUI;
+els.limitRange.oninput=()=>els.limitVal.textContent=els.limitRange.value;
+syncLimitUI();
 
-  const newTeams = [];
-  for (let i = 0; i < n; i++) {
-    const name = document.getElementById(`name${i}`).value.trim() ||
-                 `Team ${String.fromCharCode(65+i)}`;
-    const color = document.getElementById(`clr${i}`).value;
-    newTeams.push({ name, color, score: 0 });
+/* ------- Apply settings ------- */
+els.apply.onclick=()=>{
+  const n=+els.teamCount.value;
+  config.teamCount=n;
+  config.teams.length=n;
+  for(let i=0;i<n;i++){
+    const name=q(`name${i}`).value.trim()||`Team ${String.fromCharCode(65+i)}`;
+    const color=q(`clr${i}`).value;
+    config.teams[i]={name,color,score:0};
   }
-  config.teamCount = n;
-  config.teams = newTeams;
-  config.history = [];
-
+  config.limitEnabled=els.limitToggle.checked;
+  config.limit=+els.limitRange.value;
+  config.history=[];
+  save();
   els.panel.classList.remove('open');
   drawCourt();
 };
 
-// — Draw grid —
-function drawCourt() {
-  els.court.style.gridTemplate =
-    config.teamCount === 2 ? '1fr 1fr / 1fr'
-                           : '1fr 1fr / 1fr 1fr';
-  els.court.innerHTML = '';
-  config.teams.forEach((t,i) => {
-    const box = document.createElement('div');
-    box.className = 'teamBox';
-    box.dataset.index = i;
-    box.innerHTML = `
-      <div class="teamName" style="color:${t.color}">${t.name}</div>
-      <div class="teamScore" style="color:${t.color}">0</div>`;
-    box.onclick = onTeamClick;
+/* ------- Court drawing ------- */
+function drawCourt(){
+  els.court.style.gridTemplate=config.teamCount===2?'1fr 1fr / 1fr':'1fr 1fr / 1fr 1fr';
+  els.court.innerHTML='';
+  config.teams.forEach((t,i)=>{
+    const box=document.createElement('div');
+    box.className='teamBox';box.dataset.i=i;
+    box.innerHTML=`<div class="teamName" style="color:${t.color}">${t.name}</div>
+                   <div class="teamScore" style="color:${t.color}">${t.score}</div>`;
+    box.addEventListener('pointerdown',e=>handlePress(e,box));
     els.court.append(box);
   });
 }
 drawCourt();
-
-// — Update scores —
-function updateScores() {
-  document.querySelectorAll('.teamBox').forEach(box => {
-    const i = +box.dataset.index;
-    box.querySelector('.teamScore').textContent = config.teams[i].score;
-  });
+function updateScores(){
+  document.querySelectorAll('.teamScore').forEach((el,i)=>el.textContent=config.teams[i].score);
 }
 
-// — Simulated feedback: CSS scale + audio click —
-let audioCtx = null;
-function haptic() {
-  try {
-    if (!audioCtx) {
-      audioCtx = new (AudioContext||webkitAudioContext)();
-    }
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.frequency.value = 200;
-    gain.gain.setValueAtTime(1, audioCtx.currentTime);
-    osc.start(audioCtx.currentTime);
-    osc.stop(audioCtx.currentTime + 0.02);
-  } catch(e){
-    console.warn('Audio feedback failed', e);
+/* ------- Tap (+) & long‑press (–) ------- */
+let pressTimer=null;
+function handlePress(e,box){
+  e.preventDefault();
+  const i=+box.dataset.i;
+  pressTimer=setTimeout(()=>{ changeScore(i,-1) },450);
+  box.addEventListener('pointerup',()=>{clearTimeout(pressTimer);if(e.pointerType!=='mouse'||e.timeStamp-e.timeStamp<450)changeScore(i,1)},{once:true});
+  box.addEventListener('pointercancel',()=>clearTimeout(pressTimer),{once:true});
+}
+function changeScore(teamIdx,delta){
+  const newVal=Math.max(0,config.teams[teamIdx].score+delta);
+  config.teams[teamIdx].score=newVal;
+  config.history.push({team:teamIdx,delta});
+  if(config.history.length>100)config.history.shift();
+  updateScores();haptic();checkWinner(teamIdx);save();
+}
+
+/* ------- Undo / Reset ------- */
+els.undoBtn.onclick=()=>{
+  const rec=config.history.pop();if(!rec)return;
+  config.teams[rec.team].score=Math.max(0,config.teams[rec.team].score-rec.delta);
+  updateScores();save();
+};
+els.resetBtn.onclick=resetGame;
+function resetGame(){config.teams.forEach(t=>t.score=0);config.history=[];updateScores();els.winnerBanner.style.display='none';save();}
+
+/* ------- Winner ------- */
+function checkWinner(i){
+  if(config.limitEnabled&&config.teams[i].score>=config.limit){
+    els.winnerText.textContent=`🏆 ${config.teams[i].name} wins!`;
+    els.winnerBanner.style.display='flex';
   }
 }
 
-// — Winner check —
-function checkWinner(i) {
-  if (config.limitEnabled && config.teams[i].score >= config.limit) {
-    els.winnerText.innerHTML = `🏆 ${config.teams[i].name} wins!`;
-    els.winnerBanner.style.display = 'flex';
-  }
+/* ------- Simulated haptic: audio click ------- */
+let audioCtx=null;
+function haptic(){
+  try{
+    if(!audioCtx)audioCtx=new(AudioContext||webkitAudioContext)();
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.connect(g);g.connect(audioCtx.destination);
+    o.frequency.value=200;g.gain.value=0.9;
+    o.start();o.stop(audioCtx.currentTime+0.02);
+  }catch{}
 }
 
-// — Tap handler —
-function onTeamClick(e) {
-  const i = +e.currentTarget.dataset.index;
-  config.teams[i].score++;
-  config.history.push(i);
-  updateScores();
-  haptic();
-  checkWinner(i);
-}
+/* ------- Restore saved state on load ------- */
+updateScores();
 
-// — Reset / Undo —
-function resetGame() {
-  config.teams.forEach(t => t.score = 0);
-  config.history = [];
-  els.winnerBanner.style.display = 'none';
-  updateScores();
-}
-function undo() {
-  const i = config.history.pop();
-  if (i == null) return;
-  config.teams[i].score = Math.max(0, config.teams[i].score - 1);
-  updateScores();
-}
-window.resetGame = resetGame;
-window.undo      = undo;
-
-// — Service worker —
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () =>
-    navigator.serviceWorker.register('./sw.js').catch(console.error)
-  );
+/* ------- Service Worker ------- */
+if('serviceWorker'in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(console.error));
 }
 </script>
 </body>
