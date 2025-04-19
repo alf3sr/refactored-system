@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,
+      initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Point Tracker</title>
 <meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,40 +13,42 @@
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <style>
-/* ========== BASE VARS ========== */
+/* ---------- COLOUR TOKENS ---------- */
 :root{--bg:#000;--fg:#fff;--panel:#111;--border:#333;--accent:#3498db;--box:#000}
 @media (prefers-color-scheme:light){
   :root{--bg:#fff;--fg:#000;--panel:#f5f5f5;--border:#ccc;--accent:#156fd1;--box:#fff}
 }
 .light{--bg:#fff;--fg:#000;--box:#fff}.dark{--bg:#000;--fg:#fff;--box:#000}
+
+/* ---------- BASE ---------- */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;touch-action:manipulation}
-body{background:var(--bg);color:var(--fg);font-family:system-ui,sans-serif;overflow:hidden;user-select:none;-webkit-user-select:none}
+body{background:var(--bg);color:var(--fg);font-family:system-ui,sans-serif;overflow:hidden;user-select:none}
 button{font:inherit}
 
-/* ========== PILL BUTTON ========== */
+/* ---------- PILL BUTTON ---------- */
 .pill{padding:.6rem 1rem;border-radius:8px;background:var(--panel);border:1px solid var(--border);color:var(--fg);box-shadow:0 2px 10px rgba(0,0,0,.25);transition:.2s}
 .pill:active{background:rgba(255,255,255,.1)}
 
-/* ========== SETTINGS FAB ========== */
-#settingsBtn{position:fixed;top:6px;right:12px;z-index:100;width:40px;height:40px;background:var(--panel);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+/* ---------- SETTINGS FAB ---------- */
+#settingsBtn{position:fixed;top:6px;right:12px;z-index:100;width:38px;height:38px;background:var(--panel);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.25)}
 
-/* ========== DRAWER ========== */
+/* ---------- DRAWER ---------- */
 #settingsPanel{position:fixed;top:0;right:0;width:320px;height:100%;padding:16px;background:var(--panel);border-left:1px solid var(--border);box-shadow:-2px 0 10px rgba(0,0,0,.25);transform:translateX(100%);transition:.3s;overflow-y:auto;overflow-x:hidden;z-index:90}
 #settingsPanel.open{transform:translateX(0)}
 #settingsPanel h2{font-size:1.3rem;margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px}
 .section-header{font-weight:600;opacity:.75;margin:16px 0 8px}
 
-/* ========== LIVE PREVIEW ========== */
+/* ---------- LIVE PREVIEW ---------- */
 #preview{display:grid;gap:0;margin-bottom:16px}
 .previewBox{background:var(--box);padding:8px;border-radius:8px;border:1px solid var(--border);text-align:center}
 .previewBox span{display:block;font-weight:600}.previewBox small{display:block;opacity:.6}
 
-/* ========== FORM ROWS ========== */
+/* ---------- FORM ROWS ---------- */
 label.row{display:flex;align-items:center;gap:12px;font-size:1rem;margin:8px 0}
 label.row>span{flex:1}
-label.row>input[type=text],label.row>select{flex:2 1 0;min-width:0;padding:.6rem .8rem;background:var(--box);border:1px solid var(--border);border-radius:6px;color:var(--fg);appearance:none;background-repeat:no-repeat;background-position:right 12px center;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path fill='currentColor' d='M0 0l5 6 5-6z'/></svg>");padding-right:2rem}
-label.row>input[type=color]{flex:none;width:32px;height:32px;border:none}
+label.row>input[type=text],label.row>select{flex:2;padding:.6rem .8rem;background:var(--box);border:1px solid var(--border);border-radius:6px;color:var(--fg);appearance:none;background-repeat:no-repeat;background-position:right 12px center;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path fill='currentColor' d='M0 0l5 6 5-6z'/></svg>");padding-right:2rem;min-width:0}
+label.row>input[type=color]{width:32px;height:32px;border:none}
 
 /* toggle */
 .toggle{position:relative;width:48px;height:28px;flex:none}
@@ -60,15 +63,15 @@ input:checked+.slider{background:var(--accent)}input:checked+.slider:before{tran
 input[type=range]::-webkit-slider-runnable-track{height:4px;background:var(--border);border-radius:4px}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;background:var(--accent);border-radius:50%;margin-top:-10px;box-shadow:0 2px 6px rgba(0,0,0,.3)}
 
-/* ========== STATS BOX ========== */
+/* ---------- STATS BOX ---------- */
 .statsBox{margin-top:24px;border-top:1px solid var(--border);padding-top:16px;font-size:1rem}
 .statsBox h3{font-size:1.2rem;margin-bottom:8px}
 
-/* ========== TIMER ========== */
+/* ---------- TIMER ---------- */
 #matchTimer{position:fixed;top:12px;left:50%;transform:translateX(-50%);font-family:'Bebas Neue',sans-serif;font-size:1.2rem;z-index:100;transition:opacity .2s}
 body.panel-open #matchTimer{opacity:0}
 
-/* ========== COURT ========== */
+/* ---------- COURT ---------- */
 #court{position:absolute;top:48px;bottom:84px;left:0;right:0;display:grid;gap:0;transition:.2s}
 .teamBox{background:var(--box);display:flex;flex-direction:column;justify-content:center;align-items:center;border:4px solid transparent;padding:12px;transition:.2s}
 .teamBox:active{transform:scale(.97)}
@@ -81,16 +84,12 @@ body.three-portrait .teamBox{padding:6px}
 body.three-portrait .teamName{font-size:clamp(3.5rem,9vw,4.5rem);margin-bottom:4px}
 body.three-portrait .teamScore{font-size:clamp(7rem,18vw,11rem)}
 
-/* ========== WINNER OVERLAY ========== */
+/* ---------- WINNER OVERLAY ---------- */
 #winnerBanner{position:absolute;inset:0;display:none;background:rgba(0,0,0,.7);color:#fff;font-size:2rem;font-weight:700;justify-content:center;align-items:center;flex-direction:column}
 #winnerBanner button{margin-top:16px}
 
-/* ========== FLOAT BAR ========== */
-#floatbar{position:fixed;z-index:100;gap:12px;transition:.2s}
-#floatbar{left:12px;bottom:16px;display:flex;flex-direction:column}
-body.one-grid  #floatbar{left:50%;transform:translateX(-50%);flex-direction:row}
-body.two-vert  #floatbar{left:12px;bottom:80px;flex-direction:column}
-body.four-grid #floatbar{left:50%;transform:translateX(-50%);bottom:16px;flex-direction:row}
+/* ---------- FLOAT BAR ---------- */
+#floatbar{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:100;transition:.2s}
 body.panel-open #floatbar{opacity:0;pointer-events:none}
 
 /* prevent dbl‑tap zoom */
@@ -122,6 +121,7 @@ html,body{touch-action:manipulation}
   <div id="teamsConfig"></div>
 
   <div class="section-header">── Game Rules ──</div>
+
   <label class="row"><span>➕ Points per tap</span>
     <select id="stepSel"><option>1</option><option>2</option><option>3</option><option>5</option></select>
   </label>
@@ -134,7 +134,11 @@ html,body{touch-action:manipulation}
   <label class="row"><span>⏱ Countdown timer</span>
     <div class="toggle"><input type="checkbox" id="cdToggle"><span class="slider"></span></div>
   </label>
-  <div id="cdRow" class="rangeRow hidden"><input type="range" id="cdRange" min="1" max="60"><span id="cdVal"></span></div>
+  <div id="cdRow" class="rangeRow hidden">
+    <input type="range" id="cdRange" min="0" max="1800" step="30">
+    <input type="number" id="cdNum" min="0" max="1800" step="30" style="width:5rem;background:var(--box);border:1px solid var(--border);border-radius:6px;padding:.4rem .5rem;color:var(--fg)">
+    <span id="cdVal"></span>
+  </div>
 
   <label class="row"><span>🌗 Theme</span>
     <select id="themeSel"><option value="auto">Auto</option><option value="dark">Dark</option><option value="light">Light</option></select>
@@ -148,15 +152,15 @@ html,body{touch-action:manipulation}
 <div id="winnerBanner"><div id="winnerText">🏆 Winner!</div><button onclick="resetGame()" class="pill">▶️ New game</button></div>
 
 <script>
-/* ===== helpers & state ===== */
+/* ========== helpers & state ========== */
 const $=id=>document.getElementById(id),
       defs=['#3498db','#e74c3c','#9b59b6','#f1c40f'],
       fmt=ms=>{const s=Math.floor(ms/1000),m=Math.floor(s/60),ss=String(s%60).padStart(2,'0');return`${m}:${ss}`};
 
 const seed={teamCount:2,teams:[{name:'Team A',color:'#3498db',score:0},{name:'Team B',color:'#e74c3c',score:0}],
-  step:1,limitEnabled:false,limit:11,countdownEnabled:false,countdown:300000,
-  timer:{running:false,start:0,elapsed:0},history:[],wins:{},games:0,pointsTotal:0,
-  theme:'auto',startTime:Date.now(),leadChanges:0,previousLeader:-1};
+      step:1,limitEnabled:false,limit:11,countdownEnabled:false,countdown:300000,
+      timer:{running:false,start:0,elapsed:0},history:[],wins:{},games:0,pointsTotal:0,
+      theme:'auto',startTime:Date.now(),leadChanges:0,previousLeader:-1};
 
 let cfg=Object.assign(seed,JSON.parse(localStorage.getItem('pt-state')||'{}'));
 const save=_=>localStorage.setItem('pt-state',JSON.stringify(cfg));
@@ -164,84 +168,171 @@ const save=_=>localStorage.setItem('pt-state',JSON.stringify(cfg));
 cfg.teams=Array.from({length:cfg.teamCount},(_,i)=>({name:cfg.teams[i]?.name||`Team ${String.fromCharCode(65+i)}`,color:cfg.teams[i]?.color||defs[i],score:cfg.teams[i]?.score||0}));
 cfg.startTime ||= Date.now();cfg.previousLeader=cfg.previousLeader>=0?cfg.previousLeader:-1;save();
 
-/* ===== refs ===== */
+/* ========== refs ========== */
 const gear=$('settingsBtn'),panel=$('settingsPanel'),preview=$('preview'),teamCount=$('teamCount'),teamsDiv=$('teamsConfig'),
       stepSel=$('stepSel'),limitToggle=$('limitToggle'),limitRow=$('limitRow'),limitRange=$('limitRange'),limitVal=$('limitVal'),
-      cdToggle=$('cdToggle'),cdRow=$('cdRow'),cdRange=$('cdRange'),cdVal=$('cdVal'),
+      cdToggle=$('cdToggle'),cdRow=$('cdRow'),cdRange=$('cdRange'),cdNum=$('cdNum'),cdVal=$('cdVal'),
       themeSel=$('themeSel'),undo=$('undoBtn'),reset=$('resetBtn'),timerBtn=$('timerBtn'),
       court=$('court'),timerDisp=$('matchTimer'),winner=$('winnerBanner'),winnerText=$('winnerText'),
-      stats=$('statsWrap'),resetStats=$('resetStats');
+      stats=$('statsWrap'),resetStats=$('resetStats'),floatbar=$('floatbar');
 
-/* drawer */
+/* ========== drawer ========== */
 gear.onclick=_=>{panel.classList.toggle('open');document.body.classList.toggle('panel-open',panel.classList.contains('open'))};
 
-/* theme */
+/* ========== theme ========== */
 function applyTheme(){const sys=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.body.classList.toggle('light',cfg.theme==='light'||(cfg.theme==='auto'&&sys==='light'));document.body.classList.toggle('dark',cfg.theme==='dark'||(cfg.theme==='auto'&&sys==='dark'));themeSel.value=cfg.theme}
 themeSel.onchange=e=>{cfg.theme=e.target.value;applyTheme();save()};applyTheme();
 
-/* body classes & preview */
-function updateBodyClasses(){const w=innerWidth,h=innerHeight;document.body.classList.toggle('one-grid',cfg.teamCount===1);document.body.classList.toggle('two-vert',cfg.teamCount===2);document.body.classList.toggle('three-portrait',cfg.teamCount===3&&h>w);document.body.classList.toggle('four-grid',cfg.teamCount===4)}
-function updatePreview(){updateBodyClasses();const w=innerWidth,h=innerHeight;if(cfg.teamCount===4)preview.style.gridTemplate='auto auto / 1fr 1fr';else if(cfg.teamCount===3)preview.style.gridTemplate=(h>w)?'1fr 1fr 1fr / 1fr':'1fr / 1fr 1fr 1fr';else if(cfg.teamCount===2)preview.style.gridTemplate='auto / 1fr 1fr';else preview.style.gridTemplate='auto / 1fr';preview.innerHTML='';cfg.teams.forEach(t=>preview.insertAdjacentHTML('beforeend',`<div class="previewBox"><span style="color:${t.color}">${t.name}</span><small style="color:${t.color}">${t.score}</small></div>`))}
-addEventListener('resize',updatePreview);
+/* ========== body classes & preview ========== */
+function updateBodyClasses(){
+  const w=innerWidth,h=innerHeight;
+  document.body.classList.toggle('one-grid',cfg.teamCount===1);
+  document.body.classList.toggle('four-grid',cfg.teamCount===4);
+  document.body.classList.toggle('two-vert',cfg.teamCount===2&&h>w);
+  document.body.classList.toggle('three-portrait',cfg.teamCount===3&&h>w);
+}
+function updatePreview(){
+  updateBodyClasses();
+  const w=innerWidth,h=innerHeight;
+  if(cfg.teamCount===4)           preview.style.gridTemplate='auto auto / 1fr 1fr';
+  else if(cfg.teamCount===3)      preview.style.gridTemplate=(h>w)?'1fr 1fr 1fr / 1fr':'1fr / 1fr 1fr 1fr';
+  else if(cfg.teamCount===2)      preview.style.gridTemplate=(h>w)?'auto / 1fr 1fr':'1fr / 1fr 1fr';
+  else                            preview.style.gridTemplate='auto / 1fr';
 
-/* teams config */
+  preview.innerHTML='';
+  cfg.teams.forEach(t=>preview.insertAdjacentHTML('beforeend',`<div class="previewBox"><span style="color:${t.color}">${t.name}</span><small style="color:${t.color}">${t.score}</small></div>`));
+}
+addEventListener('resize',()=>{updatePreview();updateCourt()});
+
+/* ========== team config form ========== */
 function renderTeams(){
   cfg.teams=Array.from({length:cfg.teamCount},(_,i)=>({name:cfg.teams[i]?.name||`Team ${String.fromCharCode(65+i)}`,color:cfg.teams[i]?.color||defs[i],score:cfg.teams[i]?.score||0}));
-  updatePreview();teamsDiv.innerHTML='';
-  cfg.teams.forEach((t,i)=>teamsDiv.insertAdjacentHTML('beforeend',`<label class="row"><span>Team ${String.fromCharCode(65+i)}</span><input type="text" id="name${i}" value="${t.name}"><input type="color" id="clr${i}" value="${t.color}"></label>`));
-  teamsDiv.querySelectorAll('input[type=text]').forEach(inp=>inp.oninput=e=>{const idx=+e.target.id.slice(4);cfg.teams[idx].name=e.target.value||`Team ${String.fromCharCode(65+idx)}`;updateCourt();updatePreview();save()});
-  teamsDiv.querySelectorAll('input[type=color]').forEach(inp=>inp.oninput=e=>{const idx=+e.target.id.slice(3);cfg.teams[idx].color=e.target.value;updateCourt();updatePreview();save()});
+  updatePreview();
+  teamsDiv.innerHTML='';
+  cfg.teams.forEach((t,i)=>teamsDiv.insertAdjacentHTML('beforeend',`
+    <label class="row"><span>Team ${String.fromCharCode(65+i)}</span>
+      <input type="text" id="name${i}" value="${t.name}">
+      <input type="color" id="clr${i}" value="${t.color}">
+    </label>`));
+  teamsDiv.querySelectorAll('input[type=text]').forEach(inp=>inp.oninput=e=>{
+    const idx=+e.target.id.slice(4);cfg.teams[idx].name=e.target.value||`Team ${String.fromCharCode(65+idx)}`;updateCourt();updatePreview();save()
+  });
+  teamsDiv.querySelectorAll('input[type=color]').forEach(inp=>inp.oninput=e=>{
+    const idx=+e.target.id.slice(3);cfg.teams[idx].color=e.target.value;updateCourt();updatePreview();save()
+  });
   updateCourt();save();
 }
 ['input','change'].forEach(ev=>teamCount.addEventListener(ev,e=>{cfg.teamCount=+e.target.value;renderTeams()}));teamCount.value=cfg.teamCount;
 
-/* rules */
+/* ========== rules ========== */
 stepSel.value=cfg.step;stepSel.onchange=e=>{cfg.step=+e.target.value;save()};
-function syncLimit(){limitRow.classList.toggle('hidden',!limitToggle.checked);cfg.limitEnabled=limitToggle.checked;save()}
-limitToggle.checked=cfg.limitEnabled;limitToggle.onchange=syncLimit;limitRange.value=cfg.limit;limitVal.textContent=cfg.limit;limitRange.oninput=e=>{cfg.limit=+e.target.value;limitVal.textContent=e.target.value;save()};syncLimit();
-function syncCD(){cdRow.classList.toggle('hidden',!cdToggle.checked);cfg.countdownEnabled=cdToggle.checked;resetClock();save()}
-cdToggle.checked=cfg.countdownEnabled;cdToggle.onchange=syncCD;cdRange.value=cfg.countdown/60000;cdVal.textContent=cfg.countdown/60000;cdRange.oninput=e=>{cfg.countdown=+e.target.value*60000;cdVal.textContent=e.target.value;resetClock();save()};syncCD();
 
-/* court */
-function updateCourt(){
-  const w=innerWidth,h=innerHeight;if(cfg.teamCount===4)court.style.gridTemplate='1fr 1fr / 1fr 1fr';else if(cfg.teamCount===3)court.style.gridTemplate=(h>w)?'1fr 1fr 1fr / 1fr':'1fr / 1fr 1fr 1fr';else if(cfg.teamCount===2)court.style.gridTemplate='1fr 1fr / 1fr';else court.style.gridTemplate='1fr / 1fr';
-  court.innerHTML='';cfg.teams.forEach((t,i)=>{const b=document.createElement('div');b.className='teamBox';b.dataset.i=i;b.innerHTML=`<div class="teamName" style="color:${t.color}">${t.name}</div><div class="teamScore" style="color:${t.color}">${t.score}</div>`;attachGestures(b,i);court.append(b)});updateScores();highlightLeader()
+/* limit */
+function syncLimit(){limitRow.classList.toggle('hidden',!limitToggle.checked);cfg.limitEnabled=limitToggle.checked;save()}
+limitToggle.checked=cfg.limitEnabled;limitToggle.onchange=syncLimit;
+limitRange.value=cfg.limit;limitVal.textContent=cfg.limit;
+limitRange.oninput=e=>{cfg.limit=+e.target.value;limitVal.textContent=e.target.value;save()};
+syncLimit();
+
+/* countdown */
+function syncCD(){
+  cdRow.classList.toggle('hidden',!cdToggle.checked);
+  cfg.countdownEnabled=cdToggle.checked;
+  resetClock();save();
 }
+cdToggle.checked=cfg.countdownEnabled;cdToggle.onchange=syncCD;
+
+/* range + number keep each other in sync */
+function setCD(val){val=Math.max(0,Math.min(1800,val));cdRange.value=cdNum.value=val;cdVal.textContent=`${Math.floor(val/60)}:${String(val%60).padStart(2,'0')}`;cfg.countdown=val*1000;resetClock();save()}
+cdRange.oninput=e=>setCD(+e.target.value);
+cdNum.oninput=e=>setCD(+e.target.value);
+setCD(Math.round(cfg.countdown/1000));syncCD();
+
+/* ========== COURT LAYOUT ========== */
+function updateCourt(){
+  const w=innerWidth,h=innerHeight;
+  if(cfg.teamCount===4)           court.style.gridTemplate='1fr 1fr / 1fr 1fr';
+  else if(cfg.teamCount===3)      court.style.gridTemplate=(h>w)?'1fr 1fr 1fr / 1fr':'1fr / 1fr 1fr 1fr';
+  else if(cfg.teamCount===2)      court.style.gridTemplate=(h>w)?'1fr 1fr / 1fr':'1fr / 1fr 1fr';
+  else                            court.style.gridTemplate='1fr / 1fr';
+
+  court.innerHTML='';
+  cfg.teams.forEach((t,i)=>{
+    const box=document.createElement('div');box.className='teamBox';box.dataset.i=i;
+    box.innerHTML=`<div class="teamName" style="color:${t.color}">${t.name}</div><div class="teamScore" style="color:${t.color}">${t.score}</div>`;
+    attachGestures(box,i);court.append(box);
+  });
+  updateScores();highlightLeader();
+}
+
+/* scores / leader */
 function updateScores(){document.querySelectorAll('.teamScore').forEach((el,i)=>el.textContent=cfg.teams[i].score)}
-function highlightLeader(){const max=Math.max(...cfg.teams.map(t=>t.score));const leaders=cfg.teams.map((t,i)=>t.score===max&&max>0?i:-1).filter(i=>i>=0);const tie=leaders.length>1;document.querySelectorAll('.teamBox').forEach((b,i)=>{b.style.borderColor=leaders.includes(i)?(tie?(document.body.classList.contains('light')?'#000':'#fff'):cfg.teams[i].color):'transparent'});const nl=leaders.length===1?leaders[0]:-1;if(cfg.previousLeader>=0&&nl!==cfg.previousLeader){cfg.leadChanges++;save()}cfg.previousLeader=nl}
+function highlightLeader(){
+  const max=Math.max(...cfg.teams.map(t=>t.score));
+  const leaders=cfg.teams.map((t,i)=>t.score===max&&max>0?i:-1).filter(i=>i>=0);
+  const tie=leaders.length>1;
+  document.querySelectorAll('.teamBox').forEach((b,i)=>b.style.borderColor=leaders.includes(i)?(tie?(document.body.classList.contains('light')?'#000':'#fff'):cfg.teams[i].color):'transparent');
+  const nl=leaders.length===1?leaders[0]:-1;if(cfg.previousLeader>=0&&nl!==cfg.previousLeader){cfg.leadChanges++;save()}cfg.previousLeader=nl;
+}
 
 /* gestures */
 function attachGestures(el,i){
-  let sx,sy,st,lid,wasLong=false;
-  el.onpointerdown=e=>{sx=e.clientX;sy=e.clientY;st=Date.now();wasLong=false;lid=setTimeout(()=>{changeScore(i,-cfg.step);wasLong=true},500)};
-  el.onpointerup=e=>{clearTimeout(lid);if(wasLong)return;const dx=e.clientX-sx,dy=e.clientY-sy;if(Math.abs(dx)>30&&Math.abs(dx)>Math.abs(dy))changeScore(i,-cfg.step);else changeScore(i,cfg.step)};
+  let sx,sy,lid,long=false;
+  el.onpointerdown=e=>{sx=e.clientX;sy=e.clientY;long=false;lid=setTimeout(()=>{changeScore(i,-cfg.step);long=true},500)};
+  el.onpointerup=e=>{clearTimeout(lid);if(long)return;const dx=e.clientX-sx,dy=e.clientY-sy;if(Math.abs(dx)>30&&Math.abs(dx)>Math.abs(dy))changeScore(i,-cfg.step);else changeScore(i,cfg.step)};
   el.onpointercancel=_=>clearTimeout(lid)
 }
 function changeScore(i,d){cfg.teams[i].score=Math.max(0,cfg.teams[i].score+d);cfg.history.push({team:i,delta:d});if(cfg.history.length>300)cfg.history.shift();updateScores();highlightLeader();haptic();checkWin(i);save();updatePreview()}
 
 /* undo / reset */
-undo.onpointerdown=_=>{const h=cfg.history.pop();if(!h)return;cfg.teams[h.team].score=Math.max(0,cfg.teams[h.team].score-h.delta);updateScores();highlightLeader();save();updatePreview()};
-reset.onpointerdown=_=>{if(confirm('Are you sure you want to reset the current scores?')){resetGame();updatePreview()}}
-function resetGame(){cfg.teams.forEach(t=>t.score=0);cfg.history=[];updateScores();highlightLeader();cfg.startTime=Date.now();cfg.leadChanges=0;cfg.previousLeader=-1;winner.style.display='none';save()}
+undo.onclick=_=>{const h=cfg.history.pop();if(!h)return;cfg.teams[h.team].score=Math.max(0,cfg.teams[h.team].score-h.delta);updateScores();highlightLeader();save();updatePreview()};
+reset.onclick=_=>{if(confirm('Are you sure you want to reset the current scores?')){resetGame();updatePreview()}};
+function resetGame(){cfg.teams.forEach(t=>t.score=0);cfg.history=[];cfg.startTime=Date.now();cfg.leadChanges=0;cfg.previousLeader=-1;updateScores();highlightLeader();winner.style.display='none';save()}
 
 /* win & stats */
-function checkWin(i){if(cfg.limitEnabled&&cfg.teams[i].score>=cfg.limit){confetti({particleCount:200,spread:70,startVelocity:45});winnerText.textContent=`🏆 ${cfg.teams[i].name} wins!`;winner.style.display='flex';cfg.wins[cfg.teams[i].name]=(cfg.wins[cfg.teams[i].name]||0)+1;cfg.games++;cfg.pointsTotal+=cfg.teams.reduce((s,t)=>s+t.score,0);renderStats();save()}}
-function renderStats(){stats.innerHTML='';stats.insertAdjacentHTML('beforeend',`<div><strong>Pts/tap:</strong> +${cfg.step}</div>`);const e=Date.now()-cfg.startTime,m=Math.floor(e/60000),s=String(Math.floor((e%60000)/1000)).padStart(2,'0');stats.insertAdjacentHTML('beforeend',`<div><strong>Time:</strong> ${m}:${s}</div>`);stats.insertAdjacentHTML('beforeend',`<div><strong>Leads:</strong> ${cfg.leadChanges}</div>`);Object.entries(cfg.wins).forEach(([n,w])=>stats.insertAdjacentHTML('beforeend',`<div>${n}: ${w} wins</div>`));if(cfg.games){stats.insertAdjacentHTML('beforeend',`<div>Avg/game: ${(cfg.pointsTotal/cfg.games).toFixed(1)}</div>`);resetStats.style.display='';}else resetStats.style.display='none'}
-resetStats.onpointerdown=_=>{cfg.wins={};cfg.games=cfg.pointsTotal=0;renderStats();save()};renderStats();
+function checkWin(i){
+  if(cfg.limitEnabled&&cfg.teams[i].score>=cfg.limit){
+    confetti({particleCount:200,spread:70,startVelocity:45});
+    winnerText.textContent=`🏆 ${cfg.teams[i].name} wins!`;winner.style.display='flex';
+    cfg.wins[cfg.teams[i].name]=(cfg.wins[cfg.teams[i].name]||0)+1;
+    cfg.games++;cfg.pointsTotal+=cfg.teams.reduce((s,t)=>s+t.score,0);
+    renderStats();save();
+  }
+}
+function renderStats(){
+  stats.innerHTML='';
+  stats.insertAdjacentHTML('beforeend',`<div><strong>Pts/tap:</strong> +${cfg.step}</div>`);
+  const e=Date.now()-cfg.startTime,m=Math.floor(e/60000),s=String(Math.floor((e%60000)/1000)).padStart(2,'0');
+  stats.insertAdjacentHTML('beforeend',`<div><strong>Time:</strong> ${m}:${s}</div>`);
+  stats.insertAdjacentHTML('beforeend',`<div><strong>Leads:</strong> ${cfg.leadChanges}</div>`);
+  Object.entries(cfg.wins).forEach(([n,w])=>stats.insertAdjacentHTML('beforeend',`<div>${n}: ${w} wins</div>`));
+  if(cfg.games){stats.insertAdjacentHTML('beforeend',`<div>Avg/game: ${(cfg.pointsTotal/cfg.games).toFixed(1)}</div>`);resetStats.style.display='';}else resetStats.style.display='none'
+}
+resetStats.onclick=_=>{cfg.wins={};cfg.games=cfg.pointsTotal=0;renderStats();save()};
+renderStats();
 
-/* countdown */
-function resetClock(){if(!cfg.countdownEnabled){timerDisp.textContent='00:00';timerBtn.style.display='none';return}timerBtn.style.display='inline-block';cfg.timer.elapsed=cfg.countdown;cfg.timer.running=false;timerBtn.textContent='⏱'}
+/* countdown clock */
+function resetClock(){
+  if(!cfg.countdownEnabled){timerDisp.textContent='00:00';timerBtn.style.display='none';return}
+  timerBtn.style.display='inline-block';cfg.timer.elapsed=cfg.countdown;cfg.timer.running=false;timerBtn.textContent='⏱'
+}
 resetClock();
-timerBtn.onpointerdown=_=>{if(!cfg.countdownEnabled)return;const t=cfg.timer;if(t.running){t.running=false;t.elapsed=Math.max(0,t.start+cfg.countdown-Date.now());timerBtn.textContent='⏱'}else{t.running=true;t.start=Date.now()-(cfg.countdown-t.elapsed||0);timerBtn.textContent='⏸'}save()};
+timerBtn.onclick=_=>{
+  if(!cfg.countdownEnabled)return;
+  const t=cfg.timer;
+  if(t.running){t.running=false;t.elapsed=Math.max(0,t.start+cfg.countdown-Date.now());timerBtn.textContent='⏱'}
+  else {t.running=true;t.start=Date.now()-(cfg.countdown-t.elapsed||0);timerBtn.textContent='⏸'}
+  save();
+};
 (function loop(){const t=cfg.timer;if(t.running&&cfg.countdownEnabled){const r=Math.max(0,t.start+cfg.countdown-Date.now());timerDisp.textContent=fmt(r);if(r===0){t.running=false;confetti({particleCount:180,spread:100})}}requestAnimationFrame(loop)})();
 
 /* haptic */
 let audioCtx;function haptic(){try{audioCtx=audioCtx||new(AudioContext||webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.frequency.value=200;g.gain.value=.8;o.start();o.stop(audioCtx.currentTime+.02)}catch{}}
 
-/* dbl‑tap zoom block */
+/* double‑tap zoom block */
 let last=0;addEventListener('touchend',e=>{const n=e.timeStamp;if(n-last<300)e.preventDefault();last=n},{passive:false});
 
-/* initial paint */
+/* first render */
 renderTeams();
 </script>
 </body>
