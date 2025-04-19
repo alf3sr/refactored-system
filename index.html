@@ -160,8 +160,13 @@ body.panel-open #floatbar{opacity:0;pointer-events:none}
 
   <div class="section-header">── Game Rules ──</div>
 
+  <!-- ▶ MOD #1 ‑ extended list to include half‑point steps -->
   <label class="row"><span>➕ Points per tap</span>
-    <select id="stepSel"><option>1</option><option>2</option><option>3</option><option>5</option></select>
+    <select id="stepSel">
+      <option>0.5</option><option>1</option><option>1.5</option><option>2</option>
+      <option>2.5</option><option>3</option><option>3.5</option><option>4</option>
+      <option>4.5</option><option>5</option>
+    </select>
   </label>
 
   <label class="row"><span>🎯 Score limit</span>
@@ -268,7 +273,9 @@ function renderTeams(){
 ['input','change'].forEach(ev=>teamCount.addEventListener(ev,e=>{cfg.teamCount=+e.target.value;renderTeams()}));teamCount.value=cfg.teamCount;
 
 /* ---------- points / tap ---------- */
-stepSel.value=cfg.step;stepSel.onchange=e=>{cfg.step=+e.target.value;save()};
+stepSel.value=cfg.step;
+// ▶ MOD #2 ‑ use parseFloat so 0.5, 1.5, … are accepted
+stepSel.onchange=e=>{cfg.step=parseFloat(e.target.value);save()};
 
 /* ---------- score limit ---------- */
 function syncLimit(){limitRow.classList.toggle('hidden',!limitToggle.checked);cfg.limitEnabled=limitToggle.checked;save()}
