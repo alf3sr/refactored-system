@@ -160,7 +160,7 @@ body.panel-open #floatbar{opacity:0;pointer-events:none}
 
   <div class="section-header">── Game Rules ──</div>
 
-  <!-- ▶ MOD #1 ‑ extended list to include half‑point steps -->
+  <!-- half‑point options -->
   <label class="row"><span>➕ Points per tap</span>
     <select id="stepSel">
       <option>0.5</option><option>1</option><option>1.5</option><option>2</option>
@@ -172,8 +172,10 @@ body.panel-open #floatbar{opacity:0;pointer-events:none}
   <label class="row"><span>🎯 Score limit</span>
     <div class="toggle"><input type="checkbox" id="limitToggle"><span class="slider"></span></div>
   </label>
+  <!-- slider now steps by 0.5 -->
   <div id="limitRow" class="rangeRow hidden">
-    <input type="range" id="limitRange" min="1" max="100"><span id="limitVal"></span>
+    <input type="range" id="limitRange" min="1" max="100" step="0.5">
+    <span id="limitVal"></span>
   </div>
 
   <label class="row"><span>⏱ Countdown timer</span>
@@ -274,13 +276,12 @@ function renderTeams(){
 
 /* ---------- points / tap ---------- */
 stepSel.value=cfg.step;
-// ▶ MOD #2 ‑ use parseFloat so 0.5, 1.5, … are accepted
 stepSel.onchange=e=>{cfg.step=parseFloat(e.target.value);save()};
 
 /* ---------- score limit ---------- */
 function syncLimit(){limitRow.classList.toggle('hidden',!limitToggle.checked);cfg.limitEnabled=limitToggle.checked;save()}
 limitToggle.checked=cfg.limitEnabled;limitToggle.onchange=syncLimit;limitRange.value=cfg.limit;limitVal.textContent=cfg.limit;
-limitRange.oninput=e=>{cfg.limit=parseInt(e.target.value,10)||0;limitVal.textContent=cfg.limit;save()};syncLimit();
+limitRange.oninput=e=>{cfg.limit=parseFloat(e.target.value)||0;limitVal.textContent=cfg.limit;save()};syncLimit();
 
 /* ---------- countdown ---------- */
 function syncCDUI(){cdRow.classList.toggle('hidden',!cdToggle.checked);cfg.countdownEnabled=cdToggle.checked;resetClock();save()}
@@ -340,6 +341,7 @@ function attachGestures(el,i){
 /* ---------- score change ---------- */
 function changeScore(i,d,add){
   cfg.teams[i].score=Math.max(0,cfg.teams[i].score+d);
+  cfg.teams[i].score=Math.round(cfg.teams[i].score*2)/2;   // round to nearest 0.5
   cfg.history.push({team:i,delta:d});if(cfg.history.length>300)cfg.history.shift();
   updateScores();highlightLeader();(add?beepAdd():beepRemove());checkWin(i);save();buildPreview();
 }
@@ -348,6 +350,7 @@ function changeScore(i,d,add){
 undo.onpointerdown=_=>{
   const h=cfg.history.pop();if(!h)return;
   cfg.teams[h.team].score=Math.max(0,cfg.teams[h.team].score-h.delta);
+  cfg.teams[h.team].score=Math.round(cfg.teams[h.team].score*2)/2;
   updateScores();highlightLeader();beepRemove();save();buildPreview();
 };
 reset.onpointerdown=_=>{
