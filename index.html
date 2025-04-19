@@ -6,23 +6,30 @@
       content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Point Tracker</title>
 
-<!-- minimal CSP (prevents remote scripts / images) -->
+<!-- ---------- security headers (HTML meta form) ---------- -->
 <meta http-equiv="Content-Security-Policy"
-      content="
-        default-src 'self';
-        script-src  'self' 'unsafe-inline';
-        style-src   'self' 'unsafe-inline' https://fonts.googleapis.com;
-        font-src    https://fonts.gstatic.com;
-        img-src     'self' data:;
-        connect-src 'none';
-      ">
+      content="default-src 'self';
+               script-src  'self' 'unsafe-inline';
+               style-src   'self' 'unsafe-inline' https://fonts.googleapis.com;
+               font-src    https://fonts.gstatic.com;
+               img-src     'self' data:;
+               connect-src 'none';
+               object-src  'none';
+               frame-ancestors 'self';">
+<meta http-equiv="Referrer-Policy"         content="no-referrer">
+<meta http-equiv="X-Content-Type-Options"  content="nosniff">
+<meta http-equiv="X-Frame-Options"         content="SAMEORIGIN">
 
 <meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./Icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<!-- canvas‑confetti with sub‑resource‑integrity (hash from jsDelivr 1.6.0) -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"
+        integrity="sha384-KXr1ZR+RjPXeQoLayqXWwPHU6pX+g9D/64GgpIu2xTqK2X9li1WzJDkJSm0k1Wj6"
+        crossorigin="anonymous"></script>
 
 <style>
 /* ---------- COLOUR TOKENS ---------- */
@@ -96,16 +103,24 @@ body.three-portrait .teamBox{padding:6px}
 body.three-portrait .teamName{font-size:clamp(3.5rem,9vw,4.5rem);margin-bottom:4px}
 body.three-portrait .teamScore{font-size:clamp(7rem,18vw,11rem)}
 
+/* shrink for 2‑/3‑landscape */
+@media (orientation:landscape){
+  body.two-land   .teamName{font-size:clamp(4rem,8vh,6rem)}
+  body.two-land   .teamScore{font-size:clamp(7rem,15vh,12rem)}
+  body.three-land .teamName{font-size:clamp(3.5rem,7vh,5.5rem)}
+  body.three-land .teamScore{font-size:clamp(6rem,13vh,10rem)}
+}
+
 /* ---------- WINNER OVERLAY ---------- */
 #winnerBanner{position:absolute;inset:0;display:none;background:rgba(0,0,0,.7);color:#fff;font-size:2rem;font-weight:700;justify-content:center;align-items:center;flex-direction:column}
 #winnerBanner button{margin-top:16px}
 
 /* ---------- FLOAT BAR ---------- */
 #floatbar{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:100;transition:.2s}
-@media (min-width:750px){
-  /* on large monitors let it sit 24 px lower */
-  #floatbar{bottom:32px}
-}
+@media (min-width:750px){#floatbar{bottom:28px}}
+body.two-land   #floatbar{left:50%;transform:translateX(-50%)}
+body.three-land #floatbar{left:50%;transform:translateX(-50%)}
+body.four-grid  #floatbar{left:12px;bottom:16px;transform:none}
 body.panel-open #floatbar{opacity:0;pointer-events:none}
 
 /* prevent dbl‑tap zoom */
@@ -151,8 +166,8 @@ html,body{touch-action:manipulation}
     <div class="toggle"><input type="checkbox" id="cdToggle"><span class="slider"></span></div>
   </label>
   <div id="cdRow" class="rangeRow hidden">
-    <input type="range"  id="cdRange" min="0" max="1800" step="30">
-    <input type="number" id="cdNum"   min="0" max="30"   step="0.5"
+    <input type="range"  id="cdRange" min="0" max="10800" step="30">
+    <input type="number" id="cdNum"   min="0" max="180"  step="0.5"
            style="width:5rem;background:var(--box);border:1px solid var(--border);border-radius:6px;padding:.4rem .5rem;color:var(--fg)">
     <span>min</span>
   </div>
@@ -192,7 +207,7 @@ const gear=$('settingsBtn'),panel=$('settingsPanel'),preview=$('preview'),teamCo
       cdToggle=$('cdToggle'),cdRow=$('cdRow'),cdRange=$('cdRange'),cdNum=$('cdNum'),
       themeSel=$('themeSel'),undo=$('undoBtn'),reset=$('resetBtn'),timerBtn=$('timerBtn'),
       court=$('court'),timerDisp=$('matchTimer'),winner=$('winnerBanner'),winnerText=$('winnerText'),
-      stats=$('statsWrap'),resetStats=$('resetStats'),floatbar=$('floatbar');
+      stats=$('statsWrap'),resetStats=$('resetStats');
 
 /* ---------- drawer ---------- */
 gear.onclick=_=>{panel.classList.toggle('open');document.body.classList.toggle('panel-open',panel.classList.contains('open'))};
@@ -204,9 +219,11 @@ themeSel.onchange=e=>{cfg.theme=e.target.value;applyTheme();save()};applyTheme()
 /* ---------- body classes & preview ---------- */
 function updateBodyClasses(){
   const w=innerWidth,h=innerHeight;
-  document.body.classList.toggle('one-grid',cfg.teamCount===1);
+  document.body.classList.toggle('one-grid', cfg.teamCount===1);
   document.body.classList.toggle('four-grid',cfg.teamCount===4);
-  document.body.classList.toggle('two-vert',cfg.teamCount===2&&h>w);
+  document.body.classList.toggle('two-land',  cfg.teamCount===2&&w>h);
+  document.body.classList.toggle('three-land',cfg.teamCount===3&&w>h);
+  document.body.classList.toggle('two-vert',  cfg.teamCount===2&&h>w);
   document.body.classList.toggle('three-portrait',cfg.teamCount===3&&h>w);
 }
 function updatePreview(){
@@ -253,7 +270,7 @@ limitRange.oninput=e=>{cfg.limit=+e.target.value;limitVal.textContent=e.target.v
 syncLimit();
 
 /* countdown */
-function setCD(mins){mins=Math.max(0,Math.min(30,mins));cdRange.value=cdNum.value=mins*60;cdNum.value=mins;cfg.countdown=mins*60000;resetClock();save()}
+function setCD(mins){mins=Math.max(0,Math.min(180,mins));cdRange.value=cdNum.value=mins*60;cdNum.value=mins;cfg.countdown=mins*60000;resetClock();save()}
 function syncCD(){cdRow.classList.toggle('hidden',!cdToggle.checked);cfg.countdownEnabled=cdToggle.checked;resetClock();save()}
 cdToggle.checked=cfg.countdownEnabled;cdToggle.onchange=syncCD;
 cdRange.oninput=e=>{setCD(+e.target.value/60)};
