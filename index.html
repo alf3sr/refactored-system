@@ -100,36 +100,81 @@ body.panel-open #matchTimer{opacity:0}
 #court{position:absolute;top:48px;bottom:124px;left:0;right:0;display:grid;gap:0;transition:.2s}
 body.one-grid    #court{bottom:124px}
 body.two-vert    #court{bottom:140px}
-body.three-portrait #court{bottom:148px}
+body.three-portrait #court{bottom:148px} /* Determines space below court */
 body.four-grid,#court.four-land{}
 
-.teamBox{background:var(--box);display:flex;flex-direction:column;justify-content:center;align-items:center;border:4px solid transparent;padding:12px;transition:.2s}
+.teamBox{
+    background:var(--box);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    border:4px solid transparent;
+    padding:12px;
+    transition:.2s;
+    /* Fix: Allow shrinking and fill height */
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden; /* Prevent content spilling out */
+}
 .teamBox:active{transform:scale(.97)}
-.teamName {font-size:clamp(5rem,12vw,7rem);font-family:'Bebas Neue',sans-serif;margin-bottom:8px}
-.teamScore{font-size:clamp(10rem,25vw,18rem);font-family:'Bebas Neue',sans-serif}
+
+.teamName {
+    font-size:clamp(5rem,12vw,7rem);
+    font-family:'Bebas Neue',sans-serif;
+    margin-bottom:8px; /* Can reduce if space is very tight */
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 95%; /* Ensure it doesn't touch edges */
+    text-align: center;
+}
+.teamScore{
+    /* Fix: Adjusted clamp values and added line-height */
+    font-size:clamp(8rem, 22vw, 16rem);
+    font-family:'Bebas Neue',sans-serif;
+    line-height: 0.9; /* Tighter line height */
+}
 
 /* scaled fonts */
 @media (orientation:landscape){
   body.one-land   .teamName{font-size:clamp(4rem,8vh,6rem)}
-  body.one-land   .teamScore{font-size:clamp(7rem,15vh,11rem)}
+  body.one-land   .teamScore{font-size:clamp(6rem,13vh,10rem)} /* Adjusted */
   body.two-land   .teamName{font-size:clamp(4rem,8vh,6rem)}
-  body.two-land   .teamScore{font-size:clamp(7rem,15vh,11rem)}
+  body.two-land   .teamScore{font-size:clamp(6rem,13vh,10rem)} /* Adjusted */
   body.three-land .teamName{font-size:clamp(3.5rem,7vh,5.5rem)}
-  body.three-land .teamScore{font-size:clamp(6rem,13vh,10rem)}
+  body.three-land .teamScore{font-size:clamp(5rem,11vh,9rem)} /* Adjusted */
   body.four-land .teamName{font-size:clamp(3.2rem,6vh,4.8rem)}
-  body.four-land .teamScore{font-size:clamp(5.5rem,11vh,8.5rem)}
+  body.four-land .teamScore{font-size:clamp(4.5rem, 10vh, 7.5rem)} /* Adjusted */
 }
 
 /* 3‑portrait shrink */
 body.three-portrait .teamBox{padding:6px}
 body.three-portrait .teamName {font-size:clamp(3.6rem,9vw,4.6rem)}
-body.three-portrait .teamScore{font-size:clamp(7rem,18vw,11rem)}
+body.three-portrait .teamScore{font-size:clamp(6rem, 16vw, 10rem)} /* Adjusted */
 
-.teamBox,.teamBox *{user-select:none}
+.teamBox * { /* Applied to children, not box itself */
+    user-select:none;
+}
 
 /* ---------- WINNER OVERLAY ---------- */
-#winnerBanner{position:absolute;inset:0;background:rgba(0,0,0,.7);color:#fff;font-size:2rem;font-weight:700;justify-content:center;align-items:center;flex-direction:column}
-/* Initially hidden via JS */
+#winnerBanner{
+    /* Fix: Use fixed positioning and z-index */
+    position:fixed;
+    inset:0;
+    display:flex; /* Keep flex for centering */
+    background:rgba(0,0,0,.7);
+    color:#fff;
+    font-size:2rem;
+    font-weight:700;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    z-index: 200; /* Ensure it's on top */
+}
+/* Initially hidden via .hidden class applied in HTML/JS */
 #winnerBanner button{margin-top:16px}
 
 /* ---------- FLOAT‑BAR ---------- */
@@ -150,8 +195,7 @@ body.panel-open #floatbar{opacity:0;pointer-events:none}
 <div id="floatbar">
   <button id="undoBtn"  class="pill">↩️</button>
   <button id="resetBtn" class="pill">🔄</button>
-  <button id="timerBtn" class="pill">⏱</button>
-</div>
+  <button id="timerBtn" class="pill hidden">⏱</button> </div>
 
 <div id="settingsPanel">
   <h2>Settings</h2>
@@ -185,8 +229,7 @@ body.panel-open #floatbar{opacity:0;pointer-events:none}
   <label class="row"><span>⏱ Countdown timer</span>
     <div class="toggle"><input type="checkbox" id="cdToggle"><span class="slider"></span></div>
   </label>
-  <div id="cdRow" class="rangeRow hidden"> <input type="range"  id="cdRange" min="0" max="10800" step="30">
-    <input type="number" id="cdNum"   min="0" max="180"   step="0.5"
+  <div id="cdRow" class="rangeRow hidden"> <input type="range"  id="cdRange" min="0" max="10800" step="30"> <input type="number" id="cdNum"   min="0" max="180"   step="0.5"
            style="width:5rem;background:var(--box);border:1px solid var(--border);border-radius:6px;padding:.4rem .5rem;color:var(--fg)">
     <span>min</span>
   </div>
@@ -203,7 +246,8 @@ body.panel-open #floatbar{opacity:0;pointer-events:none}
 
 <div id="court"></div>
 <div id="winnerBanner" class="hidden"> <div id="winnerText">🏆 Winner!</div>
-    <button id="newGameBtn" class="pill">▶️ New game</button> </div>
+    <button id="newGameBtn" class="pill">▶️ New game</button>
+</div>
 
 <script>
 (function() { // IIFE Start for scoping
@@ -224,7 +268,8 @@ const seed = {
   teamCount: 2,
   teams: [{ name: 'Team A', color: '#3498db', score: 0 }, { name: 'Team B', color: '#e74c3c', score: 0 }],
   step: 1, limitEnabled: false, limit: 11, countdownEnabled: false, countdown: 300000, // 5 minutes
-  timer: { running: false, start: 0, elapsed: 0 }, history: [],
+  timer: { running: false, start: 0, elapsed: 300000 }, // Start elapsed matching countdown
+  history: [],
   wins: {}, games: 0, pointsTotal: 0,
   theme: 'auto', startTime: Date.now(), leadChanges: 0, previousLeader: -1
 };
@@ -235,12 +280,17 @@ function loadState() {
     const saved = localStorage.getItem('pt-state');
     // Merge saved state into seed, ensuring seed structure prevails
     const loaded = Object.assign({}, seed, JSON.parse(saved || '{}'));
-    // Ensure timer sub-object exists
+    // Ensure timer sub-object exists and elapsed matches countdown if not running
     loaded.timer = { ...seed.timer, ...(loaded.timer || {}) };
+     if (!loaded.timer.running) {
+         loaded.timer.elapsed = loaded.countdown; // Ensure elapsed matches on load if paused
+     }
     return loaded;
   } catch (e) {
     console.error("Failed to load state from localStorage:", e);
-    return { ...seed }; // Return default seed state on error
+    const defaultState = { ...seed };
+    defaultState.timer.elapsed = defaultState.countdown; // Ensure elapsed matches in default
+    return defaultState;
   }
 }
 
@@ -303,7 +353,7 @@ function setBodyClasses() {
   document.body.classList.toggle('two-land', cfg.teamCount === 2 && isLandscape);
   document.body.classList.toggle('three-portrait', cfg.teamCount === 3 && !isLandscape);
   document.body.classList.toggle('three-land', cfg.teamCount === 3 && isLandscape);
-  document.body.classList.toggle('four-grid', cfg.teamCount === 4 && !isLandscape); // Assuming 4 teams are always grid
+  document.body.classList.toggle('four-grid', cfg.teamCount === 4 ); // Assuming 4 teams are always grid
   document.body.classList.toggle('four-land', cfg.teamCount === 4 && isLandscape);
 }
 
@@ -313,7 +363,7 @@ function buildPreview() {
   const w = innerWidth, h = innerHeight;
   if (cfg.teamCount === 4) preview.style.gridTemplate = 'auto auto / 1fr 1fr';
   else if (cfg.teamCount === 3) preview.style.gridTemplate = (h > w) ? '1fr 1fr 1fr / 1fr' : '1fr / 1fr 1fr 1fr';
-  else if (cfg.teamCount === 2) preview.style.gridTemplate = (h > w) ? 'auto / 1fr 1fr' : '1fr / 1fr 1fr'; // Adjusted for consistency
+  else if (cfg.teamCount === 2) preview.style.gridTemplate = 'auto / 1fr 1fr'; // Keep simple 1 row, 2 cols
   else preview.style.gridTemplate = 'auto / 1fr';
   preview.innerHTML = ''; // Clear previous preview
   cfg.teams.forEach(t => preview.insertAdjacentHTML('beforeend',
@@ -364,11 +414,9 @@ teamCount.value = cfg.teamCount;
     const newCount = +e.target.value;
     if (newCount >= 1 && newCount <= 4) { // Basic validation
         cfg.teamCount = newCount;
-        // Ensure scores are reset if team count changes? Optional, currently preserves scores.
         renderTeams(); // This will adjust cfg.teams array size and redraw UI
     }
 }));
-
 
 /* ---------- points / tap ---------- */
 stepSel.value = cfg.step;
@@ -378,6 +426,7 @@ stepSel.onchange = e => { cfg.step = parseFloat(e.target.value); save(); };
 function syncLimitUI() {
   limitRow.classList.toggle('hidden', !limitToggle.checked);
   cfg.limitEnabled = limitToggle.checked;
+  // If enabling limit, check for immediate win condition? Desirable? No, let next score trigger it.
   save();
 }
 limitToggle.checked = cfg.limitEnabled;
@@ -389,15 +438,14 @@ syncLimitUI(); // Initial UI sync
 
 /* ---------- countdown ---------- */
 function syncCDUI() {
-  cdRow.classList.toggle('hidden', !cdToggle.checked);
-  cfg.countdownEnabled = cdToggle.checked;
-  // If disabling timer, stop it and reset display
-  if (!cfg.countdownEnabled) {
+  const isEnabled = cdToggle.checked;
+  cdRow.classList.toggle('hidden', !isEnabled);
+  cfg.countdownEnabled = isEnabled;
+  if (!isEnabled && cfg.timer.running) { // Stop timer if disabling
       cfg.timer.running = false;
-      timerBtn.textContent = '⏱'; // Reset button text
-      timerDisp.textContent = fmt(cfg.countdown); // Show full time
+      cfg.timer.elapsed = Math.max(0, cfg.timer.start + cfg.countdown - Date.now()); // Store remaining time
   }
-  resetClockDisplay(); // Update display based on enabled state
+  resetClockDisplay(); // Update display (will hide button if needed)
   save();
 }
 cdToggle.checked = cfg.countdownEnabled;
@@ -407,27 +455,58 @@ function msToUI(ms) {
   cdRange.value = ms / 1000; // Range slider uses seconds
   cdNum.value = (ms / 60000).toFixed(1).replace(/\.0$/, ''); // Number input uses minutes
 }
-function uiToMS() {
-  // Prioritize number input if it has focus/value, otherwise use range? Or always sync? Let's sync.
+function uiToMSFromRange() {
   return Math.round(+cdRange.value) * 1000; // Range slider (seconds) dictates ms
+}
+function uiToMSFromNum() {
+    let v = Math.max(0, Math.min(COUNTDOWN_MAX_MINUTES, +cdNum.value || 0));
+    return v * 60000; // Convert minutes to ms
 }
 
 msToUI(cfg.countdown); // Init UI from state
 
+function handleCountdownChange(newCountdown) {
+    const oldCountdown = cfg.countdown;
+    if (newCountdown === oldCountdown) return; // No change
+
+    const wasRunning = cfg.timer.running;
+    const now = Date.now();
+    let elapsedInCurrentRun = 0;
+
+    if (wasRunning) {
+        elapsedInCurrentRun = now - cfg.timer.start;
+    }
+
+    cfg.countdown = newCountdown; // Update total duration
+
+    if (wasRunning) {
+        // Adjust start time to maintain the same elapsed duration within the new total
+        cfg.timer.start = now - elapsedInCurrentRun;
+        // Ensure elapsed doesn't exceed new countdown if somehow calculated wrong
+        if (elapsedInCurrentRun >= newCountdown) {
+             cfg.timer.start = now - newCountdown; // Start as if fully elapsed
+        }
+    } else {
+        // If paused, update the stored 'elapsed' time.
+        // Cap it at the new total duration.
+        cfg.timer.elapsed = Math.min(cfg.timer.elapsed, newCountdown);
+    }
+
+    resetClockDisplay(); // Update visuals
+    save();
+}
+
 cdRange.oninput = _ => {
-  cfg.countdown = uiToMS();
-  // Update number input to reflect range change
-  cdNum.value = (cfg.countdown / 60000).toFixed(1).replace(/\.0$/, '');
-  resetClockDisplay();
-  save();
+    const newCountdown = uiToMSFromRange();
+    handleCountdownChange(newCountdown);
+    // Update number input to reflect range change
+    cdNum.value = (newCountdown / 60000).toFixed(1).replace(/\.0$/, '');
 };
-cdNum.oninput = e => {
-  let v = Math.max(0, Math.min(COUNTDOWN_MAX_MINUTES, +e.target.value || 0));
-  cfg.countdown = v * 60000; // Convert minutes to ms
-  // Update range slider to reflect number input change
-  cdRange.value = cfg.countdown / 1000;
-  resetClockDisplay();
-  save();
+cdNum.oninput = _ => {
+    const newCountdown = uiToMSFromNum();
+    handleCountdownChange(newCountdown);
+    // Update range slider to reflect number input change
+    cdRange.value = newCountdown / 1000;
 };
 syncCDUI(); // Initial UI sync for visibility
 
@@ -456,16 +535,19 @@ function updateCourt() {
 }
 
 function updateScores() {
-  document.querySelectorAll('.teamBox').forEach((box, i) => {
+  document.querySelectorAll('.teamBox').forEach((box) => {
+    const i = parseInt(box.dataset.index, 10);
+    if (isNaN(i) || !cfg.teams[i]) return;
+
     const scoreEl = box.querySelector('.teamScore');
-    if (scoreEl && cfg.teams[i]) {
+    if (scoreEl) {
       scoreEl.textContent = cfg.teams[i].score;
+      scoreEl.style.color = cfg.teams[i].color; // Ensure color updates
     }
     const nameEl = box.querySelector('.teamName');
-     if (nameEl && cfg.teams[i]) {
+     if (nameEl) {
       nameEl.textContent = cfg.teams[i].name;
       nameEl.style.color = cfg.teams[i].color; // Ensure color updates
-      if(scoreEl) scoreEl.style.color = cfg.teams[i].color;
     }
   });
 }
@@ -478,7 +560,7 @@ function highlightLeader() {
     .filter(i => i >= 0);
   const isTie = leaders.length > 1;
 
-  document.querySelectorAll('.teamBox').forEach((box, i) => {
+  document.querySelectorAll('.teamBox').forEach((box) => {
     const teamIndex = parseInt(box.dataset.index, 10); // Get index from dataset
     if (isNaN(teamIndex) || !cfg.teams[teamIndex]) return; // Safety check
 
@@ -494,57 +576,70 @@ function highlightLeader() {
   // Track lead changes
   const currentLeaderIndex = leaders.length === 1 ? leaders[0] : -1; // -1 for tie or no leader > 0
   if (cfg.previousLeader !== -1 && currentLeaderIndex !== cfg.previousLeader && currentLeaderIndex !== -1) {
-    // Only count a change if there was a previous single leader and now there's a new single leader
     cfg.leadChanges++;
-    // Save not needed here, will be saved on score change
   }
-  // Update previous leader state *after* comparison
   cfg.previousLeader = currentLeaderIndex;
   // save(); // Avoid saving just for lead change tracking - save happens on score change
 }
 
 /* ---------- gestures ---------- */
 function attachGestures(el, index) {
-  let startX, startY, longPressTimeoutId, isLongPress = false;
+  let startX, startY, longPressTimeoutId, isLongPress = false, pointerId = null;
 
   el.onpointerdown = e => {
     // Ignore if settings panel is open or winner banner is shown
     if (panel.classList.contains('open') || !winner.classList.contains('hidden')) return;
+    // Only handle primary button (usually left mouse or single touch)
+    if (e.button !== 0) return;
 
     startX = e.clientX; startY = e.clientY; isLongPress = false;
-    el.setPointerCapture(e.pointerId); // Capture pointer
+    pointerId = e.pointerId; // Store pointer ID
+    el.setPointerCapture(pointerId); // Capture pointer
 
     longPressTimeoutId = setTimeout(() => {
       changeScore(index, -cfg.step, false); // Subtract points on long press
       isLongPress = true;
       // Optionally provide haptic feedback here if desired
+      // navigator.vibrate(50); // Example haptic feedback (check browser support)
     }, LONG_PRESS_DELAY);
   };
 
   el.onpointerup = e => {
+    if (e.pointerId !== pointerId) return; // Only react to the captured pointer
+
     clearTimeout(longPressTimeoutId);
-    if (isLongPress) return; // Action already taken by long press
+    if (isLongPress) { // Action already taken by long press
+        el.releasePointerCapture(pointerId);
+        pointerId = null;
+        return;
+    }
 
     const deltaX = e.clientX - startX;
     const deltaY = e.clientY - startY;
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-    // Consider it a tap if movement is small, otherwise potentially a swipe
+    // Consider it a tap if movement is small
     if (distance < SWIPE_THRESHOLD) {
        changeScore(index, cfg.step, true); // Add points on tap
-    } else if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > SWIPE_THRESHOLD / 2) {
-       // Horizontal swipe (treat as subtract for now, could be configurable)
-       changeScore(index, -cfg.step, false);
     }
-    // Vertical swipe does nothing currently
+    // Optional: Add swipe detection back if needed
+    // else if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > SWIPE_THRESHOLD / 2) {
+    //    changeScore(index, -cfg.step, false); // Horizontal swipe subtracts
+    // }
 
-    el.releasePointerCapture(e.pointerId);
+    el.releasePointerCapture(pointerId);
+    pointerId = null;
   };
 
   el.onpointercancel = e => { // Handle cases like system interruptions
+     if (e.pointerId !== pointerId) return;
     clearTimeout(longPressTimeoutId);
-    el.releasePointerCapture(e.pointerId);
+    el.releasePointerCapture(pointerId);
+    pointerId = null;
   };
+
+   // Prevent context menu on long press (especially mobile)
+   el.addEventListener('contextmenu', e => e.preventDefault());
 }
 
 /* ---------- score change ---------- */
@@ -581,8 +676,9 @@ undo.onpointerdown = _ => {
 
   const teamIndex = lastAction.teamIndex;
   if (cfg.teams[teamIndex]) {
-    // Reverse the delta: subtract if original was add, add if original was subtract
+    // Reverse the delta
     let currentScore = cfg.teams[teamIndex].score;
+    // Calculate score *before* the action we are undoing
     let scoreBeforeLastAction = currentScore - lastAction.delta;
     scoreBeforeLastAction = Math.max(0, scoreBeforeLastAction); // Ensure non-negative
     scoreBeforeLastAction = Math.round(scoreBeforeLastAction * 2) / 2; // Round to 0.5
@@ -604,8 +700,8 @@ function performReset() {
     cfg.startTime = Date.now(); // Reset game start time
     cfg.leadChanges = 0; // Reset lead changes
     cfg.previousLeader = -1; // Reset leader tracking
-    cfg.timer.elapsed = cfg.countdown; // Reset timer elapsed to full duration
     cfg.timer.running = false; // Stop timer
+    cfg.timer.elapsed = cfg.countdown; // Reset timer elapsed to full duration
     timerBtn.textContent = '⏱'; // Reset timer button text
     winner.classList.add('hidden'); // Hide winner banner
     updateScores();
@@ -624,7 +720,7 @@ reset.onpointerdown = _ => {
 };
 
 // Listener for the "New Game" button on the winner banner
-newGameBtn.onclick = _ => { // Using onclick here for simplicity, could use onpointerdown
+newGameBtn.onclick = _ => { // Using onclick here for simplicity
     performReset();
 };
 
@@ -632,12 +728,24 @@ newGameBtn.onclick = _ => { // Using onclick here for simplicity, could use onpo
 /* ---------- win & stats ---------- */
 function checkWin(index) {
   if (cfg.limitEnabled && cfg.teams[index] && cfg.teams[index].score >= cfg.limit) {
-    // Ensure confetti is available (it might be blocked by CSP if not configured right)
+
+    // Ensure confetti is available before calling
     if (typeof confetti === 'function') {
         confetti({ particleCount: 200, spread: 70, startVelocity: 45, origin: { y: 0.6 } });
+    } else {
+        // Fix: Added warning for debugging confetti issues
+        console.warn("Confetti function not found. Check CSP or script loading.");
     }
+
     winnerText.textContent = `🏆 ${cfg.teams[index].name} wins!`;
     winner.classList.remove('hidden'); // Show winner banner
+
+    // Stop the timer if it was running when someone won
+    if (cfg.timer.running) {
+        cfg.timer.running = false;
+        cfg.timer.elapsed = Math.max(0, cfg.timer.start + cfg.countdown - Date.now());
+        timerBtn.textContent = '⏱';
+    }
 
     // Update stats
     cfg.wins[cfg.teams[index].name] = (cfg.wins[cfg.teams[index].name] || 0) + 1;
@@ -681,7 +789,8 @@ resetStats.onpointerdown = _ => {
     cfg.wins = {};
     cfg.games = 0;
     cfg.pointsTotal = 0;
-    // Do NOT reset startTime, leadChanges, previousLeader here - they are per-game or session
+    // Reset session start time as well? Optional, depends on definition of "session"
+    // cfg.startTime = Date.now();
     renderStats();
     save();
   }
@@ -690,16 +799,18 @@ renderStats(); // Initial render
 
 /* ---------- countdown clock ---------- */
 function resetClockDisplay() {
-  // Display depends on whether timer is enabled AND running
+  // Display depends on whether timer is enabled
   if (!cfg.countdownEnabled) {
-    timerDisp.textContent = '00:00'; // Show 00:00 if disabled
+    timerDisp.textContent = ''; // Hide display if disabled
     timerBtn.classList.add('hidden'); // Hide timer button if disabled
   } else {
     timerBtn.classList.remove('hidden'); // Show timer button if enabled
+    // Determine time to display based on running state
     const displayTime = cfg.timer.running
         ? Math.max(0, cfg.timer.start + cfg.countdown - Date.now()) // Time remaining if running
         : cfg.timer.elapsed; // Show stored elapsed time if paused/reset
     timerDisp.textContent = fmt(displayTime);
+    timerBtn.textContent = cfg.timer.running ? '⏸' : '⏱'; // Set button icon based on state
   }
 }
 
@@ -707,25 +818,32 @@ timerBtn.onpointerdown = _ => {
   if (!cfg.countdownEnabled || panel.classList.contains('open')) return; // Ignore if disabled or panel open
 
   const t = cfg.timer;
+  const now = Date.now();
   if (t.running) { // Stop the timer
     t.running = false;
     // Store remaining time when stopped
-    t.elapsed = Math.max(0, t.start + cfg.countdown - Date.now());
-    timerBtn.textContent = '⏱'; // Show play icon
+    t.elapsed = Math.max(0, t.start + cfg.countdown - now);
   } else { // Start the timer
     t.running = true;
     // Calculate start time based on previously elapsed time
-    t.start = Date.now() - (cfg.countdown - t.elapsed);
-    timerBtn.textContent = '⏸'; // Show pause icon
+    // Ensure elapsed doesn't exceed countdown when calculating start
+    t.start = now - (cfg.countdown - Math.min(t.elapsed, cfg.countdown));
+     // If timer had fully elapsed, start from full duration
+    if (t.elapsed <= 0) {
+        t.start = now;
+        t.elapsed = cfg.countdown; // Reset elapsed visually
+    }
   }
   resetClockDisplay(); // Update display immediately
   save(); // Save timer state change
 };
 
 // Animation frame loop for timer display update
-(function timerLoop() {
+let animationFrameId = null;
+function timerLoop() {
   if (cfg.timer.running && cfg.countdownEnabled) {
-    const remaining = Math.max(0, cfg.timer.start + cfg.countdown - Date.now());
+    const now = Date.now();
+    const remaining = Math.max(0, cfg.timer.start + cfg.countdown - now);
     timerDisp.textContent = fmt(remaining);
 
     if (remaining === 0) {
@@ -734,22 +852,45 @@ timerBtn.onpointerdown = _ => {
       timerBtn.textContent = '⏱'; // Reset button
       if (typeof confetti === 'function') {
           confetti({ particleCount: 180, spread: 100, origin: { y: 0.6 } }); // Time's up confetti
+      } else {
+          console.warn("Confetti function not found for timer end.");
       }
       beep(330); // Time's up sound (higher pitch)
+      resetClockDisplay(); // Ensure display updates correctly after stopping
       save(); // Save stopped state
     }
   }
-  requestAnimationFrame(timerLoop);
-})();
+  animationFrameId = requestAnimationFrame(timerLoop); // Continue loop
+}
+
+// Start/Stop loop based on global state (avoids multiple loops)
+function manageTimerLoop() {
+    if (cfg.timer.running && animationFrameId === null) {
+        animationFrameId = requestAnimationFrame(timerLoop);
+    }
+    // No explicit stop needed, loop self-regulates based on cfg.timer.running
+    // Could add cancelAnimationFrame if performance becomes an issue on pause/disable
+}
+// Call manageTimerLoop whenever cfg.timer.running might change
+// Added calls in timerBtn.onpointerdown, performReset, checkWin, syncCDUI
+
 
 resetClockDisplay(); // Initial display setup
+manageTimerLoop(); // Start loop if needed on load
+
 
 /* ---------- audio cues ---------- */
 let audioCtx;
 function beep(frequency) {
   try {
     audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    if (!audioCtx) return; // Exit if context couldn't be created
+    if (!audioCtx || audioCtx.state === 'suspended') {
+        audioCtx?.resume(); // Attempt to resume if suspended (common after user interaction)
+    }
+    if (!audioCtx || audioCtx.state !== 'running') {
+        console.warn("AudioContext not available or running.");
+        return;
+    }
 
     const oscillator = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
@@ -758,14 +899,14 @@ function beep(frequency) {
     gainNode.connect(audioCtx.destination);
 
     oscillator.frequency.value = frequency;
-    gainNode.gain.setValueAtTime(0.6, audioCtx.currentTime); // Volume
+    gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime); // Reduced volume slightly
     gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.08); // Fade out
 
     oscillator.start(audioCtx.currentTime);
     oscillator.stop(audioCtx.currentTime + 0.08); // Short beep duration
   } catch (e) {
       console.error("Audio cue failed:", e);
-      audioCtx = null; // Attempt to reset context if error occurs
+      // Avoid resetting audioCtx here, as the error might be temporary
   }
 }
 const beepAdd = () => beep(220); // Lower pitch for add
