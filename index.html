@@ -3,21 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport"
-      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Point Tracker</title>
 
+<!-- security headers -->
 <meta http-equiv="Content-Security-Policy"
-      content="default-src 'self';
-               script-src  'self' 'unsafe-inline' https://cdn.jsdelivr.net;
-               style-src   'self' 'unsafe-inline' https://fonts.googleapis.com;
-               font-src    https://fonts.gstatic.com;
-               img-src     'self' data:;
-               object-src  'none';
-               connect-src 'none';
-               frame-ancestors 'self';">
-<meta http-equiv="Referrer-Policy"        content="no-referrer">
+      content="default-src 'self';
+               script-src  'self' 'unsafe-inline';
+               style-src   'self' 'unsafe-inline' https://fonts.googleapis.com;
+               font-src    https://fonts.gstatic.com;
+               img-src     'self' data:;
+               object-src  'none';
+               connect-src 'none';
+               frame-ancestors 'self';">
+<meta http-equiv="Referrer-Policy"        content="no-referrer">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
-<meta http-equiv="X-Frame-Options"        content="SAMEORIGIN">
+<meta http-equiv="X-Frame-Options"        content="SAMEORIGIN">
 
 <meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -25,14 +26,14 @@
 <link rel="apple-touch-icon" href="./Icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"
-        integrity="sha384-KXr1ZR+RjPXeQoLayqXWwPHU6pX+g9D/64GgpIu2xTqK2X9li1WzJDkJSm0k1Wj6"
-        crossorigin="anonymous"></script>
+        integrity="sha384-KXr1ZR+RjPXeQoLayqXWwPHU6pX+g9D/64GgpIu2xTqK2X9li1WzJDkJSm0k1Wj6"
+        crossorigin="anonymous"></script>
 
 <style>
 /* ---------- THEME TOKENS ---------- */
 :root{--bg:#000;--fg:#fff;--panel:#111;--border:#333;--accent:#3498db;--box:#000}
 @media (prefers-color-scheme:light){
-  :root{--bg:#fff;--fg:#000;--panel:#f5f5f5;--border:#ccc;--accent:#156fd1;--box:#fff}
+  :root{--bg:#fff;--fg:#000;--panel:#f5f5f5;--border:#ccc;--accent:#156fd1;--box:#fff}
 }
 .light{--bg:#fff;--fg:#000;--box:#fff}.dark{--bg:#000;--fg:#fff;--box:#000}
 
@@ -43,7 +44,6 @@ body{background:var(--bg);color:var(--fg);font-family:system-ui,sans-serif;overf
 button{font:inherit}
 .pill{padding:.6rem 1rem;border-radius:8px;background:var(--panel);border:1px solid var(--border);color:var(--fg);box-shadow:0 2px 10px rgba(0,0,0,.25);transition:.2s}
 .pill:active{background:rgba(255,255,255,.08)}
-.hidden{display:none !important} /* Utility class */
 
 /* ---------- SETTINGS FAB ---------- */
 #settingsBtn{position:fixed;top:6px;right:12px;z-index:100;width:36px;height:36px;background:var(--panel);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.25)}
@@ -74,19 +74,9 @@ input:checked+.slider{background:var(--accent)}input:checked+.slider:before{tran
 
 /* range */
 .rangeRow{display:flex;align-items:center;gap:8px;margin:8px 0}
-.rangeRow input[type=range]{flex:1;-webkit-appearance:none;appearance:none;background:transparent;cursor:pointer;}
-/* Webkit */
+.rangeRow input[type=range]{flex:1;-webkit-appearance:none;background:transparent}
 input[type=range]::-webkit-slider-runnable-track{height:4px;background:var(--border);border-radius:4px}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:24px;height:24px;background:var(--accent);border-radius:50%;margin-top:-10px;box-shadow:0 2px 6px rgba(0,0,0,.3)}
-/* Mozilla */
-input[type=range]::-moz-range-track{height:4px;background:var(--border);border-radius:4px}
-input[type=range]::-moz-range-thumb{width:24px;height:24px;background:var(--accent);border-radius:50%;border:none;box-shadow:0 2px 6px rgba(0,0,0,.3)}
-/* Microsoft */
-input[type=range]::-ms-track{height:4px;background:var(--border);border-radius:4px;border-color:transparent;color:transparent;}
-input[type=range]::-ms-thumb{width:24px;height:24px;background:var(--accent);border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3);margin-top:0;}
-input[type=range]::-ms-fill-lower {background:var(--border);border-radius:4px;}
-input[type=range]::-ms-fill-upper {background:var(--border);border-radius:4px;}
-
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;background:var(--accent);border-radius:50%;margin-top:-10px;box-shadow:0 2px 6px rgba(0,0,0,.3)}
 
 /* ---------- STATS ---------- */
 .statsBox{margin-top:24px;border-top:1px solid var(--border);padding-top:16px;font-size:1rem}
@@ -98,834 +88,331 @@ body.panel-open #matchTimer{opacity:0}
 
 /* ---------- COURT GRID ---------- */
 #court{position:absolute;top:48px;bottom:124px;left:0;right:0;display:grid;gap:0;transition:.2s}
-body.one-grid    #court{bottom:124px}
-body.two-vert    #court{bottom:140px}
-body.three-portrait #court{bottom:148px} /* Determines space below court */
+body.one-grid   #court{bottom:124px}
+body.two-vert   #court{bottom:140px}
+body.three-portrait #court{bottom:148px}
 body.four-grid,#court.four-land{}
 
-.teamBox{
-    background:var(--box);
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
-    border:4px solid transparent;
-    padding:12px;
-    transition:.2s;
-    /* Fix: Allow shrinking and fill height */
-    min-width: 0;
-    min-height: 0;
-    height: 100%;
-    overflow: hidden; /* Prevent content spilling out */
-}
+.teamBox{background:var(--box);display:flex;flex-direction:column;justify-content:center;align-items:center;border:4px solid transparent;padding:12px;transition:.2s}
 .teamBox:active{transform:scale(.97)}
-
-.teamName {
-    font-size:clamp(5rem,12vw,7rem);
-    font-family:'Bebas Neue',sans-serif;
-    margin-bottom:8px; /* Can reduce if space is very tight */
-    line-height: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 95%; /* Ensure it doesn't touch edges */
-    text-align: center;
-}
-.teamScore{
-    /* Fix: Adjusted clamp values and added line-height */
-    font-size:clamp(8rem, 22vw, 16rem);
-    font-family:'Bebas Neue',sans-serif;
-    line-height: 0.9; /* Tighter line height */
-}
+.teamName {font-size:clamp(5rem,12vw,7rem);font-family:'Bebas Neue',sans-serif;margin-bottom:8px}
+.teamScore{font-size:clamp(10rem,25vw,18rem);font-family:'Bebas Neue',sans-serif}
 
 /* scaled fonts */
 @media (orientation:landscape){
-  body.one-land   .teamName{font-size:clamp(4rem,8vh,6rem)}
-  body.one-land   .teamScore{font-size:clamp(6rem,13vh,10rem)} /* Adjusted */
-  body.two-land   .teamName{font-size:clamp(4rem,8vh,6rem)}
-  body.two-land   .teamScore{font-size:clamp(6rem,13vh,10rem)} /* Adjusted */
-  body.three-land .teamName{font-size:clamp(3.5rem,7vh,5.5rem)}
-  body.three-land .teamScore{font-size:clamp(5rem,11vh,9rem)} /* Adjusted */
-  body.four-land .teamName{font-size:clamp(3.2rem,6vh,4.8rem)}
-  body.four-land .teamScore{font-size:clamp(4.5rem, 10vh, 7.5rem)} /* Adjusted */
+  body.one-land  .teamName{font-size:clamp(4rem,8vh,6rem)}
+  body.one-land  .teamScore{font-size:clamp(7rem,15vh,11rem)}
+  body.two-land  .teamName{font-size:clamp(4rem,8vh,6rem)}
+  body.two-land  .teamScore{font-size:clamp(7rem,15vh,11rem)}
+  body.three-land .teamName{font-size:clamp(3.5rem,7vh,5.5rem)}
+  body.three-land .teamScore{font-size:clamp(6rem,13vh,10rem)}
+  body.four-land .teamName{font-size:clamp(3.2rem,6vh,4.8rem)}
+  body.four-land .teamScore{font-size:clamp(5.5rem,11vh,8.5rem)}
 }
 
 /* 3‑portrait shrink */
 body.three-portrait .teamBox{padding:6px}
 body.three-portrait .teamName {font-size:clamp(3.6rem,9vw,4.6rem)}
-body.three-portrait .teamScore{font-size:clamp(6rem, 16vw, 10rem)} /* Adjusted */
+body.three-portrait .teamScore{font-size:clamp(7rem,18vw,11rem)}
 
-.teamBox * { /* Applied to children, not box itself */
-    user-select:none;
-}
+.teamBox,.teamBox *{user-select:none}
 
 /* ---------- WINNER OVERLAY ---------- */
-#winnerBanner{
-    /* Fix: Use fixed positioning and z-index */
-    position:fixed;
-    inset:0;
-    display:flex; /* Keep flex for centering */
-    background:rgba(0,0,0,.7);
-    color:#fff;
-    font-size:2rem;
-    font-weight:700;
-    justify-content:center;
-    align-items:center;
-    flex-direction:column;
-    z-index: 200; /* Ensure it's on top */
-}
-/* Initially hidden via .hidden class applied in HTML/JS */
+#winnerBanner{position:absolute;inset:0;display:none;background:rgba(0,0,0,.7);color:#fff;font-size:2rem;font-weight:700;justify-content:center;align-items:center;flex-direction:column}
 #winnerBanner button{margin-top:16px}
 
 /* ---------- FLOAT‑BAR ---------- */
 #floatbar{position:fixed;left:50%;transform:translateX(-50%);bottom:32px;display:flex;gap:12px;z-index:100;transition:.2s}
-body.two-vert    #floatbar{flex-direction:column;left:12px;transform:none;bottom:52px}
+body.two-vert   #floatbar{flex-direction:column;left:12px;transform:none;bottom:52px}
 body.three-portrait #floatbar{flex-direction:column;left:12px;transform:none;bottom:60px}
-body.four-grid   #floatbar{bottom:28px}
-body.one-grid    #floatbar{bottom:28px}
+body.four-grid  #floatbar{bottom:28px}
+body.one-grid   #floatbar{bottom:28px}
 body.panel-open #floatbar{opacity:0;pointer-events:none}
 </style>
 </head>
 
 <body class="dark">
+<!-- TIMER -->
 <div id="matchTimer">00:00</div>
 
+<!-- SETTINGS FAB -->
 <button id="settingsBtn" class="pill">⚙️</button>
 
+<!-- FLOAT BAR -->
 <div id="floatbar">
-  <button id="undoBtn"  class="pill">↩️</button>
-  <button id="resetBtn" class="pill">🔄</button>
-  <button id="timerBtn" class="pill hidden">⏱</button> </div>
+  <button id="undoBtn"  class="pill">↩️</button>
+  <button id="resetBtn" class="pill">🔄</button>
+  <button id="timerBtn" class="pill">⏱</button>
+</div>
 
+<!-- SETTINGS PANEL -->
 <div id="settingsPanel">
-  <h2>Settings</h2>
+  <h2>Settings</h2>
 
-  <div class="section-header">── Team Names & Colours ──</div>
-  <div id="preview"></div>
+  <div class="section-header">── Team Names & Colours ──</div>
+  <div id="preview"></div>
 
-  <label class="row"><span>Number of Teams</span>
-    <select id="teamCount"><option>1</option><option>2</option><option>3</option><option>4</option></select>
-  </label>
+  <label class="row"><span>Number of Teams</span>
+    <select id="teamCount"><option>1</option><option>2</option><option>3</option><option>4</option></select>
+  </label>
 
-  <div id="teamsConfig"></div>
+  <div id="teamsConfig"></div>
 
-  <div class="section-header">── Game Rules ──</div>
+  <div class="section-header">── Game Rules ──</div>
 
-  <label class="row"><span>➕ Points per tap</span>
-    <select id="stepSel">
-      <option>0.5</option><option>1</option><option>1.5</option><option>2</option>
-      <option>2.5</option><option>3</option><option>3.5</option><option>4</option>
-      <option>4.5</option><option>5</option>
-    </select>
-  </label>
+  <!-- half‑point options -->
+  <label class="row"><span>➕ Points per tap</span>
+    <select id="stepSel">
+      <option>0.5</option><option>1</option><option>1.5</option><option>2</option>
+      <option>2.5</option><option>3</option><option>3.5</option><option>4</option>
+      <option>4.5</option><option>5</option>
+    </select>
+  </label>
 
-  <label class="row"><span>🎯 Score limit</span>
-    <div class="toggle"><input type="checkbox" id="limitToggle"><span class="slider"></span></div>
-  </label>
-  <div id="limitRow" class="rangeRow hidden"> <input type="range" id="limitRange" min="1" max="100" step="0.5">
-    <span id="limitVal"></span>
-  </div>
+  <label class="row"><span>🎯 Score limit</span>
+    <div class="toggle"><input type="checkbox" id="limitToggle"><span class="slider"></span></div>
+  </label>
+  <!-- slider now steps by 0.5 -->
+  <div id="limitRow" class="rangeRow hidden">
+    <input type="range" id="limitRange" min="1" max="100" step="0.5">
+    <span id="limitVal"></span>
+  </div>
 
-  <label class="row"><span>⏱ Countdown timer</span>
-    <div class="toggle"><input type="checkbox" id="cdToggle"><span class="slider"></span></div>
-  </label>
-  <div id="cdRow" class="rangeRow hidden"> <input type="range"  id="cdRange" min="0" max="10800" step="30"> <input type="number" id="cdNum"   min="0" max="180"   step="0.5"
-           style="width:5rem;background:var(--box);border:1px solid var(--border);border-radius:6px;padding:.4rem .5rem;color:var(--fg)">
-    <span>min</span>
-  </div>
+  <label class="row"><span>⏱ Countdown timer</span>
+    <div class="toggle"><input type="checkbox" id="cdToggle"><span class="slider"></span></div>
+  </label>
+  <div id="cdRow" class="rangeRow hidden">
+    <input type="range"  id="cdRange" min="0" max="10800" step="30">
+    <input type="number" id="cdNum"   min="0" max="180"  step="0.5"
+           style="width:5rem;background:var(--box);border:1px solid var(--border);border-radius:6px;padding:.4rem .5rem;color:var(--fg)">
+    <span>min</span>
+  </div>
 
-  <label class="row"><span>🌗 Theme</span>
-    <select id="themeSel"><option value="auto">Auto</option><option value="dark">Dark</option><option value="light">Light</option></select>
-  </label>
+  <label class="row"><span>🌗 Theme</span>
+    <select id="themeSel"><option value="auto">Auto</option><option value="dark">Dark</option><option value="light">Light</option></select>
+  </label>
 
-  <div class="statsBox">
-    <h3>Stats</h3>
-    <div id="statsWrap"></div>
-    <button id="resetStats" class="pill hidden">🗑️</button> </div>
+  <div class="statsBox">
+    <h3>Stats</h3>
+    <div id="statsWrap"></div>
+    <button id="resetStats" class="pill" style="display:none">🗑️</button>
+  </div>
 </div>
 
+<!-- COURT & WINNER -->
 <div id="court"></div>
-<div id="winnerBanner" class="hidden"> <div id="winnerText">🏆 Winner!</div>
-    <button id="newGameBtn" class="pill">▶️ New game</button>
-</div>
+<div id="winnerBanner"><div id="winnerText">🏆 Winner!</div><button onclick="resetGame()" class="pill">▶️ New game</button></div>
 
 <script>
-(function() { // IIFE Start for scoping
-
-/* ---------- constants ---------- */
-const DEF_COL = ['#3498db', '#e74c3c', '#9b59b6', '#f1c40f'];
-const LONG_PRESS_DELAY = 500; // ms
-const SWIPE_THRESHOLD = 30; // pixels
-const MAX_HISTORY = 300; // items
-const COUNTDOWN_MAX_MINUTES = 180; // minutes for number input max
-
 /* ---------- helpers ---------- */
-const $ = id => document.getElementById(id);
-const fmt = ms => { const s = Math.floor(ms / 1000), m = Math.floor(s / 60), ss = String(s % 60).padStart(2, '0'); return `${m}:${ss}` };
+const $=id=>document.getElementById(id),
+      DEF_COL=['#3498db','#e74c3c','#9b59b6','#f1c40f'],
+      fmt=ms=>{const s=Math.floor(ms/1000),m=Math.floor(s/60),ss=String(s%60).padStart(2,'0');return`${m}:${ss}`};
 
 /* ---------- state ---------- */
-const seed = {
-  teamCount: 2,
-  teams: [{ name: 'Team A', color: '#3498db', score: 0 }, { name: 'Team B', color: '#e74c3c', score: 0 }],
-  step: 1, limitEnabled: false, limit: 11, countdownEnabled: false, countdown: 300000, // 5 minutes
-  timer: { running: false, start: 0, elapsed: 300000 }, // Start elapsed matching countdown
-  history: [],
-  wins: {}, games: 0, pointsTotal: 0,
-  theme: 'auto', startTime: Date.now(), leadChanges: 0, previousLeader: -1
-};
+const seed={teamCount:2,teams:[{name:'Team A',color:'#3498db',score:0},{name:'Team B',color:'#e74c3c',score:0}],
+  step:1,limitEnabled:false,limit:11,countdownEnabled:false,countdown:300000,
+  timer:{running:false,start:0,elapsed:0},history:[],wins:{},games:0,pointsTotal:0,
+  theme:'auto',startTime:Date.now(),leadChanges:0,previousLeader:-1};
 
-// Load state safely from localStorage
-function loadState() {
-  try {
-    const saved = localStorage.getItem('pt-state');
-    // Merge saved state into seed, ensuring seed structure prevails
-    const loaded = Object.assign({}, seed, JSON.parse(saved || '{}'));
-    // Ensure timer sub-object exists and elapsed matches countdown if not running
-    loaded.timer = { ...seed.timer, ...(loaded.timer || {}) };
-     if (!loaded.timer.running) {
-         loaded.timer.elapsed = loaded.countdown; // Ensure elapsed matches on load if paused
-     }
-    return loaded;
-  } catch (e) {
-    console.error("Failed to load state from localStorage:", e);
-    const defaultState = { ...seed };
-    defaultState.timer.elapsed = defaultState.countdown; // Ensure elapsed matches in default
-    return defaultState;
-  }
-}
-
-// Save state safely to localStorage
-function saveState() {
-  try {
-    localStorage.setItem('pt-state', JSON.stringify(cfg));
-  } catch (e) {
-    console.error("Failed to save state to localStorage:", e);
-    // Optionally notify user that saving failed
-  }
-}
-
-let cfg = loadState();
-const save = saveState; // Use the safe save function
-
-// Ensure teams array matches teamCount and has defaults
-cfg.teams = Array.from({ length: cfg.teamCount }, (_, i) => ({
-  name: cfg.teams[i]?.name || `Team ${String.fromCharCode(65 + i)}`,
-  color: cfg.teams[i]?.color || DEF_COL[i] || '#cccccc', // Fallback color
-  score: cfg.teams[i]?.score || 0
-}));
-cfg.startTime = cfg.startTime || Date.now(); // Ensure startTime exists
-cfg.previousLeader = cfg.previousLeader >= 0 ? cfg.previousLeader : -1; // Ensure valid value
-save(); // Save potentially corrected state
+let cfg=Object.assign(seed,JSON.parse(localStorage.getItem('pt-state')||'{}'));
+const save=_=>localStorage.setItem('pt-state',JSON.stringify(cfg));
+cfg.teams=Array.from({length:cfg.teamCount},(_,i)=>({name:cfg.teams[i]?.name||`Team ${String.fromCharCode(65+i)}`,color:cfg.teams[i]?.color||DEF_COL[i],score:cfg.teams[i]?.score||0}));
+cfg.startTime ||= Date.now();cfg.previousLeader=cfg.previousLeader>=0?cfg.previousLeader:-1;save();
 
 /* ---------- refs ---------- */
-const gear = $('settingsBtn'), panel = $('settingsPanel'), preview = $('preview'),
-      teamCount = $('teamCount'), teamsDiv = $('teamsConfig'),
-      stepSel = $('stepSel'), limitToggle = $('limitToggle'), limitRow = $('limitRow'), limitRange = $('limitRange'), limitVal = $('limitVal'),
-      cdToggle = $('cdToggle'), cdRow = $('cdRow'), cdRange = $('cdRange'), cdNum = $('cdNum'),
-      themeSel = $('themeSel'), undo = $('undoBtn'), reset = $('resetBtn'), timerBtn = $('timerBtn'),
-      court = $('court'), timerDisp = $('matchTimer'), winner = $('winnerBanner'), winnerText = $('winnerText'), newGameBtn = $('newGameBtn'),
-      stats = $('statsWrap'), resetStats = $('resetStats');
+const gear=$('settingsBtn'),panel=$('settingsPanel'),preview=$('preview'),
+      teamCount=$('teamCount'),teamsDiv=$('teamsConfig'),
+      stepSel=$('stepSel'),limitToggle=$('limitToggle'),limitRow=$('limitRow'),limitRange=$('limitRange'),limitVal=$('limitVal'),
+      cdToggle=$('cdToggle'),cdRow=$('cdRow'),cdRange=$('cdRange'),cdNum=$('cdNum'),
+      themeSel=$('themeSel'),undo=$('undoBtn'),reset=$('resetBtn'),timerBtn=$('timerBtn'),
+      court=$('court'),timerDisp=$('matchTimer'),winner=$('winnerBanner'),winnerText=$('winnerText'),
+      stats=$('statsWrap'),resetStats=$('resetStats');
 
 /* ---------- drawer ---------- */
-gear.onclick = _ => {
-  const isOpen = panel.classList.toggle('open');
-  document.body.classList.toggle('panel-open', isOpen);
-};
+gear.onclick=_=>{panel.classList.toggle('open');document.body.classList.toggle('panel-open',panel.classList.contains('open'))};
 
 /* ---------- theme ---------- */
-function applyTheme() {
-  const prefersDark = matchMedia('(prefers-color-scheme:dark)').matches;
-  const targetTheme = cfg.theme === 'auto' ? (prefersDark ? 'dark' : 'light') : cfg.theme;
-  document.body.classList.remove('light', 'dark');
-  document.body.classList.add(targetTheme);
-  themeSel.value = cfg.theme;
-}
-themeSel.onchange = e => { cfg.theme = e.target.value; applyTheme(); save(); };
-applyTheme(); // Initial theme set
+function applyTheme(){const dark=matchMedia('(prefers-color-scheme:dark)').matches;const target=cfg.theme==='auto'?(dark?'dark':'light'):cfg.theme;document.body.classList.remove('light','dark');document.body.classList.add(target);themeSel.value=cfg.theme}
+themeSel.onchange=e=>{cfg.theme=e.target.value;applyTheme();save()};applyTheme();
 
 /* ---------- body class helper ---------- */
-function setBodyClasses() {
-  const w = innerWidth, h = innerHeight;
-  const isLandscape = w > h;
-  document.body.classList.toggle('one-grid', cfg.teamCount === 1);
-  document.body.classList.toggle('one-land', cfg.teamCount === 1 && isLandscape);
-  document.body.classList.toggle('two-vert', cfg.teamCount === 2 && !isLandscape);
-  document.body.classList.toggle('two-land', cfg.teamCount === 2 && isLandscape);
-  document.body.classList.toggle('three-portrait', cfg.teamCount === 3 && !isLandscape);
-  document.body.classList.toggle('three-land', cfg.teamCount === 3 && isLandscape);
-  document.body.classList.toggle('four-grid', cfg.teamCount === 4 ); // Assuming 4 teams are always grid
-  document.body.classList.toggle('four-land', cfg.teamCount === 4 && isLandscape);
+function setBodyClasses(){
+  const w=innerWidth,h=innerHeight;
+  document.body.classList.toggle('one-grid', cfg.teamCount===1);
+  document.body.classList.toggle('one-land', cfg.teamCount===1 && w>h);
+  document.body.classList.toggle('two-vert', cfg.teamCount===2 && h>w);
+  document.body.classList.toggle('two-land', cfg.teamCount===2 && w>h);
+  document.body.classList.toggle('three-portrait', cfg.teamCount===3 && h>w);
+  document.body.classList.toggle('three-land', cfg.teamCount===3 && w>h);
+  document.body.classList.toggle('four-grid', cfg.teamCount===4 && h>w);
+  document.body.classList.toggle('four-land', cfg.teamCount===4 && w>h);
 }
 
 /* ---------- live preview ---------- */
-function buildPreview() {
-  setBodyClasses(); // Update body classes which might affect preview layout if styles depend on them
-  const w = innerWidth, h = innerHeight;
-  if (cfg.teamCount === 4) preview.style.gridTemplate = 'auto auto / 1fr 1fr';
-  else if (cfg.teamCount === 3) preview.style.gridTemplate = (h > w) ? '1fr 1fr 1fr / 1fr' : '1fr / 1fr 1fr 1fr';
-  else if (cfg.teamCount === 2) preview.style.gridTemplate = 'auto / 1fr 1fr'; // Keep simple 1 row, 2 cols
-  else preview.style.gridTemplate = 'auto / 1fr';
-  preview.innerHTML = ''; // Clear previous preview
-  cfg.teams.forEach(t => preview.insertAdjacentHTML('beforeend',
-    `<div class="previewBox"><span style="color:${t.color}">${t.name}</span><small style="color:${t.color}">${t.score}</small></div>`));
+function buildPreview(){
+  setBodyClasses();
+  const w=innerWidth,h=innerHeight;
+  if(cfg.teamCount===4) preview.style.gridTemplate='auto auto / 1fr 1fr';
+  else if(cfg.teamCount===3) preview.style.gridTemplate=(h>w)?'1fr 1fr 1fr / 1fr':'1fr / 1fr 1fr 1fr';
+  else if(cfg.teamCount===2) preview.style.gridTemplate='auto / 1fr 1fr';
+  else preview.style.gridTemplate='auto / 1fr';
+  preview.innerHTML='';
+  cfg.teams.forEach(t=>preview.insertAdjacentHTML('beforeend',`<div class="previewBox"><span style="color:${t.color}">${t.name}</span><small style="color:${t.color}">${t.score}</small></div>`));
 }
-addEventListener('resize', buildPreview);
+addEventListener('resize',buildPreview);
 
 /* ---------- teams form ---------- */
-// Event delegation for team name/color inputs
-teamsDiv.addEventListener('input', (e) => {
-    if (e.target.matches('input[type=text][id^="name"]')) {
-      const index = +e.target.id.slice(4);
-      if (cfg.teams[index]) {
-        cfg.teams[index].name = e.target.value || `Team ${String.fromCharCode(65 + index)}`;
-        updateCourt(); buildPreview(); save();
-      }
-    } else if (e.target.matches('input[type=color][id^="clr"]')) {
-      const index = +e.target.id.slice(3);
-       if (cfg.teams[index]) {
-        cfg.teams[index].color = e.target.value;
-        updateCourt(); buildPreview(); save();
-      }
-    }
-});
-
-function renderTeams() {
-  // Ensure teams array matches teamCount and has defaults
-  cfg.teams = Array.from({ length: cfg.teamCount }, (_, i) => ({
-    name: cfg.teams[i]?.name || `Team ${String.fromCharCode(65 + i)}`,
-    color: cfg.teams[i]?.color || DEF_COL[i] || '#cccccc',
-    score: cfg.teams[i]?.score || 0
-  }));
-
-  buildPreview(); // Update preview first
-
-  teamsDiv.innerHTML = ''; // Clear existing config rows
-  cfg.teams.forEach((t, i) => {
-    teamsDiv.insertAdjacentHTML('beforeend',
-     `<label class="row"><span>Team ${String.fromCharCode(65 + i)}</span><input type="text" id="name${i}" value="${t.name}"><input type="color" id="clr${i}" value="${t.color}"></label>`);
-  });
-
-  updateCourt(); // Update main display
-  save(); // Save potentially changed team structure/defaults
+function renderTeams(){
+  cfg.teams=Array.from({length:cfg.teamCount},(_,i)=>({name:cfg.teams[i]?.name||`Team ${String.fromCharCode(65+i)}`,color:cfg.teams[i]?.color||DEF_COL[i],score:cfg.teams[i]?.score||0}));
+  buildPreview();
+  teamsDiv.innerHTML='';
+  cfg.teams.forEach((t,i)=>teamsDiv.insertAdjacentHTML('beforeend',`<label class="row"><span>Team ${String.fromCharCode(65+i)}</span><input type="text" id="name${i}" value="${t.name}"><input type="color" id="clr${i}" value="${t.color}"></label>`));
+  teamsDiv.querySelectorAll('input[type=text]').forEach(inp=>inp.oninput=e=>{const ix=+e.target.id.slice(4);cfg.teams[ix].name=e.target.value||`Team ${String.fromCharCode(65+ix)}`;updateCourt();buildPreview();save()});
+  teamsDiv.querySelectorAll('input[type=color]').forEach(inp=>inp.oninput=e=>{const ix=+e.target.id.slice(3);cfg.teams[ix].color=e.target.value;updateCourt();buildPreview();save()});
+  updateCourt();save()
 }
-// Initial setup for team count selector
-teamCount.value = cfg.teamCount;
-['input', 'change'].forEach(ev => teamCount.addEventListener(ev, e => {
-    const newCount = +e.target.value;
-    if (newCount >= 1 && newCount <= 4) { // Basic validation
-        cfg.teamCount = newCount;
-        renderTeams(); // This will adjust cfg.teams array size and redraw UI
-    }
-}));
+['input','change'].forEach(ev=>teamCount.addEventListener(ev,e=>{cfg.teamCount=+e.target.value;renderTeams()}));teamCount.value=cfg.teamCount;
 
 /* ---------- points / tap ---------- */
-stepSel.value = cfg.step;
-stepSel.onchange = e => { cfg.step = parseFloat(e.target.value); save(); };
+stepSel.value=cfg.step;
+stepSel.onchange=e=>{cfg.step=parseFloat(e.target.value);save()};
 
 /* ---------- score limit ---------- */
-function syncLimitUI() {
-  limitRow.classList.toggle('hidden', !limitToggle.checked);
-  cfg.limitEnabled = limitToggle.checked;
-  // If enabling limit, check for immediate win condition? Desirable? No, let next score trigger it.
-  save();
-}
-limitToggle.checked = cfg.limitEnabled;
-limitToggle.onchange = syncLimitUI;
-limitRange.value = cfg.limit;
-limitVal.textContent = cfg.limit;
-limitRange.oninput = e => { cfg.limit = parseFloat(e.target.value) || 0; limitVal.textContent = cfg.limit; save(); };
-syncLimitUI(); // Initial UI sync
+function syncLimit(){limitRow.classList.toggle('hidden',!limitToggle.checked);cfg.limitEnabled=limitToggle.checked;save()}
+limitToggle.checked=cfg.limitEnabled;limitToggle.onchange=syncLimit;limitRange.value=cfg.limit;limitVal.textContent=cfg.limit;
+limitRange.oninput=e=>{cfg.limit=parseFloat(e.target.value)||0;limitVal.textContent=cfg.limit;save()};syncLimit();
 
 /* ---------- countdown ---------- */
-function syncCDUI() {
-  const isEnabled = cdToggle.checked;
-  cdRow.classList.toggle('hidden', !isEnabled);
-  cfg.countdownEnabled = isEnabled;
-  if (!isEnabled && cfg.timer.running) { // Stop timer if disabling
-      cfg.timer.running = false;
-      cfg.timer.elapsed = Math.max(0, cfg.timer.start + cfg.countdown - Date.now()); // Store remaining time
-  }
-  resetClockDisplay(); // Update display (will hide button if needed)
-  save();
-}
-cdToggle.checked = cfg.countdownEnabled;
-cdToggle.onchange = syncCDUI;
+function syncCDUI(){cdRow.classList.toggle('hidden',!cdToggle.checked);cfg.countdownEnabled=cdToggle.checked;resetClock();save()}
+cdToggle.checked=cfg.countdownEnabled;cdToggle.onchange=syncCDUI;
 
-function msToUI(ms) {
-  cdRange.value = ms / 1000; // Range slider uses seconds
-  cdNum.value = (ms / 60000).toFixed(1).replace(/\.0$/, ''); // Number input uses minutes
-}
-function uiToMSFromRange() {
-  return Math.round(+cdRange.value) * 1000; // Range slider (seconds) dictates ms
-}
-function uiToMSFromNum() {
-    let v = Math.max(0, Math.min(COUNTDOWN_MAX_MINUTES, +cdNum.value || 0));
-    return v * 60000; // Convert minutes to ms
-}
+function msToUI(ms){cdRange.value=ms/1000;cdNum.value=(ms/60000).toFixed(1).replace(/\.0$/,'')}
+function uiToMS(){return Math.round(+cdRange.value)*1000}
 
-msToUI(cfg.countdown); // Init UI from state
-
-function handleCountdownChange(newCountdown) {
-    const oldCountdown = cfg.countdown;
-    if (newCountdown === oldCountdown) return; // No change
-
-    const wasRunning = cfg.timer.running;
-    const now = Date.now();
-    let elapsedInCurrentRun = 0;
-
-    if (wasRunning) {
-        elapsedInCurrentRun = now - cfg.timer.start;
-    }
-
-    cfg.countdown = newCountdown; // Update total duration
-
-    if (wasRunning) {
-        // Adjust start time to maintain the same elapsed duration within the new total
-        cfg.timer.start = now - elapsedInCurrentRun;
-        // Ensure elapsed doesn't exceed new countdown if somehow calculated wrong
-        if (elapsedInCurrentRun >= newCountdown) {
-             cfg.timer.start = now - newCountdown; // Start as if fully elapsed
-        }
-    } else {
-        // If paused, update the stored 'elapsed' time.
-        // Cap it at the new total duration.
-        cfg.timer.elapsed = Math.min(cfg.timer.elapsed, newCountdown);
-    }
-
-    resetClockDisplay(); // Update visuals
-    save();
-}
-
-cdRange.oninput = _ => {
-    const newCountdown = uiToMSFromRange();
-    handleCountdownChange(newCountdown);
-    // Update number input to reflect range change
-    cdNum.value = (newCountdown / 60000).toFixed(1).replace(/\.0$/, '');
-};
-cdNum.oninput = _ => {
-    const newCountdown = uiToMSFromNum();
-    handleCountdownChange(newCountdown);
-    // Update range slider to reflect number input change
-    cdRange.value = newCountdown / 1000;
-};
-syncCDUI(); // Initial UI sync for visibility
+msToUI(cfg.countdown);
+cdRange.oninput=_=>{cfg.countdown=uiToMS();cdNum.value=(cfg.countdown/60000).toFixed(1).replace(/\.0$/,'');resetClock();save()};
+cdNum.oninput=e=>{let v=Math.max(0,Math.min(180,+e.target.value||0));cfg.countdown=v*60000;cdRange.value=cfg.countdown/1000;resetClock();save()};
+syncCDUI();
 
 /* ---------- court ---------- */
-function updateCourt() {
-  const w = innerWidth, h = innerHeight, isLandscape = w > h;
-  let grid;
-  if (cfg.teamCount === 4) grid = '1fr 1fr / 1fr 1fr'; // Always 2x2 for 4 teams
-  else if (cfg.teamCount === 3) grid = !isLandscape ? '1fr 1fr 1fr / 1fr' : '1fr / 1fr 1fr 1fr';
-  else if (cfg.teamCount === 2) grid = !isLandscape ? '1fr 1fr / 1fr' : '1fr / 1fr 1fr';
-  else grid = '1fr / 1fr'; // Single team
-  court.style.gridTemplate = grid;
+function updateCourt(){
+  const w=innerWidth,h=innerHeight,set=setBodyClasses;
+  let grid;
+  if(cfg.teamCount===4) grid=(w>h)?'1fr 1fr / 1fr 1fr':'1fr 1fr / 1fr 1fr';
+  else if(cfg.teamCount===3) grid=(h>w)?'1fr 1fr 1fr / 1fr':'1fr / 1fr 1fr 1fr';
+  else if(cfg.teamCount===2) grid=(h>w)?'1fr 1fr / 1fr':'1fr / 1fr 1fr';
+  else grid='1fr / 1fr';
+  court.style.gridTemplate=grid;
 
-  court.innerHTML = ''; // Clear court
-  cfg.teams.forEach((t, i) => {
-    const box = document.createElement('div');
-    box.className = 'teamBox';
-    box.dataset.index = i; // Use dataset for index
-    box.innerHTML = `<div class="teamName" style="color:${t.color}">${t.name}</div><div class="teamScore" style="color:${t.color}">${t.score}</div>`;
-    attachGestures(box, i);
-    court.append(box);
-  });
-  updateScores(); // Ensure scores are displayed correctly
-  highlightLeader(); // Highlight leader
-  setBodyClasses(); // Update body classes for layout styles
+  court.innerHTML='';
+  cfg.teams.forEach((t,i)=>{
+    const box=document.createElement('div');box.className='teamBox';box.dataset.i=i;
+    box.innerHTML=`<div class="teamName" style="color:${t.color}">${t.name}</div><div class="teamScore" style="color:${t.color}">${t.score}</div>`;
+    attachGestures(box,i);court.append(box);
+  });
+  updateScores();highlightLeader();set();
 }
-
-function updateScores() {
-  document.querySelectorAll('.teamBox').forEach((box) => {
-    const i = parseInt(box.dataset.index, 10);
-    if (isNaN(i) || !cfg.teams[i]) return;
-
-    const scoreEl = box.querySelector('.teamScore');
-    if (scoreEl) {
-      scoreEl.textContent = cfg.teams[i].score;
-      scoreEl.style.color = cfg.teams[i].color; // Ensure color updates
-    }
-    const nameEl = box.querySelector('.teamName');
-     if (nameEl) {
-      nameEl.textContent = cfg.teams[i].name;
-      nameEl.style.color = cfg.teams[i].color; // Ensure color updates
-    }
-  });
-}
-
-function highlightLeader() {
-  if (cfg.teams.length === 0) return; // No teams, nothing to highlight
-  const maxScore = Math.max(...cfg.teams.map(t => t.score));
-  const leaders = cfg.teams
-    .map((t, i) => (t.score === maxScore && maxScore > 0 ? i : -1))
-    .filter(i => i >= 0);
-  const isTie = leaders.length > 1;
-
-  document.querySelectorAll('.teamBox').forEach((box) => {
-    const teamIndex = parseInt(box.dataset.index, 10); // Get index from dataset
-    if (isNaN(teamIndex) || !cfg.teams[teamIndex]) return; // Safety check
-
-    let borderColor = 'transparent';
-    if (leaders.includes(teamIndex)) {
-        borderColor = isTie
-            ? (document.body.classList.contains('light') ? '#000' : '#fff') // Tie color based on theme
-            : cfg.teams[teamIndex].color; // Leader color
-    }
-     box.style.borderColor = borderColor;
-  });
-
-  // Track lead changes
-  const currentLeaderIndex = leaders.length === 1 ? leaders[0] : -1; // -1 for tie or no leader > 0
-  if (cfg.previousLeader !== -1 && currentLeaderIndex !== cfg.previousLeader && currentLeaderIndex !== -1) {
-    cfg.leadChanges++;
-  }
-  cfg.previousLeader = currentLeaderIndex;
-  // save(); // Avoid saving just for lead change tracking - save happens on score change
+function updateScores(){document.querySelectorAll('.teamScore').forEach((el,i)=>el.textContent=cfg.teams[i].score)}
+function highlightLeader(){
+  const max=Math.max(...cfg.teams.map(t=>t.score));
+  const leads=cfg.teams.map((t,i)=>t.score===max&&max>0?i:-1).filter(i=>i>=0);
+  const tie=leads.length>1;
+  document.querySelectorAll('.teamBox').forEach((b,i)=>b.style.borderColor=leads.includes(i)?(tie?(document.body.classList.contains('light')?'#000':'#fff'):cfg.teams[i].color):'transparent');
+  const nl=leads.length===1?leads[0]:-1;if(cfg.previousLeader>=0&&nl!==cfg.previousLeader){cfg.leadChanges++;save()};cfg.previousLeader=nl;
 }
 
 /* ---------- gestures ---------- */
-function attachGestures(el, index) {
-  let startX, startY, longPressTimeoutId, isLongPress = false, pointerId = null;
-
-  el.onpointerdown = e => {
-    // Ignore if settings panel is open or winner banner is shown
-    if (panel.classList.contains('open') || !winner.classList.contains('hidden')) return;
-    // Only handle primary button (usually left mouse or single touch)
-    if (e.button !== 0) return;
-
-    startX = e.clientX; startY = e.clientY; isLongPress = false;
-    pointerId = e.pointerId; // Store pointer ID
-    el.setPointerCapture(pointerId); // Capture pointer
-
-    longPressTimeoutId = setTimeout(() => {
-      changeScore(index, -cfg.step, false); // Subtract points on long press
-      isLongPress = true;
-      // Optionally provide haptic feedback here if desired
-      // navigator.vibrate(50); // Example haptic feedback (check browser support)
-    }, LONG_PRESS_DELAY);
-  };
-
-  el.onpointerup = e => {
-    if (e.pointerId !== pointerId) return; // Only react to the captured pointer
-
-    clearTimeout(longPressTimeoutId);
-    if (isLongPress) { // Action already taken by long press
-        el.releasePointerCapture(pointerId);
-        pointerId = null;
-        return;
-    }
-
-    const deltaX = e.clientX - startX;
-    const deltaY = e.clientY - startY;
-    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-    // Consider it a tap if movement is small
-    if (distance < SWIPE_THRESHOLD) {
-       changeScore(index, cfg.step, true); // Add points on tap
-    }
-    // Optional: Add swipe detection back if needed
-    // else if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > SWIPE_THRESHOLD / 2) {
-    //    changeScore(index, -cfg.step, false); // Horizontal swipe subtracts
-    // }
-
-    el.releasePointerCapture(pointerId);
-    pointerId = null;
-  };
-
-  el.onpointercancel = e => { // Handle cases like system interruptions
-     if (e.pointerId !== pointerId) return;
-    clearTimeout(longPressTimeoutId);
-    el.releasePointerCapture(pointerId);
-    pointerId = null;
-  };
-
-   // Prevent context menu on long press (especially mobile)
-   el.addEventListener('contextmenu', e => e.preventDefault());
+function attachGestures(el,i){
+  let sx,sy,lid,long=false;
+  el.onpointerdown=e=>{
+    sx=e.clientX;sy=e.clientY;long=false;
+    lid=setTimeout(()=>{changeScore(i,-cfg.step,false);long=true},500);
+  };
+  el.onpointerup=e=>{
+    clearTimeout(lid);
+    if(long)return;
+    const dx=e.clientX-sx,dy=e.clientY-sy;
+    if(Math.abs(dx)>30&&Math.abs(dx)>Math.abs(dy)) changeScore(i,-cfg.step,false); else changeScore(i,cfg.step,true);
+  };
+  el.onpointercancel=_=>clearTimeout(lid);
 }
 
 /* ---------- score change ---------- */
-function changeScore(index, delta, isPositive) {
-  if (!cfg.teams[index]) return; // Safety check
-
-  const oldScore = cfg.teams[index].score;
-  let newScore = oldScore + delta;
-  newScore = Math.max(0, newScore); // Prevent negative scores
-  newScore = Math.round(newScore * 2) / 2; // Round to nearest 0.5
-
-  if (newScore !== oldScore) { // Only proceed if score actually changed
-    cfg.teams[index].score = newScore;
-    cfg.history.push({ teamIndex: index, delta: delta }); // Store original delta for undo
-    if (cfg.history.length > MAX_HISTORY) {
-      cfg.history.shift(); // Limit history size
-    }
-
-    updateScores(); // Update display
-    highlightLeader(); // Check for leader changes
-    isPositive ? beepAdd() : beepRemove(); // Audio cue
-    checkWin(index); // Check win condition
-    save(); // Save state
-    buildPreview(); // Update settings preview
-    renderStats(); // Update stats display
-  }
+function changeScore(i,d,add){
+  cfg.teams[i].score=Math.max(0,cfg.teams[i].score+d);
+  cfg.teams[i].score=Math.round(cfg.teams[i].score*2)/2;   // round to nearest 0.5
+  cfg.history.push({team:i,delta:d});if(cfg.history.length>300)cfg.history.shift();
+  updateScores();highlightLeader();(add?beepAdd():beepRemove());checkWin(i);save();buildPreview();
 }
 
 /* ---------- undo / reset ---------- */
-undo.onpointerdown = _ => {
-  if (panel.classList.contains('open') || !winner.classList.contains('hidden')) return; // Don't undo if panel/winner shown
-  const lastAction = cfg.history.pop();
-  if (!lastAction) return; // No history
-
-  const teamIndex = lastAction.teamIndex;
-  if (cfg.teams[teamIndex]) {
-    // Reverse the delta
-    let currentScore = cfg.teams[teamIndex].score;
-    // Calculate score *before* the action we are undoing
-    let scoreBeforeLastAction = currentScore - lastAction.delta;
-    scoreBeforeLastAction = Math.max(0, scoreBeforeLastAction); // Ensure non-negative
-    scoreBeforeLastAction = Math.round(scoreBeforeLastAction * 2) / 2; // Round to 0.5
-
-    cfg.teams[teamIndex].score = scoreBeforeLastAction;
-
-    updateScores();
-    highlightLeader(); // Recalculate leader after undo
-    beepRemove(); // Undo sound
-    save();
-    buildPreview();
-    renderStats();
-  }
+undo.onpointerdown=_=>{
+  const h=cfg.history.pop();if(!h)return;
+  cfg.teams[h.team].score=Math.max(0,cfg.teams[h.team].score-h.delta);
+  cfg.teams[h.team].score=Math.round(cfg.teams[h.team].score*2)/2;
+  updateScores();highlightLeader();beepRemove();save();buildPreview();
 };
-
-function performReset() {
-    cfg.teams.forEach(t => t.score = 0); // Reset scores
-    cfg.history = []; // Clear history
-    cfg.startTime = Date.now(); // Reset game start time
-    cfg.leadChanges = 0; // Reset lead changes
-    cfg.previousLeader = -1; // Reset leader tracking
-    cfg.timer.running = false; // Stop timer
-    cfg.timer.elapsed = cfg.countdown; // Reset timer elapsed to full duration
-    timerBtn.textContent = '⏱'; // Reset timer button text
-    winner.classList.add('hidden'); // Hide winner banner
-    updateScores();
-    highlightLeader();
-    resetClockDisplay(); // Update timer display
-    save();
-    buildPreview();
-    renderStats();
-}
-
-reset.onpointerdown = _ => {
-  if (panel.classList.contains('open')) return; // Don't reset if panel open
-  if (confirm('Are you sure you want to reset the current scores?')) {
-    performReset();
-  }
+reset.onpointerdown=_=>{
+  if(confirm('Are you sure you want to reset the current scores?')){
+    cfg.teams.forEach(t=>t.score=0);cfg.history=[];updateScores();highlightLeader();cfg.startTime=Date.now();cfg.leadChanges=0;cfg.previousLeader=-1;winner.style.display='none';save();buildPreview();
+  }
 };
-
-// Listener for the "New Game" button on the winner banner
-newGameBtn.onclick = _ => { // Using onclick here for simplicity
-    performReset();
-};
-
 
 /* ---------- win & stats ---------- */
-function checkWin(index) {
-  if (cfg.limitEnabled && cfg.teams[index] && cfg.teams[index].score >= cfg.limit) {
-
-    // Ensure confetti is available before calling
-    if (typeof confetti === 'function') {
-        confetti({ particleCount: 200, spread: 70, startVelocity: 45, origin: { y: 0.6 } });
-    } else {
-        // Fix: Added warning for debugging confetti issues
-        console.warn("Confetti function not found. Check CSP or script loading.");
-    }
-
-    winnerText.textContent = `🏆 ${cfg.teams[index].name} wins!`;
-    winner.classList.remove('hidden'); // Show winner banner
-
-    // Stop the timer if it was running when someone won
-    if (cfg.timer.running) {
-        cfg.timer.running = false;
-        cfg.timer.elapsed = Math.max(0, cfg.timer.start + cfg.countdown - Date.now());
-        timerBtn.textContent = '⏱';
-    }
-
-    // Update stats
-    cfg.wins[cfg.teams[index].name] = (cfg.wins[cfg.teams[index].name] || 0) + 1;
-    cfg.games++;
-    // Calculate total points scored in this *finished* game
-    const pointsInGame = cfg.teams.reduce((sum, team) => sum + team.score, 0);
-    cfg.pointsTotal += pointsInGame;
-
-    renderStats(); // Update stats display
-    save(); // Save updated stats
-  }
+function checkWin(i){
+  if(cfg.limitEnabled&&cfg.teams[i].score>=cfg.limit){
+    confetti({particleCount:200,spread:70,startVelocity:45});
+    winnerText.textContent=`🏆 ${cfg.teams[i].name} wins!`;winner.style.display='flex';
+    cfg.wins[cfg.teams[i].name]=(cfg.wins[cfg.teams[i].name]||0)+1;cfg.games++;cfg.pointsTotal+=cfg.teams.reduce((s,t)=>s+t.score,0);renderStats();save();
+  }
 }
-
-function renderStats() {
-  stats.innerHTML = ''; // Clear previous stats
-  stats.insertAdjacentHTML('beforeend', `<div><strong>Pts/tap:</strong> +${cfg.step}</div>`);
-
-  // Display overall session time (from first load/state reset)
-  const sessionDuration = Date.now() - (cfg.startTime || Date.now());
-  const sessionMinutes = Math.floor(sessionDuration / 60000);
-  const sessionSeconds = String(Math.floor((sessionDuration % 60000) / 1000)).padStart(2, '0');
-  stats.insertAdjacentHTML('beforeend', `<div><strong>Session:</strong> ${sessionMinutes}:${sessionSeconds}</div>`);
-
-  stats.insertAdjacentHTML('beforeend', `<div><strong>Games:</strong> ${cfg.games || 0}</div>`);
-  stats.insertAdjacentHTML('beforeend', `<div><strong>Lead Changes:</strong> ${cfg.leadChanges || 0}</div>`); // Display tracked lead changes
-
-  Object.entries(cfg.wins).forEach(([name, winCount]) => {
-    stats.insertAdjacentHTML('beforeend', `<div>${name}: ${winCount} wins</div>`);
-  });
-
-  if (cfg.games > 0) {
-    stats.insertAdjacentHTML('beforeend', `<div>Avg Pts/Game: ${(cfg.pointsTotal / cfg.games).toFixed(1)}</div>`);
-    resetStats.classList.remove('hidden'); // Show reset button if there are stats
-  } else {
-    resetStats.classList.add('hidden'); // Hide reset button if no stats
-  }
+function renderStats(){
+  stats.innerHTML='';
+  stats.insertAdjacentHTML('beforeend',`<div><strong>Pts/tap:</strong> +${cfg.step}</div>`);
+  const e=Date.now()-cfg.startTime,m=Math.floor(e/60000),s=String(Math.floor((e%60000)/1000)).padStart(2,'0');
+  stats.insertAdjacentHTML('beforeend',`<div><strong>Time:</strong> ${m}:${s}</div>`);
+  stats.insertAdjacentHTML('beforeend',`<div><strong>Leads:</strong> ${cfg.leadChanges}</div>`);
+  Object.entries(cfg.wins).forEach(([n,w])=>stats.insertAdjacentHTML('beforeend',`<div>${n}: ${w} wins</div>`));
+  if(cfg.games){stats.insertAdjacentHTML('beforeend',`<div>Avg/game: ${(cfg.pointsTotal/cfg.games).toFixed(1)}</div>`);resetStats.style.display='';}else resetStats.style.display='none';
 }
-
-resetStats.onpointerdown = _ => {
-  if (confirm('Reset all session statistics (wins, games, points)?')) {
-    cfg.wins = {};
-    cfg.games = 0;
-    cfg.pointsTotal = 0;
-    // Reset session start time as well? Optional, depends on definition of "session"
-    // cfg.startTime = Date.now();
-    renderStats();
-    save();
-  }
-};
-renderStats(); // Initial render
+resetStats.onpointerdown=_=>{cfg.wins={};cfg.games=cfg.pointsTotal=0;renderStats();save()}
+renderStats();
 
 /* ---------- countdown clock ---------- */
-function resetClockDisplay() {
-  // Display depends on whether timer is enabled
-  if (!cfg.countdownEnabled) {
-    timerDisp.textContent = ''; // Hide display if disabled
-    timerBtn.classList.add('hidden'); // Hide timer button if disabled
-  } else {
-    timerBtn.classList.remove('hidden'); // Show timer button if enabled
-    // Determine time to display based on running state
-    const displayTime = cfg.timer.running
-        ? Math.max(0, cfg.timer.start + cfg.countdown - Date.now()) // Time remaining if running
-        : cfg.timer.elapsed; // Show stored elapsed time if paused/reset
-    timerDisp.textContent = fmt(displayTime);
-    timerBtn.textContent = cfg.timer.running ? '⏸' : '⏱'; // Set button icon based on state
-  }
+function resetClock(){
+  if(!cfg.countdownEnabled){timerDisp.textContent='00:00';timerBtn.style.display='none';return}
+  timerBtn.style.display='inline-block';cfg.timer.elapsed=cfg.countdown;cfg.timer.running=false;timerBtn.textContent='⏱';
 }
-
-timerBtn.onpointerdown = _ => {
-  if (!cfg.countdownEnabled || panel.classList.contains('open')) return; // Ignore if disabled or panel open
-
-  const t = cfg.timer;
-  const now = Date.now();
-  if (t.running) { // Stop the timer
-    t.running = false;
-    // Store remaining time when stopped
-    t.elapsed = Math.max(0, t.start + cfg.countdown - now);
-  } else { // Start the timer
-    t.running = true;
-    // Calculate start time based on previously elapsed time
-    // Ensure elapsed doesn't exceed countdown when calculating start
-    t.start = now - (cfg.countdown - Math.min(t.elapsed, cfg.countdown));
-     // If timer had fully elapsed, start from full duration
-    if (t.elapsed <= 0) {
-        t.start = now;
-        t.elapsed = cfg.countdown; // Reset elapsed visually
-    }
-  }
-  resetClockDisplay(); // Update display immediately
-  save(); // Save timer state change
+resetClock();
+timerBtn.onpointerdown=_=>{
+  if(!cfg.countdownEnabled)return;
+  const t=cfg.timer;
+  if(t.running){t.running=false;t.elapsed=Math.max(0,t.start+cfg.countdown-Date.now());timerBtn.textContent='⏱'}
+  else{t.running=true;t.start=Date.now()-(cfg.countdown-t.elapsed||0);timerBtn.textContent='⏸'}
+  save()
 };
-
-// Animation frame loop for timer display update
-let animationFrameId = null;
-function timerLoop() {
-  if (cfg.timer.running && cfg.countdownEnabled) {
-    const now = Date.now();
-    const remaining = Math.max(0, cfg.timer.start + cfg.countdown - now);
-    timerDisp.textContent = fmt(remaining);
-
-    if (remaining === 0) {
-      cfg.timer.running = false; // Stop timer
-      cfg.timer.elapsed = 0; // Reset elapsed time
-      timerBtn.textContent = '⏱'; // Reset button
-      if (typeof confetti === 'function') {
-          confetti({ particleCount: 180, spread: 100, origin: { y: 0.6 } }); // Time's up confetti
-      } else {
-          console.warn("Confetti function not found for timer end.");
-      }
-      beep(330); // Time's up sound (higher pitch)
-      resetClockDisplay(); // Ensure display updates correctly after stopping
-      save(); // Save stopped state
-    }
-  }
-  animationFrameId = requestAnimationFrame(timerLoop); // Continue loop
-}
-
-// Start/Stop loop based on global state (avoids multiple loops)
-function manageTimerLoop() {
-    if (cfg.timer.running && animationFrameId === null) {
-        animationFrameId = requestAnimationFrame(timerLoop);
-    }
-    // No explicit stop needed, loop self-regulates based on cfg.timer.running
-    // Could add cancelAnimationFrame if performance becomes an issue on pause/disable
-}
-// Call manageTimerLoop whenever cfg.timer.running might change
-// Added calls in timerBtn.onpointerdown, performReset, checkWin, syncCDUI
-
-
-resetClockDisplay(); // Initial display setup
-manageTimerLoop(); // Start loop if needed on load
-
+(function loop(){const t=cfg.timer;if(t.running&&cfg.countdownEnabled){const r=Math.max(0,t.start+cfg.countdown-Date.now());timerDisp.textContent=fmt(r);if(r===0){t.running=false;confetti({particleCount:180,spread:100})}}requestAnimationFrame(loop)})();
 
 /* ---------- audio cues ---------- */
-let audioCtx;
-function beep(frequency) {
-  try {
-    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    if (!audioCtx || audioCtx.state === 'suspended') {
-        audioCtx?.resume(); // Attempt to resume if suspended (common after user interaction)
-    }
-    if (!audioCtx || audioCtx.state !== 'running') {
-        console.warn("AudioContext not available or running.");
-        return;
-    }
-
-    const oscillator = audioCtx.createOscillator();
-    const gainNode = audioCtx.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-
-    oscillator.frequency.value = frequency;
-    gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime); // Reduced volume slightly
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.08); // Fade out
-
-    oscillator.start(audioCtx.currentTime);
-    oscillator.stop(audioCtx.currentTime + 0.08); // Short beep duration
-  } catch (e) {
-      console.error("Audio cue failed:", e);
-      // Avoid resetting audioCtx here, as the error might be temporary
-  }
+let ctx;
+function beep(freq){
+  try{
+    ctx=ctx||new(AudioContext||webkitAudioContext)();
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.frequency.value=freq;g.gain.value=.8;
+    o.start();o.stop(ctx.currentTime+.06);
+  }catch{}
 }
-const beepAdd = () => beep(220); // Lower pitch for add
-const beepRemove = () => beep(130); // Higher pitch for remove/undo
+const beepAdd   =()=>beep(220);
+const beepRemove=()=>beep(130);
 
 /* ---------- dbl‑tap zoom block ---------- */
-let lastTapTime = 0;
-addEventListener('touchend', e => {
-  const currentTime = e.timeStamp;
-  if (currentTime - lastTapTime < 300) { // 300ms threshold for double tap
-    e.preventDefault(); // Prevent zoom
-  }
-  lastTapTime = currentTime;
-}, { passive: false }); // Need passive:false to call preventDefault
+let last=0;addEventListener('touchend',e=>{const n=e.timeStamp;if(n-last<300)e.preventDefault();last=n},{passive:false});
 
 /* ---------- first render ---------- */
-renderTeams(); // Initial setup of teams and court
-
-})(); // IIFE End
+renderTeams();
 </script>
 </body>
 </html>
